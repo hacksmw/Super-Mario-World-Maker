@@ -234,7 +234,7 @@ function save() {
     fileData[snes2pc(oldSpriteDataPointer)] = spriteHeader;
     if (!isLayer2) {
         if (defaultBGList.indexOf(bgPointer) != -1) {
-            low = bgPointer & 0xFF;
+            low = (bgPointer >>> 0) & 0xFF;
             high = (bgPointer >>> 8) & 0xFF;
             bank = 0xFF;
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = low;
@@ -445,7 +445,7 @@ function save() {
     fileData[free + 1] = "T".charCodeAt(0);
     fileData[free + 2] = "A".charCodeAt(0);
     fileData[free + 3] = "R".charCodeAt(0);
-    fileData[free + 4] = ((spriteDataBinary.length - 1)) & 0xFF;
+    fileData[free + 4] = ((spriteDataBinary.length - 1) >>> 0) & 0xFF;
     fileData[free + 5] = ((spriteDataBinary.length - 1) >>> 8) & 0xFF;
     fileData[free + 6] = (~(fileData[free + 4])) & 0xFF;
     fileData[free + 7] = (~(fileData[free + 5])) & 0xFF;
@@ -454,7 +454,7 @@ function save() {
     }
     let addr;
     addr = pc2snes(free + 8);
-    fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = (addr & 0xFF);
+    fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
     if (!isLMModified) {
         throw new TypeError();
@@ -468,7 +468,7 @@ function save() {
     fileData[free + 1] = "T".charCodeAt(0);
     fileData[free + 2] = "A".charCodeAt(0);
     fileData[free + 3] = "R".charCodeAt(0);
-    fileData[free + 4] = ((layer1DataBinary.length - 1)) & 0xFF;
+    fileData[free + 4] = ((layer1DataBinary.length - 1) >>> 0) & 0xFF;
     fileData[free + 5] = ((layer1DataBinary.length - 1) >>> 8) & 0xFF;
     fileData[free + 6] = (~(fileData[free + 4])) & 0xFF;
     fileData[free + 7] = (~(fileData[free + 5])) & 0xFF;
@@ -476,7 +476,7 @@ function save() {
         fileData[free + 8 + i] = layer1DataBinary[i];
     }
     addr = pc2snes(free + 8);
-    fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = (addr & 0xFF);
+    fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
     if (isLayer2) {
@@ -486,7 +486,7 @@ function save() {
         fileData[free + 1] = "T".charCodeAt(0);
         fileData[free + 2] = "A".charCodeAt(0);
         fileData[free + 3] = "R".charCodeAt(0);
-        fileData[free + 4] = ((layer2DataBinary.length - 1)) & 0xFF;
+        fileData[free + 4] = ((layer2DataBinary.length - 1) >>> 0) & 0xFF;
         fileData[free + 5] = ((layer2DataBinary.length - 1) >>> 8) & 0xFF;
         fileData[free + 6] = (~(fileData[free + 4])) & 0xFF;
         fileData[free + 7] = (~(fileData[free + 5])) & 0xFF;
@@ -494,7 +494,7 @@ function save() {
             fileData[free + 8 + i] = layer2DataBinary[i];
         }
         addr = pc2snes(free + 8);
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = (addr & 0xFF);
+        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
     }
@@ -509,7 +509,7 @@ function save() {
             fileData[free+1] = "T".charCodeAt(0);
             fileData[free+2] = "A".charCodeAt(0);
             fileData[free+3] = "R".charCodeAt(0);
-            fileData[free+4] = ((bgDataBinary!.length - 1)) & 0xFF;
+            fileData[free+4] = ((bgDataBinary!.length - 1) >>> 0) & 0xFF;
             fileData[free+5] = ((bgDataBinary!.length - 1) >>> 8) & 0xFF;
             fileData[free+6] = (~(fileData[free+4])) & 0xFF;
             fileData[free+7] = (~(fileData[free+5])) & 0xFF;
@@ -521,8 +521,8 @@ function save() {
             addr = pc2snes(free+8);
     
             
-            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = (addr & 0xFF);
-            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
+            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
+            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
         */
     }

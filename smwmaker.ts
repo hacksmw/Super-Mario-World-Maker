@@ -225,19 +225,19 @@ function save() {
 
     // get old level data pointer
 
-    low = fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)];
+    low  = fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)];
     high = fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 1)];
     bank = fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 2)];
 
     let oldLayer1DataPointer = (bank << 16) | (high << 8) | low;
 
-    low = fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)];
+    low  = fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)];
     high = fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)];
     bank = fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)];
 
     let oldLayer2DataPointer = (bank << 16) | (high << 8) | low;
 
-    low = fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)];
+    low  = fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)];
     high = fileData[snes2pc(spriteDataTable + (2 * levelNum) + 1)];
 
     if (!isLMModified) {
@@ -265,7 +265,7 @@ function save() {
 
     if (!isLayer2) {
         if (defaultBGList.indexOf(bgPointer) != -1) {
-            low = bgPointer & 0xFF;
+            low =  (bgPointer >>> 0) & 0xFF;
             high = (bgPointer >>> 8) & 0xFF;
             bank = 0xFF;
     
@@ -340,7 +340,7 @@ function save() {
         let exit = exits[i];
         layer1DataBinary[layer1DataBinary.length] = exit.scrNumber & 0b11111;
         layer1DataBinary[layer1DataBinary.length] = ((exit.isWaterMid & 1) << 3) |
-        ((exit.LMflag & 1) << 2) | ((exit.isSecond & 1) << 1) | ((exit.destLevel >>> 8) & 1);
+            ((exit.LMflag & 1) << 2) | ((exit.isSecond & 1) << 1) | ((exit.destLevel >>> 8) & 1);
         layer1DataBinary[layer1DataBinary.length] = 0;
         layer1DataBinary[layer1DataBinary.length] = exit.destLevel & 0xFF;
     }
@@ -425,17 +425,20 @@ function save() {
         let spr = sprites[i];
         spriteDataBinary[1+(i*3)+2] = spr.spriteID & 0xFF;
         spriteDataBinary[1+(i*3)+0] = ((spr.yPosition & 0b1111) << 4) | ((spr.extra & 0b11) << 2) | 
-        (((spr.screenNum >>> 4) & 0b1) << 1) | (((spr.yPosition >>> 4) & 0b1));
+            (((spr.screenNum >>> 4) & 0b1) << 1) | (((spr.yPosition >>> 4) & 0b1));
         spriteDataBinary[1+(i*3)+1] = ((spr.xPosition & 0b1111) << 4) | (spr.screenNum & 0b1111);
     }
     spriteDataBinary[spriteDataBinary.length - 1] = 0xFF;
 
     // delete old sprite data
     if (snes2pc(oldSpriteDataPointer) - 8 >= 0x80200 && 
-        String.fromCharCode(fileData[snes2pc(oldSpriteDataPointer)-8], 
-        fileData[snes2pc(oldSpriteDataPointer)-7], fileData[snes2pc(oldSpriteDataPointer)-6],
-        fileData[snes2pc(oldSpriteDataPointer)-5]) == "STAR") {
-        let size = (fileData[snes2pc(oldSpriteDataPointer)-3] << 8) | fileData[snes2pc(oldSpriteDataPointer)-4];
+    String.fromCharCode(
+        fileData[snes2pc(oldSpriteDataPointer)-8], 
+        fileData[snes2pc(oldSpriteDataPointer)-7], 
+        fileData[snes2pc(oldSpriteDataPointer)-6],
+        fileData[snes2pc(oldSpriteDataPointer)-5]
+    ) == "STAR") {
+        let size =    (fileData[snes2pc(oldSpriteDataPointer)-3] << 8) | fileData[snes2pc(oldSpriteDataPointer)-4];
         let invSize = (fileData[snes2pc(oldSpriteDataPointer)-1] << 8) | fileData[snes2pc(oldSpriteDataPointer)-2];
         if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
             size++;
@@ -456,10 +459,13 @@ function save() {
 
     // delete old layer1 data
     if (snes2pc(oldLayer1DataPointer) - 8 >= 0x80200 && 
-    String.fromCharCode(fileData[snes2pc(oldLayer1DataPointer)-8], 
-    fileData[snes2pc(oldLayer1DataPointer)-7], fileData[snes2pc(oldLayer1DataPointer)-6],
-    fileData[snes2pc(oldLayer1DataPointer)-5]) == "STAR") {
-        let size = (fileData[snes2pc(oldLayer1DataPointer)-3] << 8) | fileData[snes2pc(oldLayer1DataPointer)-4];
+    String.fromCharCode(
+        fileData[snes2pc(oldLayer1DataPointer)-8], 
+        fileData[snes2pc(oldLayer1DataPointer)-7], 
+        fileData[snes2pc(oldLayer1DataPointer)-6],
+        fileData[snes2pc(oldLayer1DataPointer)-5]
+    ) == "STAR") {
+        let size =    (fileData[snes2pc(oldLayer1DataPointer)-3] << 8) | fileData[snes2pc(oldLayer1DataPointer)-4];
         let invSize = (fileData[snes2pc(oldLayer1DataPointer)-1] << 8) | fileData[snes2pc(oldLayer1DataPointer)-2];
         if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
             size++;
@@ -480,10 +486,13 @@ function save() {
 
     // delete old layer2/bg data
     if (snes2pc(oldLayer2DataPointer) - 8 >= 0x80200 && 
-    String.fromCharCode(fileData[snes2pc(oldLayer2DataPointer)-8], 
-    fileData[snes2pc(oldLayer2DataPointer)-7], fileData[snes2pc(oldLayer2DataPointer)-6],
-    fileData[snes2pc(oldLayer2DataPointer)-5]) == "STAR") {
-        let size = (fileData[snes2pc(oldLayer2DataPointer)-3] << 8) | fileData[snes2pc(oldLayer2DataPointer)-4];
+    String.fromCharCode(
+        fileData[snes2pc(oldLayer2DataPointer)-8], 
+        fileData[snes2pc(oldLayer2DataPointer)-7], 
+        fileData[snes2pc(oldLayer2DataPointer)-6],
+        fileData[snes2pc(oldLayer2DataPointer)-5]
+    ) == "STAR") {
+        let size =    (fileData[snes2pc(oldLayer2DataPointer)-3] << 8) | fileData[snes2pc(oldLayer2DataPointer)-4];
         let invSize = (fileData[snes2pc(oldLayer2DataPointer)-1] << 8) | fileData[snes2pc(oldLayer2DataPointer)-2];
         if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
             size++;
@@ -511,7 +520,7 @@ function save() {
     fileData[free+1] = "T".charCodeAt(0);
     fileData[free+2] = "A".charCodeAt(0);
     fileData[free+3] = "R".charCodeAt(0);
-    fileData[free+4] = ((spriteDataBinary.length - 1)) & 0xFF;
+    fileData[free+4] = ((spriteDataBinary.length - 1) >>> 0) & 0xFF;
     fileData[free+5] = ((spriteDataBinary.length - 1) >>> 8) & 0xFF;
     fileData[free+6] = (~(fileData[free+4])) & 0xFF;
     fileData[free+7] = (~(fileData[free+5])) & 0xFF;
@@ -523,7 +532,7 @@ function save() {
     let addr: number;
     addr = pc2snes(free+8);
 
-    fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = (addr & 0xFF);
+    fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
 
     if (!isLMModified) {
@@ -539,7 +548,7 @@ function save() {
     fileData[free+1] = "T".charCodeAt(0);
     fileData[free+2] = "A".charCodeAt(0);
     fileData[free+3] = "R".charCodeAt(0);
-    fileData[free+4] = ((layer1DataBinary.length - 1)) & 0xFF;
+    fileData[free+4] = ((layer1DataBinary.length - 1) >>> 0) & 0xFF;
     fileData[free+5] = ((layer1DataBinary.length - 1) >>> 8) & 0xFF;
     fileData[free+6] = (~(fileData[free+4])) & 0xFF;
     fileData[free+7] = (~(fileData[free+5])) & 0xFF;
@@ -550,8 +559,8 @@ function save() {
 
     addr = pc2snes(free+8);
 
-    fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = (addr & 0xFF);
-    fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
+    fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
+    fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
 
     if (isLayer2) {
@@ -562,7 +571,7 @@ function save() {
         fileData[free+1] = "T".charCodeAt(0);
         fileData[free+2] = "A".charCodeAt(0);
         fileData[free+3] = "R".charCodeAt(0);
-        fileData[free+4] = ((layer2DataBinary.length - 1)) & 0xFF;
+        fileData[free+4] = ((layer2DataBinary.length - 1) >>> 0) & 0xFF;
         fileData[free+5] = ((layer2DataBinary.length - 1) >>> 8) & 0xFF;
         fileData[free+6] = (~(fileData[free+4])) & 0xFF;
         fileData[free+7] = (~(fileData[free+5])) & 0xFF;
@@ -573,8 +582,8 @@ function save() {
 
         addr = pc2snes(free+8);
 
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = (addr & 0xFF);
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
+        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
+        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
     } else {
     /*
@@ -587,7 +596,7 @@ function save() {
         fileData[free+1] = "T".charCodeAt(0);
         fileData[free+2] = "A".charCodeAt(0);
         fileData[free+3] = "R".charCodeAt(0);
-        fileData[free+4] = ((bgDataBinary!.length - 1)) & 0xFF;
+        fileData[free+4] = ((bgDataBinary!.length - 1) >>> 0) & 0xFF;
         fileData[free+5] = ((bgDataBinary!.length - 1) >>> 8) & 0xFF;
         fileData[free+6] = (~(fileData[free+4])) & 0xFF;
         fileData[free+7] = (~(fileData[free+5])) & 0xFF;
@@ -599,8 +608,8 @@ function save() {
         addr = pc2snes(free+8);
 
         
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = (addr & 0xFF);
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
+        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
+        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);    
     */
     }
