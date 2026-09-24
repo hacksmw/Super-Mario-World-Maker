@@ -201,9 +201,6 @@ let target: Nullable<HTMLDivElement> = null;
 let prevObjLeft: number, prevObjTop: number;
 
 function save() {
-    /*
-        bg data
-    */
     let low: number, high: number, bank: number;
     let primaryLevelHeader = [0, 0, 0, 0, 0];
     let secondaryLevelHeader = [0, 0, 0, 0];
@@ -492,6 +489,8 @@ function save() {
         fileData[snes2pc(oldLayer2DataPointer)-6],
         fileData[snes2pc(oldLayer2DataPointer)-5]
     ) == "STAR") {
+        console.log("Deleting Layer 2 / BG: " + oldLayer2DataPointer);
+
         let size =    (fileData[snes2pc(oldLayer2DataPointer)-3] << 8) | fileData[snes2pc(oldLayer2DataPointer)-4];
         let invSize = (fileData[snes2pc(oldLayer2DataPointer)-1] << 8) | fileData[snes2pc(oldLayer2DataPointer)-2];
         if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
@@ -585,33 +584,31 @@ function save() {
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
-    } else {
-    /*
-        
-        free = getFreeSpace(bgDataBinary!.length);
+    } else {  
+        // write background data
+        if (defaultBGList.indexOf(bgPointer) === -1) {
+            free = getFreeSpace(bgDataBinary!.length);
 
-        
+            fileData[free+0] = "S".charCodeAt(0);
+            fileData[free+1] = "T".charCodeAt(0);
+            fileData[free+2] = "A".charCodeAt(0);
+            fileData[free+3] = "R".charCodeAt(0);
+            fileData[free+4] = ((bgDataBinary!.length - 1) >>> 0) & 0xFF;
+            fileData[free+5] = ((bgDataBinary!.length - 1) >>> 8) & 0xFF;
+            fileData[free+6] = (~(fileData[free+4])) & 0xFF;
+            fileData[free+7] = (~(fileData[free+5])) & 0xFF;
 
-        fileData[free+0] = "S".charCodeAt(0);
-        fileData[free+1] = "T".charCodeAt(0);
-        fileData[free+2] = "A".charCodeAt(0);
-        fileData[free+3] = "R".charCodeAt(0);
-        fileData[free+4] = ((bgDataBinary!.length - 1) >>> 0) & 0xFF;
-        fileData[free+5] = ((bgDataBinary!.length - 1) >>> 8) & 0xFF;
-        fileData[free+6] = (~(fileData[free+4])) & 0xFF;
-        fileData[free+7] = (~(fileData[free+5])) & 0xFF;
+            for (let i = 0; i < bgDataBinary!.length; i++) {
+                fileData[free+8+i] = bgDataBinary![i];
+            }
 
-        for (let i = 0; i < bgDataBinary!.length; i++) {
-            fileData[free+8+i] = bgDataBinary![i];
-        }
+            addr = pc2snes(free+8);
 
-        addr = pc2snes(free+8);
-
-        
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
-        fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);    
-    */
+            
+            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
+            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
+            fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);    
+        }  
     }
 
     if (!isLMModified) {
