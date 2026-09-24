@@ -3430,9 +3430,12 @@ function getPalette(bgPalNum: number, fgPalNum: number, spPalNum: number) {
     return pal;
 }
 
-function loadGraphics() {
-    let temp: number;
+function getCompressedGraphicsAddr(index: number) {
+    return snes2pc(((fileData[snes2pc(0x00b9f6 + index)]) << 16) |
+        ((fileData[snes2pc(0x00b9c4 + index)]) << 8) | fileData[snes2pc(0x00b992 + index)]);
+}
 
+function loadGraphics() {
     let fg1gfx: number[], fg2gfx: number[], bggfx: number[], fg3gfx: number[];
     let sp1gfx: number[], sp2gfx: number[], sp3gfx: number[], sp4gfx: number[];
 
@@ -3440,67 +3443,44 @@ function loadGraphics() {
     tileset = tilesetList[fgbgGFX];
 
     /* Get Level's graphics number */
-    fg1 = fileData[snes2pc(0xA92B + (4*fgbgGFX))];
+    fg1 = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 0)];
     fg2 = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 1)];
-    bg = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 2)];
+    bg  = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 2)];
     fg3 = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 3)];
 
-    sp1 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX))]
-    sp2 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 1))]
-    sp3 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 2))]
-    sp4 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 3))]
+    sp1 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 0))];
+    sp2 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 1))];
+    sp3 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 2))];
+    sp4 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 3))];
 
     /* Get Compressed Graphics and Decompress */
 
     // FG/BG graphics;
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + fg1)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + fg1)]) << 8) | fileData[snes2pc(0x00b992 + fg1)]);
+    
+    fg1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg1)));
 
-    fg1gfx = decompress_lz2(fileData.slice(temp));
+    fg2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg2)));
 
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + fg2)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + fg2)]) << 8) | fileData[snes2pc(0x00b992 + fg2)]);
+    bggfx  = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg )));
 
-    fg2gfx = decompress_lz2(fileData.slice(temp));
-
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + bg)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + bg)]) << 8) | fileData[snes2pc(0x00b992 + bg)]);
-
-    bggfx = decompress_lz2(fileData.slice(temp));
-
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + fg3)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + fg3)]) << 8) | fileData[snes2pc(0x00b992 + fg3)]);
-
-    fg3gfx = decompress_lz2(fileData.slice(temp));
+    fg3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg3)));
 
     // Sprite Graphics
 
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + sp1)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + sp1)]) << 8) | fileData[snes2pc(0x00b992 + sp1)]);
+    sp1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp1)));
 
-    sp1gfx = decompress_lz2(fileData.slice(temp));
+    sp2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp2)));
 
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + sp2)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + sp2)]) << 8) | fileData[snes2pc(0x00b992 + sp2)]);
+    sp3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp3)));
 
-    sp2gfx = decompress_lz2(fileData.slice(temp));
-
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + sp3)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + sp3)]) << 8) | fileData[snes2pc(0x00b992 + sp3)]);
-
-    sp3gfx = decompress_lz2(fileData.slice(temp));
-
-    temp = snes2pc(((fileData[snes2pc(0x00b9f6 + sp4)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + sp4)]) << 8) | fileData[snes2pc(0x00b992 + sp4)]);
-
-    sp4gfx = decompress_lz2(fileData.slice(temp));
+    sp4gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp4)));
 
     /* Convert Graphics */
 
     fg1bmp = convertGraphics(fg1gfx);
     fg2bmp = convertGraphics(fg2gfx);
     fg3bmp = convertGraphics(fg3gfx);
-    bgbmp = convertGraphics(bggfx);
+    bgbmp  = convertGraphics(bggfx);
 
     sp1bmp = convertGraphics(sp1gfx);
     sp2bmp = convertGraphics(sp2gfx);
