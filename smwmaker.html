@@ -1,0 +1,760 @@
+<!doctype html>
+<html>
+<head>
+<title>SMWMaker</title>
+<meta charset="utf-8">
+<script src="./html2canvas.js"></script>
+<script src="./smwmaker.js"></script>
+<style>
+    #main {
+        width: 100%;
+        overflow-x: show;
+        overflow-y: hidden;
+    }
+    .object:focus-visible {
+        outline: 0px;
+    }
+    .sprite:focus-visible {
+        outline: 0px;
+    }
+    #stage {
+        outline: 0px;
+        user-select: none;
+        color: black;
+    }
+    .hidden {
+        display: none;
+    }
+    #backColorView {
+        width: 16px;
+        height: 16px;
+        background-color: black;
+    }
+    .center {
+        text-align: center;
+    }
+    body {
+        background-color: black;
+        color: white;
+    }
+</style>
+</head>
+<body>
+<div id="buttonBar">
+<button id="btnOpen">Open</button>
+<button id="btnSave" disabled>Save</button>
+<button id="btn8x8" disabled>8x8</button>
+<button id="btn16x16" disabled>16x16</button>
+<button id="btnSwitchBG" disabled>BG</button>
+<button id="btnPalette" disabled>Palette</button>
+<button id="btnExit" disabled>Exits</button>
+<button id="btnEnter" disabled>Entrance</button>
+<button id="btn2ndExit" disabled>2nd Exits</button>
+<button id="btnGFX" disabled>GFX</button>
+<button id="btnLevelHeader" disabled>Level Header</button>
+<button id="btnSprHeader" disabled>Sprite Header</button>
+<button id="btnOtherHeader" disabled>Other Header</button>
+<button id="btnLevelToImage" disabled>Screenshot</button>
+
+</div>
+<div id="main"></div>
+
+<div id="dialogSprHeader" class="hidden">
+<table>
+<tr>
+<td>
+<fieldset>
+<legend>Sprite Memory</legend>
+<select id="selSprMemory">
+<option value="0">00</option>
+<option value="1">01</option>
+<option value="2">02</option>
+<option value="3">03</option>
+<option value="4">04</option>
+<option value="5">05</option>
+<option value="6">06</option>
+<option value="7">07</option>
+<option value="8">08</option>
+<option value="9">09</option>
+<option value="10">0A</option>
+<option value="11">0B</option>
+<option value="12">0C</option>
+<option value="13">0D</option>
+<option value="14">0E</option>
+<option value="15">0F</option>
+<option value="16">10</option>
+<option value="17">11</option>
+<option value="18">12</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<input id="chkSprBuoy1" type="checkbox"><label for="chkSprBuoy1">Enable sprite buoyancy 1</label>
+</td>
+</tr>
+<tr>
+<td>
+<input id="chkSprBuoy2" type="checkbox"><label for="chkSprBuoy2">Enable sprite buoyancy 2</label>
+</td>
+</tr>
+<td class="center">
+<button id="btnSprHeaderOK">OK</button>&nbsp;<button id="btnSprHeaderCancel">Cancel</button>
+</td>
+</table>
+</div>
+
+
+
+<div id="dialogGFX" class="hidden">
+<table>
+<tr>
+<td>
+<fieldset>
+<legend>Change FG/BG GFX</legend>
+<select id="selFGBGGFX">
+<option value="0">0: (Normal 1)</option>
+<option value="1">1: (Castle 1)</option>
+<option value="2">2: (Rope 1)</option>
+<option value="3">3: (Underground 1)</option>
+<option value="4">4: (Switch Palace 1)</option>
+<option value="5">5: (Ghost House 1)</option>
+<option value="6">6: (Rope 2)</option>
+<option value="7">7: (Normal 2)</option>
+<option value="8">8: (Rope 3)</option>
+<option value="9">9: (Underground 2)</option>
+<option value="10">A: (Switch Palace 2)</option>
+<option value="11">B: (Castle 2)</option>
+<option value="12">C: (Cloud/Forest)</option>
+<option value="13">D: (Ghost House 2)</option>
+<option value="14">E: (Underground 3)</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<fieldset>
+<legend>Change Sprite GFX</legend>
+<select id="selSprGFX">
+<option value="0">0: (Forest)</option>
+<option value="1">1: (Castle)</option>
+<option value="2">2: (Mushroom)</option>
+<option value="3">3: (Underground)</option>
+<option value="4">4: (Water)</option>
+<option value="5">5: (Pokey)</option>
+<option value="6">6: (Underground 2)</option>
+<option value="7">7: (Ghost House)</option>
+<option value="8">8: (Banzai Bill)</option>
+<option value="9">9: (Yoshi's House)</option>
+<option value="10">A: (Dino-Rhino)</option>
+<option value="11">B: (Switch Palace)</option>
+<option value="12">C: (Mecha-Koopa)</option>
+<option value="13">D: (Wendy/Lemmy)</option>
+<option value="14">E: (Ninji)</option>
+<option value="15">F: (Not Used)</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<button id="btnGFXOK">OK</button>
+<button id="btnGFXCancel">Cancel</button>
+</td>
+</tr>
+</table>
+</div>
+
+
+
+<div id="dialogLevelHeader" class="hidden">
+<table>
+<tr>
+<td colspan="2">
+<fieldset>
+<legend>SNES Registers and Level Modes</legend>
+<select id="selLevelMode">
+<option value="0">00: Horizontal level</option>
+<option value="1">01: Horizontal layer 2 level (BG)</option>
+<option value="2">02: Horizontal layer 2 level (FG)</option>
+<option value="3">03: Do not use this level mode!</option>
+<option value="4">04: Do not use this level mode!</option>
+<option value="5">05: Do not use this level mode!</option>
+<option value="6">06: Do not use this level mode!</option>
+<option value="7">07: Vertical layer 2 level (BG)</option>
+<option value="8">07: Vertical layer 2 level (FG)</option>
+<option value="9">09: Horizontal boss Level</option>
+<option value="10">0A: Vertical level</option>
+<option value="11">0B: Horizontal boss level</option>
+<option value="12">0C: Horizontal dark BG level</option>
+<option value="13">0D: Vertical dark BG level</option>
+<option value="14">0E: Horizontal level</option>
+<option value="15">0F: Horizontal layer 2 level (FG)</option>
+<option value="16">10: Horizontal boss level</option>
+<option value="17">11: Horizontal dark BG level</option>
+<option value="18">12: Cannot use this level mode!</option>
+<option value="19">13: Cannot use this level mode!</option>
+<option value="20">14: Cannot use this level mode!</option>
+<option value="21">15: Cannot use this level mode!</option>
+<option value="22">16: Cannot use this level mode!</option>
+<option value="23">17: Cannot use this level mode!</option>
+<option value="24">18: Cannot use this level mode!</option>
+<option value="25">19: Cannot use this level mode!</option>
+<option value="26">1A: Cannot use this level mode!</option>
+<option value="27">1B: Cannot use this level mode!</option>
+<option value="28">1C: Cannot use this level mode!</option>
+<option value="29">1D: Cannot use this level mode!</option>
+<option value="30">1E: Horizontal translucent level</option>
+<option value="31">1F: Horizontal layer 2 translucent level (FG)</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<fieldset>
+<legend>Layer 1 (FG) Vertical Scrolling</legend>
+<select id="selVerticalScrollSetting">
+<option value="0">No Vertical Scroll</option>
+<option value="1">Vertical Scroll at Will</option>
+<option value="2">No Vertical Scroll unless Flying/Climbing/Etc</option>
+<option value="3">No Vertical or Horizontal Scroll</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<fieldset>
+<legend>Music</legend>
+<select id="selMusic">
+<option value="0">02 Here we go!</option>
+<option value="1">06 Cave Drums</option>
+<option value="2">01 Piano</option>
+<option value="3">08 Castle</option>
+<option value="4">07 Ghost House</option>
+<option value="5">03 Water Level</option>
+<option value="6">05 Boss Battle</option>
+<option value="7">12 Switch Palace</option>
+</select>
+</fieldset>
+</td>
+<td>
+<fieldset>
+<legend>Time Limit</legend>
+<select id="selTimer">
+<option value="0">Time 0000</option>
+<option value="1">Time 0200</option>
+<option value="2">Time 0300</option>
+<option value="3">Time 0400</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<fieldset>
+<legend>Number of Screens</legend>
+<select id="selScreenLength">
+<option value="0">01 Screen</option>
+<option value="1">02 Screens</option>
+<option value="2">03 Screens</option>
+<option value="3">04 Screens</option>
+<option value="4">05 Screens</option>
+<option value="5">06 Screens</option>
+<option value="6">07 Screens</option>
+<option value="7">08 Screens</option>
+<option value="8">09 Screens</option>
+<option value="9">0A Screens</option>
+<option value="10">0B Screens</option>
+<option value="11">0C Screens</option>
+<option value="12">0D Screens</option>
+<option value="13">0E Screens</option>
+<option value="14">0F Screens</option>
+<option value="15">10 Screens</option>
+<option value="16">11 Screens</option>
+<option value="17">12 Screens</option>
+<option value="18">13 Screens</option>
+<option value="19">14 Screens</option>
+<option value="20">15 Screens</option>
+<option value="21">16 Screens</option>
+<option value="22">17 Screens</option>
+<option value="23">18 Screens</option>
+<option value="24">19 Screens</option>
+<option value="25">1A Screens</option>
+<option value="26">1B Screens</option>
+<option value="27">1C Screens</option>
+<option value="28">1D Screens</option>
+<option value="29">1E Screens</option>
+<option value="30">1F Screens</option>
+<option value="31">20 Screens</option>
+</select>
+</fieldset>
+</td>
+<td>
+<fieldseT>
+<legend>Item Memory Index</legend>
+<select id="selItemMemory">
+<option value="0">Index 0</option>
+<option value="1">Index 1</option>
+<option value="2">Index 2</option>
+<option value="3">Index 3</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<input id="checkForceLayer3" type="checkbox">
+<label for="checkForceLayer3">
+Force Layer 3 above all other layers and sprites
+</label>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<button id="btnHeaderOK">OK</button>
+<button id="btnHeaderCancel">Cancal</button></td>
+</tr>
+</table>
+</div>
+
+
+<div id="dialogOtherHeader" class="hidden">
+<table>
+<tr>
+<td>
+<fieldset>
+<legend>Layer 2 (BG) Scrolling Rate</legend>
+<select id="selLayer2ScrollingRate">
+<option value="0">H-Scroll: Variable, V-Scroll: Slow</option>
+<option value="1">H-Scroll: Variable, V-Scroll: Constant</option>
+<option value="2">H-Scroll: Constant, V-Scroll: Constant</option>
+<option value="3">H-Scroll: None, V-Scroll: None</option>
+<option value="4">H-Scroll: Constant, V-Scroll: None</option>
+<option value="5">H-Scroll: Variable, V-Scroll: Variable</option>
+<option value="6">H-Scroll: Constant, V-Scroll: Variable</option>
+<option value="7">H-Scroll: None, V-Scroll: Constant</option>
+<option value="8">H-Scroll: None, V-Scroll: None</option>
+<option value="9">H-Scroll: None, V-Scroll: None</option>
+<option value="10">H-Scroll: None, V-Scroll: None</option>
+<option value="11">H-Scroll: None, V-Scroll: None</option>
+<option value="12">H-Scroll: None, V-Scroll: None</option>
+<option value="13">H-Scroll: None, V-Scroll: None</option>
+<option value="14">H-Scroll: None, V-Scroll: None</option>
+<option value="15">H-Scroll: None, V-Scroll: None</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<fieldset>
+<legend>Layer 3 Options</legend>
+<select id="selLayer3Option">
+<option value="0">No Layer 3</option>
+<option value="1">Water, high and low tides</option>
+<option value="2">Water, low tide only</option>
+<option value="3">Tileset Specific</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<input type="checkbox" id="checkVerticalLevelPositioning"><label for="checkVerticalLevelPositioning">Use Vertical Level Positioning for all entrances</label>
+</td>
+</tr>
+<tr>
+<td>
+<input type="checkbox" id="checkVerticalLevelUnknown"><label for="checkVerticalLevelUnknown">Vertical Level Unknown/Unused</label>
+</td>
+</tr>
+<tr>
+<td><input type="checkbox" id="checkDisableNoYoshi"><label for="checkDisableNoYoshi">Disable "No Yoshi" Level Intro</label></td>
+</tr>
+<tr>
+<td align="center">
+<button id="btnOtherHeaderOK">OK</button>
+<button id="btnOtherHeaderCancel">Cancel</button>
+</td>
+</tr>
+</table>
+</div>
+
+
+
+<div id="dialogEnter" class="hidden">
+<table border="0">
+<tr>
+<td>
+<input type="text" id="scrNum" value="0">
+<laber for="scrNum">Screen Number of Entrance (0-1F)</laber>
+</td>
+</tr>
+<tr>
+<td>
+<input type="text" id="midNum" value="0">
+<laber for="midNum">Screen Number of Midway Entrance (0-F)</laber>
+</td>
+</tr>
+<tr>
+<td align="center">
+<fieldset>
+<legend>X/Y Position (P=additional pixels S=Subscreen)</legend>
+<select id="selEnterX">
+<option value="0">X=1, P=0, S=00</option>
+<option value="1">X=8, P=0, S=00</option>
+<option value="2">X=0, P=0, S=00</option>
+<option value="3">X=E, P=0, S=00</option>
+<option value="4">X=1, P=0, S=01</option>
+<option value="5">X=7, P=0, S=01</option>
+<option value="6">X=0, P=0, S=01</option>
+</select>
+<select id="selEnterY">
+<option value="0">Y=0, P=0, S=00</option>
+<option value="1">Y=3, P=0, S=00</option>
+<option value="2">Y=6, P=0, S=00</option>
+<option value="3">Y=8, P=0, S=00</option>
+<option value="4">Y=A, P=0, S=00</option>
+<option value="5">Y=B, P=0, S=00</option>
+<option value="6">Y=C, P=0, S=00</option>
+<option value="7">Y=E, P=0, S=00</option>
+<option value="8">Y=1, P=0, S=01</option>
+<option value="9">Y=3, P=0, S=01</option>
+<option value="10">Y=5, P=0, S=01</option>
+<option value="11">Y=6, P=0, S=01</option>
+<option value="12">Y=7, P=0, S=01</option>
+<option value="13">Y=9, P=0, S=01</option>
+<option value="14">Y=0, P=0, S=01</option>
+<option value="15">Y=0, P=0, S=01</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<fieldset>
+<legend>Layer 1,2 (FG,BG) Initial Position</legend>
+<select id="selEnterFG">
+<option value="0">FG=00</option>
+<option value="1">FG=60</option>
+<option value="2">FG=C0</option>
+<option value="3">FG=00</option>
+</select>
+<select id="selEnterBG">
+<option value="0">BG=60</option>
+<option value="1">BG=90</option>
+<option value="2">BG=C0</option>
+<option value="3">BG=00</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<fieldset>
+<legend>Mario Action</legend>
+<select id="selMarioAction">
+<option value="0">Do Nothing - Cannot Bring Item</option>
+<option value="1">Horizontal Pipe Exit Left</option>
+<option value="2">Horizontal Pipe Exit Right</option>
+<option value="3">Vertical Pipe Exit Up</option>
+<option value="4">Vertical Pipe Exit Down</option>
+<option value="5">Do Nothing (Slippery Level)</option>
+<option value="6">Shoot From Slanted Pipe Right</option>
+<option value="7">Vertical Pipe Exit Down (Water Level)</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<button id="btnEnterOK">OK</button>
+<button id="btnEnterCancel">Cancel</button>
+</td>
+</tr>
+</table>
+</div>
+
+<div id="dialogPalette" class="hidden">
+<table border="0">
+<tr>
+<td>
+<canvas id="paletteView"></canvas>
+</td>
+<td>
+<fieldset>
+<legend>Header Settings</legend>
+<div id="backColorView"></div><br>
+<select id="selBackColor">
+<option value="0">Back Area Color 0</option>
+<option value="1">Back Area Color 1</option>
+<option value="2">Back Area Color 2</option>
+<option value="3">Back Area Color 3</option>
+<option value="4">Back Area Color 4</option>
+<option value="5">Back Area Color 5</option>
+<option value="6">Back Area Color 6</option>
+<option value="7">Back Area Color 7</option>
+</select>
+<br><br>
+<select id="selFGColor">
+<option value="0">FG Palette 0</option>
+<option value="1">FG Palette 1</option>
+<option value="2">FG Palette 2</option>
+<option value="3">FG Palette 3</option>
+<option value="4">FG Palette 4</option>
+<option value="5">FG Palette 5</option>
+<option value="6">FG Palette 6</option>
+<option value="7">FG Palette 7</option>
+</select>
+<br><br>
+<select id="selBGColor">
+<option value="0">BG Palette 0</option>
+<option value="1">BG Palette 1</option>
+<option value="2">BG Palette 2</option>
+<option value="3">BG Palette 3</option>
+<option value="4">BG Palette 4</option>
+<option value="5">BG Palette 5</option>
+<option value="6">BG Palette 6</option>
+<option value="7">BG Palette 7</option>
+</select>
+<br><br>
+<select id="selSprColor">
+<option value="0">Sprite Palette 0</option>
+<option value="1">Sprite Palette 1</option>
+<option value="2">Sprite Palette 2</option>
+<option value="3">Sprite Palette 3</option>
+<option value="4">Sprite Palette 4</option>
+<option value="5">Sprite Palette 5</option>
+<option value="6">Sprite Palette 6</option>
+<option value="7">Sprite Palette 7</option>
+</select>
+<br><br>
+<button id="btnPaletteOK">OK</button>
+<button id="btnPaletteCancel">Cancel</button>
+</fieldset>
+</td>
+</tr>
+</table>
+</div>
+
+<div id="dialogBG" class="hidden">
+<table border="0">
+<tr>
+<td>
+<canvas id="bgPreview"></canvas>
+</td>
+</tr>
+<tr>
+<td>
+<fieldset>
+<legend>Switch Background</legend>
+<select id="selBG">
+<option value="0">Oblong Hill</option>
+<option value="1">Underwater</option>
+<option value="2">Cloud / Mountain</option>
+<option value="3">Cloud</option>
+<option value="4">Shallow Hills</option>
+<option value="5">Odd Land Formations with Clouds</option>
+<option value="6">Castle with Pillars</option>
+<option value="7">Large Mountain</option>
+<option value="8">Switch Palace</option>
+<option value="9">Starry Night</option>
+<option value="10">Pointy Land Formations</option>
+<option value="11">Blank Background</option>
+<option value="12">Underground</option>
+<option value="13">Forest</option>
+<option value="14">Ghost House</option>
+<option value="15">Sunken Ship</option>
+<option value="16">Castle with Windows</option>
+<option value="17">Other</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<button id="btnBGOK">OK</button>
+<button id="btnBGCancel">Cancel</button>
+</td>
+</tr>
+</table>
+</div>
+
+<div id="dialogExit" class="hidden">
+<table>
+<tr>
+<td>
+<select id="selScrNumber">
+<option value="0">00</option>
+<option value="1">01</option>
+<option value="2">02</option>
+<option value="3">03</option>
+<option value="4">04</option>
+<option value="5">05</option>
+<option value="6">06</option>
+<option value="7">07</option>
+<option value="8">08</option>
+<option value="9">09</option>
+<option value="10">0A</option>
+<option value="11">0B</option>
+<option value="12">0C</option>
+<option value="13">0D</option>
+<option value="14">0E</option>
+<option value="15">0F</option>
+<option value="16">10</option>
+<option value="17">11</option>
+<option value="18">12</option>
+<option value="19">13</option>
+<option value="20">14</option>
+<option value="21">15</option>
+<option value="22">16</option>
+<option value="23">17</option>
+<option value="24">18</option>
+<option value="25">19</option>
+<option value="26">1A</option>
+<option value="27">1B</option>
+<option value="28">1C</option>
+<option value="29">1D</option>
+<option value="30">1E</option>
+<option value="31">1F</option>
+</select>
+</td>
+<td>Screen Number to Exit to Add/Modify/Delete</td>
+</tr>
+<tr>
+<td>
+<input type="text" id="txtExitDest" value="0">
+</td>
+<td>
+Level Destination or Secondary Exit Number (0-1FF)
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<input id="chkUseSecond" type="checkbox">
+<label for="chkUseSecond">Use the above value as a Secondary Exit Number</label>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<input id="chkUseSecondWater" type="checkbox" disabled>
+<label for="chkUseSecondWater">Make the destination level a water level (Secondary Exit only)</label>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<button id="btnExitOK">OK</button>
+<button id="btnExitDelete">Delete</button>
+<button id="btnExitCancel">Cancel</button>
+</td>
+</tr>
+</table>
+</div>
+
+<div id="dialog2ndExit" class="hidden">
+<table>
+<tr>
+<td align="center">
+<fieldset>
+<legend>Secondary Entrance/Exit Number</legend>
+<select id="sel2ndEnter"></select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td>
+<input id="txt2ndDest" type="text">
+Destination Level Number (0-1FF)
+</td>
+</tr>
+<tr>
+<td>
+<input id="txt2ndScrNum" type="text">
+Screen Number of Entrance (0-1F)
+</td>
+</tr>
+<tr>
+<td align="center">
+<fieldset>
+<legend>X/Y Position (P=additional pixels S=Subscreen)</legend>
+<select id="sel2ndEnterX">
+<option value="0">X=1, P=0, S=00</option>
+<option value="1">X=8, P=0, S=00</option>
+<option value="2">X=0, P=0, S=00</option>
+<option value="3">X=E, P=0, S=00</option>
+<option value="4">X=1, P=0, S=01</option>
+<option value="5">X=7, P=0, S=01</option>
+<option value="6">X=0, P=0, S=01</option>
+</select>
+<select id="sel2ndEnterY">
+<option value="0">Y=0, P=0, S=00</option>
+<option value="1">Y=3, P=0, S=00</option>
+<option value="2">Y=6, P=0, S=00</option>
+<option value="3">Y=8, P=0, S=00</option>
+<option value="4">Y=A, P=0, S=00</option>
+<option value="5">Y=B, P=0, S=00</option>
+<option value="6">Y=C, P=0, S=00</option>
+<option value="7">Y=E, P=0, S=00</option>
+<option value="8">Y=1, P=0, S=01</option>
+<option value="9">Y=3, P=0, S=01</option>
+<option value="10">Y=5, P=0, S=01</option>
+<option value="11">Y=6, P=0, S=01</option>
+<option value="12">Y=7, P=0, S=01</option>
+<option value="13">Y=9, P=0, S=01</option>
+<option value="14">Y=0, P=0, S=01</option>
+<option value="15">Y=0, P=0, S=01</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<fieldset>
+<legend>Layer 1,2 (FG,BG) Initial Position</legend>
+<select id="sel2ndEnterFG">
+<option value="0">FG=00</option>
+<option value="1">FG=60</option>
+<option value="2">FG=C0</option>
+<option value="3">FG=00</option>
+</select>
+<select id="sel2ndEnterBG">
+<option value="0">BG=60</option>
+<option value="1">BG=90</option>
+<option value="2">BG=C0</option>
+<option value="3">BG=00</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<fieldset>
+<legend>Mario Action</legend>
+<select id="sel2ndMarioAction">
+<option value="0">Do Nothing - Cannot Bring Item</option>
+<option value="1">Horizontal Pipe Exit Left</option>
+<option value="2">Horizontal Pipe Exit Right</option>
+<option value="3">Vertical Pipe Exit Up</option>
+<option value="4">Vertical Pipe Exit Down</option>
+<option value="5">Do Nothing (Slippery Level)</option>
+<option value="6">Shoot From Slanted Pipe Right</option>
+<option value="7">Vertical Pipe Exit Down (Water Level)</option>
+</select>
+</fieldset>
+</td>
+</tr>
+<tr>
+<td align="center">
+<button id="btn2ndOK">OK</button>
+<button id="btn2ndCancel">Cancel</button>
+</td>
+</tr>
+</table>
+</div>
+
+</body>
+</html>
