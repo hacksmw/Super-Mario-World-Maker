@@ -3285,6 +3285,28 @@ function steep_slope_image(objNum, settings, tileset = 0, topBlock = 0x131, midB
     }
     return canvas.toDataURL('image/png');
 }
+function very_steep_slope_image(objNum, settings, tileset = 0, topBlock = 0x131, midBlock = 0x131, btmBlock = 0x131, dirtBlock = 0x131) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    const top = getMap16TileImg(topBlock);
+    const mid = getMap16TileImg(midBlock);
+    const btm = getMap16TileImg(btmBlock);
+    const dirt = getMap16TileImg(dirtBlock);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    const w = width;
+    for (let i = 0; i < width; i++) {
+        ctx.putImageData(top, i * 16, ((i * 2) + 0) * 16);
+        ctx.putImageData(mid, i * 16, ((i * 2) + 1) * 16);
+        ctx.putImageData(btm, i * 16, ((i * 2) + 2) * 16);
+        for (let j = ((i * 2) + 3); j < height; j++) {
+            ctx.putImageData(dirt, i * 16, j * 16);
+        }
+    }
+    return canvas.toDataURL('image/png');
+}
 function getSprImg(sprNum = 0, extra = 0) {
     switch (sprNum) {
         default:
@@ -4681,6 +4703,15 @@ function getObjImg(objNum, settings, tileset = 0) {
                 }
                 else if (mode === 3) {
                     return bone_like_image(objNum, settings, tileset, 0x151, 0x151, 0x151);
+                }
+            }
+            else if (objNum === 0x3C) {
+                // slope
+                let height, type;
+                type = (settings >>> 4) & 0b1111;
+                height = ((settings >>> 0) & 0b1111) + 1;
+                if (type === 1) {
+                    return very_steep_slope_image(objNum, settings, tileset, 0x1CC, 0x1CD, 0x1F2, 0x3F);
                 }
             }
             else if (objNum === 0x3d) {
