@@ -4469,6 +4469,12 @@ function getObjImg(objNum, settings, tileset = 0) {
                     return steep_slope_image(objNum, settings, tileset, 0x1D0, 0x1F5, 0x25);
                 }
             }
+            else if (objNum === 0x3B) {
+                const type = (settings >>> 4) & 0b1111;
+                if (type === 1) {
+                    return very_steep_slope_image(objNum, settings, tileset, 0x89, 0x8B, 0x25, 0x25);
+                }
+            }
             else if (objNum === 0x3c) {
                 return grass_like_image(objNum, settings, tileset, 0x107, 0x108, 0x109);
             }
