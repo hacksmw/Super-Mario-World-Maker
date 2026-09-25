@@ -4653,6 +4653,18 @@ function getObjImg(objNum, settings, tileset = 0) {
             else if (objNum === 0x35) {
                 return single_block_image(objNum, settings, tileset, 0x16D);
             }
+            else if (objNum === 0x39) {
+                // lava
+                let height, type;
+                type = (settings >>> 0) & 0b1111;
+                height = ((settings >>> 4) & 0b1111) + 1;
+                if (type === 2) {
+                    return normal_slope_image(objNum, settings, tileset, 0x1D4, 0x1D5, 0x1FF, 0x1FC, 0x1FF);
+                }
+                else if (type === 3) {
+                    return steep_slope_image(objNum, settings, tileset, 0x1D7, 0x1FE, 0x1FF);
+                }
+            }
             else if (objNum === 0x3f) {
                 return single_block_image(objNum, settings, tileset, 0x165);
             }
