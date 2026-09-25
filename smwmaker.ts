@@ -6097,6 +6097,15 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
         type = (settings) & 0b1111;
         height = ((settings >>> 4) & 0b1111) + 1;
         switch (type) {
+            case 0:
+                return ((getHeight(objNum, settings, tileset) - 1) * 2);
+                break;
+            case 1:
+                return getHeight(objNum, settings, tileset) - 1;
+                break;
+            case 2:
+                return (4*(getHeight(objNum, settings, tileset)-1));
+                break;
             case 3:
                 result = height * 2;
                 break;
@@ -7404,7 +7413,16 @@ function getX(obj: Obj, tset: number = -1): number {
             }
             break;
         default:
-            return obj.x;
+            {
+                if (tset === 0) {
+                    // plain / forest
+                    if (objNum === 0x3A) {
+                        return obj.x - 2;
+                    }
+
+                }
+                return obj.x;
+            }
             break;
     }
     return obj.x;
@@ -7447,7 +7465,14 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
             }
             break;
         default:
-            return obj.x;
+            {
+                if (tset === 0) {
+                    if (objNum === 0x3a) {
+                        return x + 2;
+                    }
+                }
+                return obj.x;
+            }
             break;
     }
 
