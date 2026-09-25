@@ -3241,6 +3241,31 @@ function undefined_obj_image(objNum, settings, tileset = 0) {
     }
     return canvas.toDataURL('image/png');
 }
+function rev_normal_slope_image(objNum, settings, tileset = 0, topLeftBlock = 0x131, topRightBlock = 0x131, btmLeftBlock = 0x131, btmRightBlock = 0x131, btmBlock = 0x131) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    const topLeft = getMap16TileImg(topLeftBlock);
+    const topRight = getMap16TileImg(topRightBlock);
+    const btmLeft = getMap16TileImg(btmLeftBlock);
+    const btmRight = getMap16TileImg(btmRightBlock);
+    const btm = getMap16TileImg(btmBlock);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    const w = intdiv(width, 2);
+    for (let i = 0; i < w; i++) {
+        ctx.putImageData(topLeft, (i * 2) * 16, i * 16);
+        ctx.putImageData(topRight, (i * 2 + 1) * 16, i * 16);
+        ctx.putImageData(btmLeft, (i * 2) * 16, (i + 1) * 16);
+        ctx.putImageData(btmRight, (i * 2 + 1) * 16, (i + 1) * 16);
+        for (let j = 0; j < i; j++) {
+            ctx.putImageData(btm, (i * 2 + 0) * 16, j * 16);
+            ctx.putImageData(btm, (i * 2 + 1) * 16, j * 16);
+        }
+    }
+    return canvas.toDataURL('image/png');
+}
 function normal_slope_image(objNum, settings, tileset = 0, topLeftBlock = 0x131, topRightBlock = 0x131, btmLeftBlock = 0x131, btmRightBlock = 0x131, btmBlock = 0x131) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
@@ -3463,6 +3488,9 @@ function getObjImg(objNum, settings, tileset = 0) {
         }
         else if (type === 5) {
             return gradual_slope_image(objNum, settings, tileset, 0x182, 0x187, 0x18C, 0x191, 0x1E6, 0x1E6, 0x1DB, 0x1DC, 0x3F);
+        }
+        else if (type === 6) {
+            return rev_normal_slope_image(objNum, settings, tileset, 0x1EE, 0x1F0, 0x1c6, 0x1c7, 0x165);
         }
     }
     else if (objNum === 0x00 && settings == 0x47) {
