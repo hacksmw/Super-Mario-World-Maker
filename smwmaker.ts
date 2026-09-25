@@ -5055,6 +5055,15 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
                     return very_steep_slope_image(objNum, settings, tileset, 0x89, 0x8B, 0x25, 0x25);
                 }
 
+            } else if (objNum === 0x3A) {
+                const type = (settings >>> 0) & 0b1111;
+                if (type === 2) {
+                    return normal_slope_image(objNum, settings, tileset, 0x8E, 0x8F, 0x25, 0x25);
+                } else if (type === 3) {
+                    return steep_slope_image(objNum, settings, tileset, 0x87, 0x25, 0x25);
+                } else if (type === 5) {
+                    return steep_slope_image(objNum, settings, tileset, 0x95, 0x25, 0x25);
+                }
             } else if (objNum === 0x3c) {
                 return grass_like_image(objNum, settings, tileset, 0x107, 0x108, 0x109);
             } else if (objNum === 0x3d) {
