@@ -5237,7 +5237,6 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = ((settings & 0b1111) + 1);
             }
             else if (objNum == 0x3D) {
-                // todo
                 // escalator
                 let height, type;
                 type = (settings >>> 0) & 0b1111;
@@ -5295,6 +5294,7 @@ function getWidth(objNum, settings, tileset = 0) {
             }
         }
         else if (tileset == 3) {
+            // underground
             if (objNum == 0x34 || objNum == 0x35) {
                 result = ((settings & 0b1111) + 1);
             }
@@ -5309,12 +5309,26 @@ function getWidth(objNum, settings, tileset = 0) {
             }
             else if (objNum == 0x39) {
                 // todo
+                let height, type;
+                type = (settings >>> 0) & 0b1111;
+                height = ((settings >>> 4) & 0b1111) + 1;
+                if (type === 2) {
+                    result = height * 2;
+                }
+                else if (type === 3) {
+                    result = height;
+                }
             }
             else if (objNum == 0x3A || objNum == 0x3B) {
                 result = ((settings & 0b1111) + 1);
             }
             else if (objNum == 0x3C) {
-                // todo
+                let height, type;
+                type = (settings >>> 4) & 0b1111;
+                height = ((settings >>> 0) & 0b1111) + 1;
+                if (type === 1) {
+                    result = height;
+                }
             }
             else if (objNum == 0x3D) {
                 result = ((settings & 0b1111) + 1);
