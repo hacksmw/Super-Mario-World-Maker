@@ -6769,7 +6769,12 @@ function getX(obj, tset = -1) {
     }
     switch (objNum) {
         case 0:
-            return obj.x;
+            {
+                if (settings === 0x46) {
+                    return obj.x - 1;
+                }
+                return obj.x;
+            }
             break;
         case 0x12:
             {
@@ -6820,7 +6825,12 @@ function getRealX(x, obj, tset = -1) {
     }
     switch (objNum) {
         case 0:
-            return obj.x;
+            {
+                if (settings === 0x46) {
+                    return obj.x + 1;
+                }
+                return obj.x;
+            }
             break;
         case 0x12:
             {
