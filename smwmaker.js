@@ -5253,6 +5253,7 @@ function getWidth(objNum, settings, tileset = 0) {
             }
         }
         else if (tileset == 2) {
+            // athletic
             if (objNum == 0x32) {
                 result = ((settings & 0b1111) + 1);
             }
@@ -5266,7 +5267,15 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = ((settings & 0b1111) + 1);
             }
             else if (objNum == 0x37) {
-                // todo
+                let height, type;
+                type = (settings >>> 0) & 0b1111;
+                height = ((settings >>> 4) & 0b1111) + 1;
+                if (type === 2) {
+                    result = height;
+                }
+                else if (type === 3) {
+                    result = height;
+                }
             }
             else if (objNum == 0x38) {
                 result = ((settings & 0b1111) + 1);
@@ -5275,10 +5284,28 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = 1;
             }
             else if (objNum == 0x3A) {
-                // todo
+                let height, type;
+                type = (settings) & 0b1111;
+                height = ((settings >>> 4) & 0b1111) + 1;
+                switch (type) {
+                    case 2:
+                        result = height * 2;
+                        break;
+                    case 3:
+                        result = height;
+                        break;
+                    case 5:
+                        result = height;
+                        break;
+                }
             }
             else if (objNum == 0x3B) {
-                // todo
+                let height, type;
+                type = (settings >>> 4) & 0b1111;
+                height = ((settings >>> 0) & 0b1111) + 1;
+                if (type === 1) {
+                    result = height;
+                }
             }
             else if (objNum == 0x3C) {
                 result = ((settings & 0b1111) + 1);
@@ -5308,7 +5335,7 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = 1;
             }
             else if (objNum == 0x39) {
-                // todo
+                // lava
                 let height, type;
                 type = (settings >>> 0) & 0b1111;
                 height = ((settings >>> 4) & 0b1111) + 1;
@@ -5323,6 +5350,7 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = ((settings & 0b1111) + 1);
             }
             else if (objNum == 0x3C) {
+                // slope
                 let height, type;
                 type = (settings >>> 4) & 0b1111;
                 height = ((settings >>> 0) & 0b1111) + 1;
