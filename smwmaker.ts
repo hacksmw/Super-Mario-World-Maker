@@ -3934,6 +3934,49 @@ function rev_normal_slope_image(objNum: number, settings: number, tileset: numbe
     return canvas.toDataURL('image/png');
 }
 
+function rev_normal_slope_2_image(objNum: number, settings: number, tileset: number = 0, topLeftBlock: number = 0x131, topRightBlock: number = 0x131, btmLeftBlock: number = 0x131, btmRightBlock: number = 0x131, btmBlock: number = 0x131) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    const topLeft = getMap16TileImg(topLeftBlock);
+    const topRight = getMap16TileImg(topRightBlock);
+    const btmLeft = getMap16TileImg(btmLeftBlock);
+    const btmRight = getMap16TileImg(btmRightBlock);
+    const btm = getMap16TileImg(btmBlock);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    const w = intdiv(width, 2);
+
+    
+    for (let i = 0; i < w; i++) {
+        ctx!.putImageData(topRight, ((width-1)-(i*2)) * 16, i * 16);
+        ctx!.putImageData(topLeft,  (((width-1)-(i*2))-1) * 16, i * 16);
+        ctx!.putImageData(btmRight,  (((width-1)-(i*2))) * 16, (i+1) * 16);
+        ctx!.putImageData(btmLeft,  (((width-1)-(i*2))-1) * 16, (i+1) * 16);
+        
+        /*   
+        for (let j = 0; j < i; j++) {
+            ctx!.putImageData(btm, (i*2 + 0) * 16, j * 16);
+            ctx!.putImageData(btm, (i*2 + 1) * 16, j * 16);
+        }
+        */
+
+        for (let j = 0; j < i; j++) {
+            ctx!.putImageData(btm, ((width-1)-(i*2)) * 16, j*16);
+            ctx!.putImageData(btm, (((width-1)-(i*2))-1) * 16, j*16);
+        }
+    }
+    
+
+    return canvas.toDataURL('image/png');
+}
+
 function normal_slope_image(objNum: number, settings: number, tileset: number = 0, topLeftBlock: number = 0x131, topRightBlock: number = 0x131, btmLeftBlock: number = 0x131, btmRightBlock: number = 0x131, btmBlock: number = 0x131) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     
@@ -4302,6 +4345,8 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             return rev_steep_slope_image(objNum, settings, tileset, 0x1EC, 0x1C4, 0x165);
         } else if (type === 9) {
             return rev_steep_slope_2_image(objNum, settings, tileset, 0x1ed ,0x1c5, 0x165);
+        } else if (type === 7) {
+            return rev_normal_slope_2_image(objNum, settings, tileset, 0x1F0, 0x1EF, 0x1C8, 0x1C9, 0x165);
         }
     } else if (objNum === 0x00 && settings == 0x47) {
         // Door
