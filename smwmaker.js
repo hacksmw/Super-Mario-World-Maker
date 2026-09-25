@@ -3307,6 +3307,41 @@ function very_steep_slope_image(objNum, settings, tileset = 0, topBlock = 0x131,
     }
     return canvas.toDataURL('image/png');
 }
+function gradual_slope_image(objNum, settings, tileset = 0, firstBlock = 0x131, secondBlock = 0x131, thirdBlock = 0x131, forthBlock = 0x131, firstDownBlock = 0x131, secondDownBlock = 0x131, thirdDownBlock = 0x131, forthDownBlock = 0x131, dirtBlock = 0x131) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    const first = getMap16TileImg(firstBlock);
+    const second = getMap16TileImg(secondBlock);
+    const third = getMap16TileImg(thirdBlock);
+    const forth = getMap16TileImg(forthBlock);
+    const firstDown = getMap16TileImg(firstDownBlock);
+    const secondDown = getMap16TileImg(secondDownBlock);
+    const thirdDown = getMap16TileImg(thirdDownBlock);
+    const forthDown = getMap16TileImg(forthDownBlock);
+    const dirt = getMap16TileImg(dirtBlock);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    const w = intdiv(width, 4);
+    for (let i = 0; i < width; i++) {
+        ctx.putImageData(first, (i * 4 + 0) * 16, (i) * 16);
+        ctx.putImageData(second, (i * 4 + 1) * 16, (i) * 16);
+        ctx.putImageData(third, (i * 4 + 2) * 16, (i) * 16);
+        ctx.putImageData(forth, (i * 4 + 3) * 16, (i) * 16);
+        ctx.putImageData(firstDown, (i * 4 + 0) * 16, (i + 1) * 16);
+        ctx.putImageData(secondDown, (i * 4 + 1) * 16, (i + 1) * 16);
+        ctx.putImageData(thirdDown, (i * 4 + 2) * 16, (i + 1) * 16);
+        ctx.putImageData(forthDown, (i * 4 + 3) * 16, (i + 1) * 16);
+        for (let j = i + 2; j < height; j++) {
+            ctx.putImageData(dirt, (i * 4 + 0) * 16, j * 16);
+            ctx.putImageData(dirt, (i * 4 + 1) * 16, j * 16);
+            ctx.putImageData(dirt, (i * 4 + 2) * 16, j * 16);
+            ctx.putImageData(dirt, (i * 4 + 3) * 16, j * 16);
+        }
+    }
+    return canvas.toDataURL('image/png');
+}
 function getSprImg(sprNum = 0, extra = 0) {
     switch (sprNum) {
         default:
@@ -3425,6 +3460,9 @@ function getObjImg(objNum, settings, tileset = 0) {
         }
         else if (type === 4) {
             return steep_slope_image(objNum, settings, tileset, 0x1AF, 0x1E4, 0x3F);
+        }
+        else if (type === 5) {
+            return gradual_slope_image(objNum, settings, tileset, 0x182, 0x187, 0x18C, 0x191, 0x1E6, 0x1E6, 0x1DB, 0x1DC, 0x3F);
         }
     }
     else if (objNum === 0x00 && settings == 0x47) {
