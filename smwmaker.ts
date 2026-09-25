@@ -6153,7 +6153,12 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
             } else if (objNum == 0x38) {
                 result = (settings & 0b1111) + 1;
             } else if (objNum == 0x39) {
-                // todo
+                const height = getHeight(objNum, settings, tileset);
+	            if (height == 2) { 
+		            return 2;
+	            } else {
+		            return 4 + (height - 3);
+	            }
             } else if (objNum == 0x3A) {
                 return getHeight(objNum, settings, tileset) + 3;
             } else if (objNum == 0x3B) {
@@ -7418,6 +7423,8 @@ function getX(obj: Obj, tset: number = -1): number {
                     // plain / forest
                     if (objNum === 0x3A) {
                         return obj.x - 2;
+                    } else if (objNum === 0x39) {
+                        return obj.x + 2 - getHeight(objNum, settings, tset);
                     }
 
                 }
@@ -7469,6 +7476,8 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                 if (tset === 0) {
                     if (objNum === 0x3a) {
                         return x + 2;
+                    } else if (objNum === 0x39) {
+                        return obj.x - 2 + getHeight(objNum, settings, tset);
                     }
                 }
                 return obj.x;

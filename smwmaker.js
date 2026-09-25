@@ -5476,7 +5476,13 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = (settings & 0b1111) + 1;
             }
             else if (objNum == 0x39) {
-                // todo
+                const height = getHeight(objNum, settings, tileset);
+                if (height == 2) {
+                    return 2;
+                }
+                else {
+                    return 4 + (height - 3);
+                }
             }
             else if (objNum == 0x3A) {
                 return getHeight(objNum, settings, tileset) + 3;
@@ -6790,6 +6796,9 @@ function getX(obj, tset = -1) {
                     if (objNum === 0x3A) {
                         return obj.x - 2;
                     }
+                    else if (objNum === 0x39) {
+                        return obj.x + 2 - getHeight(objNum, settings, tset);
+                    }
                 }
                 return obj.x;
             }
@@ -6836,6 +6845,9 @@ function getRealX(x, obj, tset = -1) {
                 if (tset === 0) {
                     if (objNum === 0x3a) {
                         return x + 2;
+                    }
+                    else if (objNum === 0x39) {
+                        return obj.x - 2 + getHeight(objNum, settings, tset);
                     }
                 }
                 return obj.x;
