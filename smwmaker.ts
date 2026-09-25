@@ -3899,6 +3899,69 @@ function undefined_obj_image(objNum: number, settings: number, tileset: number =
     return canvas.toDataURL('image/png');
 }
 
+function normal_slope_image(objNum: number, settings: number, tileset: number = 0, topLeftBlock: number = 0x131, topRightBlock: number = 0x131, btmLeftBlock: number = 0x131, btmRightBlock: number = 0x131, btmBlock: number = 0x131) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    const topLeft = getMap16TileImg(topLeftBlock);
+    const topRight = getMap16TileImg(topRightBlock);
+    const btmLeft = getMap16TileImg(btmLeftBlock);
+    const btmRight = getMap16TileImg(btmRightBlock);
+    const btm = getMap16TileImg(btmBlock);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    const w = intdiv(width, 2);
+
+    for (let i = 0; i < w; i++) {
+        ctx!.putImageData(topLeft, (i * 2) * 16, i * 16);
+        ctx!.putImageData(topRight, (i * 2 + 1) * 16, i * 16);
+        ctx!.putImageData(btmLeft, (i * 2) * 16, (i + 1) * 16);
+        ctx!.putImageData(btmRight, (i * 2 + 1) * 16, (i + 1) * 16);
+        
+        for (let j = (i + 1) + 1; j < height; j++) {
+            ctx!.putImageData(btm, (i*2 + 0) * 16, j * 16);
+            ctx!.putImageData(btm, (i*2 + 1) * 16, j * 16);
+        }
+        
+    }
+
+    return canvas.toDataURL('image/png');
+}
+
+function steep_slope_image(objNum: number, settings: number, tileset: number = 0, topBlock: number = 0x131, midBlock: number = 0x131, btmBlock: number = 0x131) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    const top = getMap16TileImg(topBlock);
+    const mid = getMap16TileImg(midBlock);
+    const btm = getMap16TileImg(btmBlock);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    for (let i = 0; i < width; i++) {
+        ctx!.putImageData(top, i*16, i*16);
+        ctx!.putImageData(mid, i*16, (i+1)*16);
+
+        for (let j = i+2; j < height; j++) {
+            ctx!.putImageData(btm, i*16, j*16);
+        }
+    }    
+
+
+    return canvas.toDataURL('image/png');
+}
+
 function getSprImg(sprNum: number = 0, extra: number = 0) {
     switch (sprNum) {
         default: 
@@ -4048,8 +4111,12 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
     if (objNum === 0x22 || objNum === 0x23) {
         // Map 16 Direct Tile
     } else if (objNum === 0x12) {
-
-
+        const type = ((settings >>> 0) & 0b1111);
+        if (type == 3) {
+            return normal_slope_image(objNum, settings, tileset, 0x1A0, 0x1A5, 0x1E6, 0x1E0, 0x3F);
+        } else if (type === 4) {
+            return steep_slope_image(objNum, settings, tileset, 0x1AF, 0x1E4, 0x3F);
+        }
     } else if (objNum === 0x00 && settings == 0x47) {
         // Door
         return bone_like_image(objNum, settings, tileset, 0x1F, 0x20, 0x20);
@@ -5176,6 +5243,19 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
                 return bone_like_image(objNum, settings, tileset, 0x109, 0x86, 0x86);
             } else if (objNum === 0x3c) {
                 return stone_like_image(objNum, settings, tileset, 0x15d, 0x15e, 0x15f, 0x160, 0x161, 0x162, 0x163, 0x164, 0x165);
+            } else if (objNum === 0x3d) { 
+                // escalator
+                let height, type;
+
+                type = (settings >>> 0) & 0b1111;
+                height = ((settings >>> 4) & 0b1111) + 1;
+
+                if (type === 2) {
+                    return steep_slope_image(objNum, settings, tileset, 0x1CF, 0x1F4, 0x3F);    
+                } else if (type === 3) {
+                    return steep_slope_image(objNum, settings, tileset, 0x1D0, 0x1F5, 0X3F);
+                }
+
             } else if (objNum === 0x3f) {
                 const mode = ((settings >>> 0) & 0b1111);
                 if (mode === 0) {
