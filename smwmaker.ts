@@ -4047,6 +4047,9 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
     const ctx = canvas.getContext("2d");
     if (objNum === 0x22 || objNum === 0x23) {
         // Map 16 Direct Tile
+    } else if (objNum === 0x12) {
+
+
     } else if (objNum === 0x00 && settings == 0x47) {
         // Door
         return bone_like_image(objNum, settings, tileset, 0x1F, 0x20, 0x20);
@@ -5715,6 +5718,7 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
     if (objNum == 0) { 
         result = lookupTable[settings];
     }
+
     if (objNum >= 1 && objNum <= 0x0E) {
         result = (settings & 0b1111) + 1;
     }
@@ -5733,17 +5737,36 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
     }
 
     if (objNum === 0x12) {
-        // todo: slope
+        // todo: left slope
         let height, type;
         type = (settings) & 0b1111;
         height = ((settings >>> 4) & 0b1111) + 1;
         switch (type) {
+            case 3:
+                result = height * 2;
+                break;
+            case 4:
+                result = height;
+                break;
+            case 5:
+                result = (height) * 4;
+                break;
+            case 6:
+                result = (height - 1) * 2;
+                break;
+            case 7:
+                result = (height - 1) * 2
+                break;
+            case 8:
+                result = (height - 1);
+                break;
+            case 9:
+                result = (height - 1);
+                break;
             default:
                 result = 1;
                 break;
         }
-
-        result = 1;
     }
     
     if (objNum >= 0x2E || objNum <= 0x3F) {
@@ -5935,56 +5958,56 @@ function getHeight(objNum: number, settings: number, tileset = 0): number {
 
     if (objNum == 0x22 || objNum == 0x23) {
         
-    } 
-
-    if (objNum == 0) { 
+    } else if (objNum == 0) { 
         result = lookupTable[settings]; 
-    }
-    if (objNum >= 0x1 && objNum <= 0x0F) {
+    } else if (objNum >= 0x1 && objNum <= 0x0F) {
         result = ((settings >>> 4) & 0b1111) + 1;
-    }
-    
-    if (objNum >= 0x10) {
+    } else if (objNum == 0x10) {
         result = 2;
-    }
-
-    if (objNum >= 0x11 && objNum <= 0x16) {
+    } else if (objNum === 0x11) {
+        // bullet bill shooter
         result = ((settings >>> 4) & 0b1111) + 1;
+    } else if (objNum === 0x12) {
+        // slope
         let type = (settings & 0b1111);
-        if (objNum === 0x13 && (type === 11 || type === 12 || type === 13 || type === 14)) {
+
+        result = ((settings >>> 4) & 0b1111) + 2;
+
+        if (type === 6 || type === 7 || type === 8 || type === 9) {
+            result--;
+        }
+    } else if (objNum === 0x13) {
+        // edge
+        let type = (settings & 0b1111);
+
+        result = ((settings >>> 4) & 0b1111) + 1;
+        
+        if (type === 11 || type === 12 || type === 13 || type === 14) {
             result++;
         }
-    }
 
-    if (objNum >= 0x17) {
-        result = 1;
-    }
-    
-    if (objNum >= 0x18 && objNum <= 0x1B ) {
+    } else if (objNum === 0x14) {
+        // ground
         result = ((settings >>> 4) & 0b1111) + 1;
-    }
-
-    if (objNum == 0x12) {
-        result = ((settings >>> 4) & 0b1111) + 2;
-    }
-
-    if (objNum == 0x1C) {
+    } else if (objNum === 0x15) {
+        // midway point
+        result = ((settings >>> 4) & 0b1111) + 1;
+    } else if (objNum === 0x16) {
+        // purple coins
+        result = ((settings >>> 4) & 0b1111) + 1;
+    } else if (objNum == 0x17) {
+        result = 1;
+    } else if (objNum >= 0x18 && objNum <= 0x1B ) {
+        result = ((settings >>> 4) & 0b1111) + 1;
+    } else if (objNum == 0x1C) {
         result = 2;
-    }
-
-    if (objNum >= 0x1D && objNum <= 0x1F ) {
+    } else if (objNum >= 0x1D && objNum <= 0x1F ) {
         result = ((settings >>> 4) & 0b1111) + 1;
-    }
-
-    if (objNum == 0x20) {
+    } else if (objNum == 0x20) {
         result = 1;
-    }
-
-    if (objNum == 0x21) {
+    } else if (objNum == 0x21) {
         result = 3;
-    }
-    
-    if (objNum >= 0x2E || objNum <= 0x3F) {
+    } else if (objNum >= 0x2E || objNum <= 0x3F) {
         // tileset spec height
         if (tileset == 0) {
             if (objNum == 0x30) {
