@@ -5042,6 +5042,13 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             } else if (objNum === 0x34) {
                 // red switch
                 return single_block_image(objNum, settings, tileset, 0x16D);
+            } else if (objNum === 0x37) {
+                const mode = ((settings >>> 0) & 0b1111);
+                if (mode === 2) {
+                    return steep_slope_image(objNum, settings, tileset, 0x1CF, 0x1F4, 0x25);
+                } else if (mode === 3) {
+                    return steep_slope_image(objNum, settings, tileset, 0x1D0, 0x1F5, 0x25);
+                }
             } else if (objNum === 0x3c) {
                 return grass_like_image(objNum, settings, tileset, 0x107, 0x108, 0x109);
             } else if (objNum === 0x3d) {
