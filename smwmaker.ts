@@ -3997,6 +3997,35 @@ function steep_slope_image(objNum: number, settings: number, tileset: number = 0
     return canvas.toDataURL('image/png');
 }
 
+function rev_steep_slope_image(objNum: number, settings: number, tileset: number = 0, topBlock: number = 0x131, midBlock: number = 0x131, btmBlock: number = 0x131) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    const top = getMap16TileImg(topBlock);
+    const mid = getMap16TileImg(midBlock);
+    const btm = getMap16TileImg(btmBlock);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    for (let i = 0; i < width; i++) {
+        
+        ctx!.putImageData(top, i*16, i*16);
+        ctx!.putImageData(mid, i*16, (i+1)*16);
+
+        for (let j = 0; j < i; j++) {
+            ctx!.putImageData(btm, i*16, j*16);
+        }
+    }    
+
+
+    return canvas.toDataURL('image/png');
+}
+
 function very_steep_slope_image(objNum: number, settings: number, tileset: number = 0, topBlock: number = 0x131, midBlock: number = 0x131, btmBlock: number = 0x131, dirtBlock: number = 0x131) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     
@@ -4237,6 +4266,8 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             return gradual_slope_image(objNum, settings, tileset, 0x182, 0x187, 0x18C, 0x191, 0x1E6, 0x1E6, 0x1DB, 0x1DC, 0x3F);
         } else if (type === 6) {
             return rev_normal_slope_image(objNum, settings, tileset, 0x1EE, 0x1F0, 0x1c6, 0x1c7, 0x165);
+        } else if (type === 8) {
+            return rev_steep_slope_image(objNum, settings, tileset, 0x1EC, 0x1C4, 0x165);
         }
     } else if (objNum === 0x00 && settings == 0x47) {
         // Door
