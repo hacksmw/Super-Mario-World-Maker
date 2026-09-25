@@ -5479,7 +5479,7 @@ function getWidth(objNum, settings, tileset = 0) {
                 // todo
             }
             else if (objNum == 0x3A) {
-                // todo
+                return getHeight(objNum, settings, tileset) + 3;
             }
             else if (objNum == 0x3B) {
                 // todo
@@ -6768,7 +6768,7 @@ function getX(obj, tset = -1) {
         case 0x12:
             {
                 const type = ((settings >>> 0) & 0b1111);
-                const height = getHeight(objNum, settings, tileset);
+                const height = getHeight(objNum, settings, tset);
                 if (type === 0) {
                     return (obj.x + 2) - ((height - 1) * 2);
                 }
@@ -6816,7 +6816,7 @@ function getRealX(x, obj, tset = -1) {
         case 0x12:
             {
                 const type = ((settings >>> 0) & 0b1111);
-                const height = getHeight(objNum, settings, tileset);
+                const height = getHeight(objNum, settings, tset);
                 if (type === 0) {
                     return x - 2 + ((height - 1) * 2);
                 }
