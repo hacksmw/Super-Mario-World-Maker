@@ -5822,6 +5822,13 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
                 result = ((settings & 0b1111) + 1);
             } else if (objNum == 0x3D) {
                 // todo
+                // escalator
+                let height, type;
+                type = (settings >>> 0) & 0b1111;
+                height = ((settings >>> 4) & 0b1111) + 1;
+                if (type === 2 || type === 3) {
+                    result = height;
+                }
             } else if (objNum == 0x3E) {
                 result = ((settings & 0b1111) + 1);
             } else if (objNum == 0x3F) {
