@@ -552,12 +552,12 @@ function stage_onmousemove(e) {
     if (editMode == "layer1" || editMode == "layer2") {
         data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16);
         if (isVertical) {
-            data[index].y = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111;
-            data[index].x = Math.floor((prevObjTop + deltaY) / 16) & 0b1111;
+            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111, data[index]);
+            data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]);
         }
         else {
-            data[index].x = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111;
-            data[index].y = Math.floor((prevObjTop + deltaY) / 16) & 0b11111;
+            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111, data[index]);
+            data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]);
         }
     }
     else {
@@ -634,8 +634,8 @@ function stage_onkeydown(e) {
             //myObject.style.border = "1px solid black";
             myObject.style.position = "absolute";
             myObject.style.backgroundColor = bgColor;
-            myObject.style.top = (obj.y * 16) + 'px';
-            myObject.style.left = ((256 * obj.screen) + (obj.x * 16)) + 'px';
+            myObject.style.top = (getY(obj) * 16) + 'px';
+            myObject.style.left = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
             myObject.style.zIndex = zIndex + "";
             myObject.onmousedown = obj_onmousedown;
             myObject.onkeydown = obj_onkeydown;
@@ -2150,12 +2150,12 @@ function render() {
         myObject.style.position = "absolute";
         myObject.style.backgroundColor = 'chartreuse';
         if (isVertical) {
-            myObject.style.top = ((256 * obj.screen) + (obj.x * 16)) + 'px';
-            myObject.style.left = (obj.y * 16) + 'px';
+            myObject.style.top = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
+            myObject.style.left = (getY(obj) * 16) + 'px';
         }
         else {
-            myObject.style.top = (obj.y * 16) + 'px';
-            myObject.style.left = ((256 * obj.screen) + (obj.x * 16)) + 'px';
+            myObject.style.top = (getY(obj) * 16) + 'px';
+            myObject.style.left = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
         }
         myObject.style.zIndex = (i + 0x800000) + "";
         myObject.setAttribute("data-index", i.toString());
@@ -2184,12 +2184,12 @@ function render() {
         myObject.style.position = "absolute";
         myObject.style.backgroundColor = 'red';
         if (isVertical) {
-            myObject.style.top = ((256 * obj.screen) + (obj.x * 16)) + 'px';
-            myObject.style.left = (obj.y * 16) + 'px';
+            myObject.style.top = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
+            myObject.style.left = (getY(obj) * 16) + 'px';
         }
         else {
-            myObject.style.top = (obj.y * 16) + 'px';
-            myObject.style.left = ((256 * obj.screen) + (obj.x * 16)) + 'px';
+            myObject.style.top = (getY(obj) * 16) + 'px';
+            myObject.style.left = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
         }
         myObject.style.zIndex = (i) + "";
         myObject.setAttribute("data-index", i.toString());
@@ -6745,4 +6745,78 @@ function pc2snes(pc, type = "Auto", header = true) {
 }
 function unload() {
     location.reload();
+}
+function getX(obj, tset = -1) {
+    const objNum = obj.objNum;
+    const settings = obj.settings;
+    if (tset === -1) {
+        tset = tileset;
+    }
+    switch (objNum) {
+        case 0:
+            return obj.x;
+            break;
+        case 0x12:
+            {
+                const type = ((settings >>> 0) & 0b1111);
+                const height = getHeight(objNum, settings, tileset);
+                if (type === 0) {
+                    return (obj.x + 2) - ((height - 1) * 2);
+                }
+                else if (type === 1) {
+                    return obj.x - (height - 2);
+                }
+                else if (type === 2) {
+                    return (obj.x + 4) - (4 * (height - 1));
+                }
+                else {
+                    return obj.x;
+                }
+            }
+            break;
+        default:
+            return obj.x;
+            break;
+    }
+    return obj.x;
+}
+function getY(obj, tset = -1) {
+    return obj.y;
+}
+function getRealY(y, obj, tset = -1) {
+    return y;
+}
+function getRealX(x, obj, tset = -1) {
+    const objNum = obj.objNum;
+    const settings = obj.settings;
+    if (tset === -1) {
+        tset = tileset;
+    }
+    switch (objNum) {
+        case 0:
+            return obj.x;
+            break;
+        case 0x12:
+            {
+                const type = ((settings >>> 0) & 0b1111);
+                const height = getHeight(objNum, settings, tileset);
+                if (type === 0) {
+                    return x - 2 + ((height - 1) * 2);
+                }
+                else if (type === 1) {
+                    return x + (height - 2);
+                }
+                else if (type === 2) {
+                    return x - 4 + (4 * (height - 1));
+                }
+                else {
+                    return obj.x;
+                }
+            }
+            break;
+        default:
+            return obj.x;
+            break;
+    }
+    return obj.x;
 }
