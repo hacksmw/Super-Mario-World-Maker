@@ -3266,6 +3266,53 @@ function rev_normal_slope_image(objNum, settings, tileset = 0, topLeftBlock = 0x
     }
     return canvas.toDataURL('image/png');
 }
+function diagonal_pipe_image(objNum, settings, tileset) {
+    const canvas = document.createElement("canvas");
+    let width = getWidth(objNum, settings, tileset);
+    let height = getHeight(objNum, settings, tileset);
+    const ground = getMap16TileImg(0x1EB);
+    const blank = getMap16TileImg(0x25);
+    const topLeft = getMap16TileImg(0x1C4);
+    const topMid = getMap16TileImg(0x1C5);
+    const midRight = getMap16TileImg(0x1C6);
+    const midCenter = getMap16TileImg(0x1ED);
+    const midLeft = getMap16TileImg(0x1EC);
+    const body1 = getMap16TileImg(0x1C7);
+    const body2 = getMap16TileImg(0x1EE);
+    const body3 = getMap16TileImg(0x159);
+    const body4 = getMap16TileImg(0x15B);
+    const body5 = getMap16TileImg(0x15C);
+    const downRight = getMap16TileImg(0x15A);
+    const downRight2 = getMap16TileImg(0x1EF);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(topLeft, (width - 3) * 16, 0);
+    ctx.putImageData(topMid, (width - 2) * 16, 0);
+    ctx.putImageData(midRight, (width - 1) * 16, 16);
+    ctx.putImageData(midCenter, (width - 2) * 16, 16);
+    ctx.putImageData(midLeft, (width - 3) * 16, 16);
+    ctx.putImageData(body1, (width - 4) * 16, 16);
+    ctx.putImageData(body1, (width - 5) * 16, 32);
+    ctx.putImageData(body2, (width - 4) * 16, 32);
+    ctx.putImageData(body3, (width - 3) * 16, 32);
+    ctx.putImageData(downRight, (width - 2) * 16, 32);
+    ctx.putImageData(downRight2, (width - 1) * 16, 32);
+    for (let i = 0; i < width - 5; i++) {
+        ctx.putImageData(body1, (i + 0) * 16, (height - 1 - 1 - i) * 16);
+        ctx.putImageData(body2, (i + 1) * 16, (height - 1 - 1 - i) * 16);
+        ctx.putImageData(body3, (i + 2) * 16, (height - 1 - 1 - i) * 16);
+        ctx.putImageData(body4, (i + 3) * 16, (height - 1 - 1 - i) * 16);
+        ctx.putImageData(body5, (i + 4) * 16, (height - 1 - 1 - i) * 16);
+    }
+    ctx.putImageData(ground, 0, (height - 1) * 16);
+    ctx.putImageData(blank, 1 * 16, (height - 1) * 16);
+    ctx.putImageData(blank, 2 * 16, (height - 1) * 16);
+    ctx.putImageData(blank, 3 * 16, (height - 1) * 16);
+    ctx.putImageData(blank, 4 * 16, (height - 1) * 16);
+    ctx.putImageData(blank, 5 * 16, (height - 1) * 16);
+    return canvas.toDataURL("image/png");
+}
 function rev_normal_slope_2_image(objNum, settings, tileset = 0, topLeftBlock = 0x131, topRightBlock = 0x131, btmLeftBlock = 0x131, btmRightBlock = 0x131, btmBlock = 0x131) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
@@ -4706,6 +4753,9 @@ function getObjImg(objNum, settings, tileset = 0) {
                 else if (mode === 7) {
                     return bone_like_image(objNum, settings, tileset, 0x99, 0x99, 0x99);
                 }
+            }
+            else if (objNum === 0x39) {
+                return diagonal_pipe_image(objNum, settings, tileset);
             }
         }
         else if (tileset === 2) {
@@ -7118,7 +7168,6 @@ function getRealX(x, obj, tset = -1) {
                         return obj.x - 2 + getHeight(objNum, settings, tset);
                     }
                     else if (objNum === 0x3B) {
-                        return ;
                         return obj.x - 1 + getHeight(objNum, settings, tset);
                     }
                 }
