@@ -4738,6 +4738,9 @@ function getObjImg(objNum, settings, tileset = 0) {
                 if (type === 1) {
                     return very_steep_slope_image(objNum, settings, tileset, 0x89, 0x8B, 0x25, 0x25);
                 }
+                else if (type === 0) {
+                    return very_steep_slope_2_image(objNum, settings, tileset, 0x88, 0x8A, 0x25, 0x25);
+                }
             }
             else if (objNum === 0x3A) {
                 const type = (settings >>> 0) & 0b1111;
@@ -5742,6 +5745,9 @@ function getWidth(objNum, settings, tileset = 0) {
                 type = (settings >>> 4) & 0b1111;
                 height = ((settings >>> 0) & 0b1111) + 1;
                 if (type === 1) {
+                    result = height;
+                }
+                else if (type === 0) {
                     result = height;
                 }
             }
@@ -7004,6 +7010,7 @@ function getX(obj, tset = -1) {
                     }
                 }
                 else if (tset === 2) {
+                    // athletic
                     if (objNum === 0x37) {
                         const type = (settings >>> 0) & 0b1111;
                         if (type === 0) {
@@ -7011,6 +7018,13 @@ function getX(obj, tset = -1) {
                         }
                         else if (type === 1) {
                             return obj.x + 1 - getWidth(objNum, settings, tset);
+                        }
+                    }
+                    else if (objNum === 0x3B) {
+                        const type = (settings >>> 4) & 0b1111;
+                        if (type === 0) {
+                            const width = getWidth(objNum, settings, tset);
+                            return obj.x + 1 - width;
                         }
                     }
                 }
@@ -7090,6 +7104,7 @@ function getRealX(x, obj, tset = -1) {
                     }
                 }
                 else if (tset === 1) {
+                    // castle
                     if (objNum === 0x3D) {
                         // escalator
                         let type;
@@ -7100,6 +7115,7 @@ function getRealX(x, obj, tset = -1) {
                     }
                 }
                 else if (tset === 2) {
+                    // athletic
                     if (objNum === 0x37) {
                         const type = (settings >>> 0) & 0b1111;
                         if (type === 0) {
@@ -7107,6 +7123,12 @@ function getRealX(x, obj, tset = -1) {
                         }
                         else if (type === 1) {
                             return obj.x - 1 + getWidth(objNum, settings, tset);
+                        }
+                    }
+                    else if (objNum === 0x3B) {
+                        const type = (settings >>> 4) & 0b1111;
+                        if (type === 0) {
+                            return (obj.x - 1) + getWidth(objNum, settings, tset);
                         }
                     }
                 }
