@@ -7846,11 +7846,16 @@ function getX(obj: Obj, tset: number = -1): number {
                 if (tset === 0) {
                     // plain / forest
                     if (objNum === 0x3A) {
-                        //return obj.x - 2;
+                        const a = (settings >>> 0) & 0b1111;
+                        return obj.x - a;
+
                     } else if (objNum === 0x39) {
                         return obj.x + 2 - getHeight(objNum, settings, tset);
                     } else if (objNum === 0x3B) {
-                        //return obj.x + 1 - getHeight(objNum, settings, tset);
+                        const a = (settings >>> 4) & 0b1111;
+                        const b = (settings >>> 0) & 0b1111;
+                        
+                        return obj.x -1 -a -b;
                     }
 
                 } else if (tset === 1) { 
@@ -7941,6 +7946,7 @@ function getRealY(y: number, obj: Obj, tset: number = -1): number {
 function getRealX(x: number, obj: Obj, tset: number = -1): number {
     const objNum = obj.objNum;
     const settings = obj.settings;
+
     
     if (tset === -1) {
         tset = tileset;
@@ -7950,9 +7956,9 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
         case 0:
             {
                 if (settings === 0x46) {
-                    return obj.x + 1;
+                    return x + 1;
                 }
-                return obj.x;
+                return x;
             }
             break;
         case 0x12:
@@ -7967,7 +7973,7 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                 } else if (type === 2) {
                     return x - 4 + (4*(height-1));
                 } else {
-                    return obj.x;
+                    return x;
                 }
             }
             break;
@@ -7976,11 +7982,13 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                 if (tset === 0) {
                     // plain
                     if (objNum === 0x3a) {
-                        //return x + 2;
+                        const a = (settings >>> 0) & 0b1111;
+                        return x + a;
                     } else if (objNum === 0x39) {
-                        return obj.x - 2 + getHeight(objNum, settings, tset);
+                        return x - 2 + getHeight(objNum, settings, tset);
                     } else if (objNum === 0x3B) {
-                        //return obj.x - 1 + getHeight(objNum, settings, tset);
+                        const a = (settings >>> 0) & 0b1111;
+                        return x + a;
                     }
                 } else if (tset === 3) {
                     if (objNum === 0x3c) {
@@ -7996,10 +8004,14 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                         const width = getWidth(objNum, settings, tset);
 
                         if (type === 0) {
-                            return obj.x - 2 + width;
+                            return x - 2 + width;
                         } else if (type === 1) {
-                            return obj.x - 1 + width;
+                            return x - 1 + width;
                         }
+                        const a = (settings >>> 4) & 0b1111;
+                        const b = (settings >>> 0) & 0b1111;
+                        
+                        return x +1 +a +b;
 
                     }
                 } else if (tset === 1) {
@@ -8011,7 +8023,7 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                         type = (settings >>> 0) & 0b1111;
 
                         if (type === 0 || type === 1) {
-                            return obj.x -1 + getWidth(objNum, settings, tset);
+                            return x -1 + getWidth(objNum, settings, tset);
                         }
                     }
                 } else if (tset === 2) {
@@ -8019,15 +8031,15 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                     if (objNum === 0x37) {
                         const type = (settings >>> 0) & 0b1111;
                         if (type === 0) {
-                            return obj.x-1+getWidth(objNum, settings, tset);
+                            return x-1+getWidth(objNum, settings, tset);
                         } else if (type === 1) {
-                            return obj.x-1+getWidth(objNum, settings, tset);
+                            return x-1+getWidth(objNum, settings, tset);
                         }
                     } else if (objNum === 0x3B) {
                         const type = (settings >>> 4) & 0b1111;
                         
                         if (type === 0) {
-                            return (obj.x - 1) + getWidth(objNum, settings, tset);
+                            return (x - 1) + getWidth(objNum, settings, tset);
                         }
                         
                         
@@ -8036,19 +8048,19 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                         const width = getWidth(objNum, settings, tset);
 
                         if (type === 0) {  
-                            return obj.x - 2 + width;
+                            return x - 2 + width;
                         } else if (type === 1) {
-                            return obj.x - 1 + width;
+                            return x - 1 + width;
                         } else if (type === 4) {
-                            return obj.x - 1 + width;
+                            return x - 1 + width;
                         }
 
                     }
                 }
-                return obj.x;
+                return x;
             }
             break;
     }
 
-    return obj.x;
+    return x;
 }
