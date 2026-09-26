@@ -3266,6 +3266,59 @@ function rev_normal_slope_image(objNum, settings, tileset = 0, topLeftBlock = 0x
     }
     return canvas.toDataURL('image/png');
 }
+function hill_image(objNum, settings, tileset) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    const ground = getMap16TileImg(0x1AA);
+    const ground_down = getMap16TileImg(0x1E2);
+    const dirt = getMap16TileImg(0x3F);
+    const coltop = getMap16TileImg(0xA1);
+    const coldown = getMap16TileImg(0x1F7);
+    const left = getMap16TileImg(0xA3);
+    const right = getMap16TileImg(0xA6);
+    ctx.putImageData(ground, 2 * 16, 0 * 16);
+    ctx.putImageData(ground, 1 * 16, 1 * 16);
+    ctx.putImageData(ground, 0 * 16, 2 * 16);
+    ctx.putImageData(ground_down, 2 * 16, 1 * 16);
+    ctx.putImageData(ground_down, 1 * 16, 2 * 16);
+    ctx.putImageData(dirt, 2 * 16, 2 * 16);
+    ctx.putImageData(coltop, 3 * 16, 0 * 16);
+    ctx.putImageData(coldown, 0 * 16, 3 * 16);
+    ctx.putImageData(dirt, 3 * 16, 1 * 16);
+    ctx.putImageData(dirt, 3 * 16, 2 * 16);
+    ctx.putImageData(dirt, 3 * 16, 3 * 16);
+    ctx.putImageData(dirt, 2 * 16, 3 * 16);
+    ctx.putImageData(dirt, 1 * 16, 3 * 16);
+    ctx.putImageData(dirt, 4 * 16, 2 * 16);
+    ctx.putImageData(dirt, 4 * 16, 3 * 16);
+    ctx.putImageData(dirt, 5 * 16, 3 * 16);
+    ctx.putImageData(right, 4 * 16, 1 * 16);
+    ctx.putImageData(right, 5 * 16, 2 * 16);
+    ctx.putImageData(right, 6 * 16, 3 * 16);
+    /*
+    ctx!.putImageData(left, 1 * 16, 4 * 16);
+    ctx!.putImageData(dirt, (1 + 1) * 16, 4 * 16);
+    ctx!.putImageData(dirt, (1 + 2) * 16, 4 * 16);
+    ctx!.putImageData(dirt, (1 + 3) * 16, 4 * 16);
+    ctx!.putImageData(dirt, (1 + 4) * 16, 4 * 16);
+    ctx!.putImageData(dirt, (1 + 5) * 16, 4 * 16);
+    ctx!.putImageData(right, (1 + 6) * 16, 4 * 16);
+    */
+    for (let i = 4; i < height; i++) {
+        ctx.putImageData(left, (i - 3 + 0) * 16, i * 16);
+        ctx.putImageData(dirt, (i - 3 + 1) * 16, i * 16);
+        ctx.putImageData(dirt, (i - 3 + 2) * 16, i * 16);
+        ctx.putImageData(dirt, (i - 3 + 3) * 16, i * 16);
+        ctx.putImageData(dirt, (i - 3 + 4) * 16, i * 16);
+        ctx.putImageData(dirt, (i - 3 + 5) * 16, i * 16);
+        ctx.putImageData(right, (i - 3 + 6) * 16, i * 16);
+    }
+    return canvas.toDataURL("image/png");
+}
 function diagonal_pipe_image(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
     let width = getWidth(objNum, settings, tileset);
@@ -4756,6 +4809,9 @@ function getObjImg(objNum, settings, tileset = 0) {
             }
             else if (objNum === 0x39) {
                 return diagonal_pipe_image(objNum, settings, tileset);
+            }
+            else if (objNum === 0x3A) {
+                return hill_image(objNum, settings, tileset);
             }
         }
         else if (tileset === 2) {
