@@ -3341,6 +3341,26 @@ function steep_slope_image(objNum, settings, tileset = 0, topBlock = 0x131, midB
     }
     return canvas.toDataURL('image/png');
 }
+function steep_slope_2_image(objNum, settings, tileset = 0, topBlock = 0x131, midBlock = 0x131, btmBlock = 0x131) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    const top = getMap16TileImg(topBlock);
+    const mid = getMap16TileImg(midBlock);
+    const btm = getMap16TileImg(btmBlock);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    const w = width;
+    for (let i = 0; i < width; i++) {
+        ctx.putImageData(top, (w - i - 1) * 16, i * 16);
+        ctx.putImageData(mid, (w - i - 1) * 16, (i + 1) * 16);
+        for (let j = i + 2; j < height; j++) {
+            ctx.putImageData(btm, (w - i - 1) * 16, j * 16);
+        }
+    }
+    return canvas.toDataURL('image/png');
+}
 function rev_steep_slope_image(objNum, settings, tileset = 0, topBlock = 0x131, midBlock = 0x131, btmBlock = 0x131) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
@@ -3549,7 +3569,10 @@ function getObjImg(objNum, settings, tileset = 0) {
     }
     else if (objNum === 0x12) {
         const type = ((settings >>> 0) & 0b1111);
-        if (type == 3) {
+        if (type === 1) {
+            return steep_slope_2_image(objNum, settings, tileset, 0x1aa, 0x1e2, 0x3f);
+        }
+        else if (type == 3) {
             return normal_slope_image(objNum, settings, tileset, 0x1A0, 0x1A5, 0x1E6, 0x1E0, 0x3F);
         }
         else if (type === 4) {
