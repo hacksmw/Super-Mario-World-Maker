@@ -6537,9 +6537,9 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
 		            return 4 + (height - 3);
 	            }
             } else if (objNum == 0x3A) {
-                return getHeight(objNum, settings, tileset) + 3;
+                //return getHeight(objNum, settings, tileset) + 3;
             } else if (objNum == 0x3B) {
-                return getHeight(objNum, settings, tileset) + 3;
+                //return getHeight(objNum, settings, tileset) + 3;
             } else if (objNum == 0x3C) {
                 result = (settings & 0b1111) * 3 + 1;
             } else if (objNum == 0x3D) {
@@ -6858,9 +6858,9 @@ function getHeight(objNum: number, settings: number, tileset = 0): number {
             } else if (objNum == 0x39) {
                 result = ((settings >>> 4) & 0b1111) + 2;
             } else if (objNum == 0x3A) {
-                result = ((settings >>> 4) & 0b1111) + 4;
+                //result = ((settings >>> 4) & 0b1111) + 4;
             } else if (objNum == 0x3B) {
-                result = ((settings >>> 4) & 0b1111) + 4;
+                //result = ((settings >>> 4) & 0b1111) + 4;
             } else if (objNum == 0x3C) {
                 result = 4;
             } else if (objNum == 0x3D) {
@@ -7834,11 +7834,11 @@ function getX(obj: Obj, tset: number = -1): number {
                 if (tset === 0) {
                     // plain / forest
                     if (objNum === 0x3A) {
-                        return obj.x - 2;
+                        //return obj.x - 2;
                     } else if (objNum === 0x39) {
                         return obj.x + 2 - getHeight(objNum, settings, tset);
                     } else if (objNum === 0x3B) {
-                        return obj.x + 1 - getHeight(objNum, settings, tset);
+                        //return obj.x + 1 - getHeight(objNum, settings, tset);
                     }
 
                 } else if (tset === 1) { 
@@ -7964,11 +7964,11 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                 if (tset === 0) {
                     // plain
                     if (objNum === 0x3a) {
-                        return x + 2;
+                        //return x + 2;
                     } else if (objNum === 0x39) {
                         return obj.x - 2 + getHeight(objNum, settings, tset);
                     } else if (objNum === 0x3B) {
-                        return obj.x - 1 + getHeight(objNum, settings, tset);
+                        //return obj.x - 1 + getHeight(objNum, settings, tset);
                     }
                 } else if (tset === 3) {
                     if (objNum === 0x3c) {
