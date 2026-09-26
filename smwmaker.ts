@@ -4202,6 +4202,38 @@ function very_steep_slope_image(objNum: number, settings: number, tileset: numbe
     return canvas.toDataURL('image/png');
 }
 
+function very_steep_slope_2_image(objNum: number, settings: number, tileset: number = 0, topBlock: number = 0x131, midBlock: number = 0x131, btmBlock: number = 0x131, dirtBlock: number = 0x131) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    const top = getMap16TileImg(topBlock);
+    const mid = getMap16TileImg(midBlock);
+    const btm = getMap16TileImg(btmBlock);
+    const dirt = getMap16TileImg(dirtBlock);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    const w = width;
+
+    for (let i = 0; i < width; i++) {
+        
+        ctx!.putImageData(top, (w-i-1)*16, ((i*2)+0) * 16);
+        ctx!.putImageData(mid, (w-i-1)*16, ((i*2)+1) * 16);
+        ctx!.putImageData(btm, (w-i-1)*16, ((i*2)+2) * 16);
+
+        for (let j = ((i*2)+3); j < height; j++) {
+            ctx!.putImageData(dirt, (w-i-1+0)*16, j*16);
+        }
+    }
+
+    return canvas.toDataURL('image/png');
+}
+
 function gradual_slope_image(objNum: number, settings: number, tileset: number = 0, 
     firstBlock = 0x131, secondBlock = 0x131, thirdBlock = 0x131, forthBlock = 0x131,
     firstDownBlock = 0x131, secondDownBlock = 0x131, thirdDownBlock = 0x131, forthDownBlock = 0x131,
@@ -5619,6 +5651,8 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
 
                 if (type === 1) {
                     return very_steep_slope_image(objNum, settings, tileset, 0x1CC, 0x1CD, 0x1F2, 0x3F);
+                } else if (type === 0) {
+                    return very_steep_slope_2_image(objNum, settings, tileset, 0x1CA, 0x1CB, 0x1F1, 0x3F);
                 }
             } else if (objNum === 0x3d) {
                 return bone_like_image(objNum, settings, tileset, 0x165, 0x165, 0x14e);
@@ -6418,11 +6452,18 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
                 result = ((settings & 0b1111) + 1);
             } else if (objNum == 0x3C) {
                 // slope
+                
                 let height, type;
                 type = (settings >>> 4) & 0b1111;
                 height = ((settings >>> 0) & 0b1111) + 1;
-                if (type === 1) {
+                if (type === 0) {
+                    //console.log ("type 1");
                     result = height;
+                } else if (type === 1) {
+                    //console.log ("type 2");
+                    result = height;
+                } else {
+                    //console.log(objNum.toString(16));
                 }
             } else if (objNum == 0x3D) {
                 result = ((settings & 0b1111) + 1);
@@ -7564,6 +7605,17 @@ function getX(obj: Obj, tset: number = -1): number {
                         return obj.x + 2 - getHeight(objNum, settings, tset);
                     }
 
+                } else if (tset === 3) {
+                    // underground
+                    if (objNum === 0x3C) {
+                        const type = (settings >>> 4) & 0b1111;
+                        const height = ((settings >>> 0) & 0b1111) + 1;
+
+                        if (type === 0) {
+                            const width = getWidth(objNum, settings, tset);
+                            return obj.x + 1 - width;
+                        }
+                    }
                 }
                 return obj.x;
             }
@@ -7620,6 +7672,16 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                         return x + 2;
                     } else if (objNum === 0x39) {
                         return obj.x - 2 + getHeight(objNum, settings, tset);
+                    }
+                } else if (tset === 3) {
+                    if (objNum === 0x3c) {
+                        const type = (settings >>> 4) & 0b1111;
+                        const height = ((settings >>> 0) & 0b1111) + 1;
+
+                        if (type === 0) {
+                            const width = getWidth(objNum, settings, tset);
+                            return x - 1 + width;
+                        }
                     }
                 }
                 return obj.x;
