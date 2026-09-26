@@ -5786,10 +5786,15 @@ function getWidth(objNum, settings, tileset = 0) {
                 }
             }
             else if (objNum == 0x3A) {
+                const a = ((settings >>> 4) & 0b1111);
+                const b = ((settings >>> 0) & 0b1111);
+                return (a + 1) + ((b + 1) + (b + 1));
                 //return getHeight(objNum, settings, tileset) + 3;
             }
             else if (objNum == 0x3B) {
-                //return getHeight(objNum, settings, tileset) + 3;
+                const a = ((settings >>> 4) & 0b1111);
+                const b = ((settings >>> 0) & 0b1111);
+                return (a + 1) + ((b + 1) + (b + 1));
             }
             else if (objNum == 0x3C) {
                 result = (settings & 0b1111) * 3 + 1;
@@ -6168,10 +6173,17 @@ function getHeight(objNum, settings, tileset = 0) {
                 result = ((settings >>> 4) & 0b1111) + 2;
             }
             else if (objNum == 0x3A) {
+                // left hill
+                const a = ((settings >>> 4) & 0b1111);
+                const b = ((settings >>> 0) & 0b1111);
+                return (a + 1) + (b + 1);
                 //result = ((settings >>> 4) & 0b1111) + 4;
             }
             else if (objNum == 0x3B) {
-                //result = ((settings >>> 4) & 0b1111) + 4;
+                // right hill
+                const a = ((settings >>> 4) & 0b1111);
+                const b = ((settings >>> 0) & 0b1111);
+                return (a + 1) + (b + 1);
             }
             else if (objNum == 0x3C) {
                 result = 4;
