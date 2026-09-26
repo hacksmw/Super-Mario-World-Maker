@@ -7987,8 +7987,11 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                     } else if (objNum === 0x39) {
                         return x - 2 + getHeight(objNum, settings, tset);
                     } else if (objNum === 0x3B) {
-                        const a = (settings >>> 0) & 0b1111;
-                        return x + a;
+                        const a = (settings >>> 4) & 0b1111;
+                        const b = (settings >>> 0) & 0b1111;
+                        
+                        return x +1 +a +b;
+                        
                     }
                 } else if (tset === 3) {
                     if (objNum === 0x3c) {
@@ -8008,11 +8011,6 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                         } else if (type === 1) {
                             return x - 1 + width;
                         }
-                        const a = (settings >>> 4) & 0b1111;
-                        const b = (settings >>> 0) & 0b1111;
-                        
-                        return x +1 +a +b;
-
                     }
                 } else if (tset === 1) {
                     // castle
