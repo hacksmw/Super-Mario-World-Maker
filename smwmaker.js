@@ -4971,6 +4971,12 @@ function getObjImg(objNum, settings, tileset = 0) {
                 else if (type === 3) {
                     return steep_slope_image(objNum, settings, tileset, 0x1D7, 0x1FE, 0x1FF);
                 }
+                else if (type === 0) {
+                    return normal_slope_2_image(objNum, settings, tileset, 0x1D2, 0x1D3, 0x1FB, 0x1FF, 0x1FF);
+                }
+                else if (type === 1) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x1d6, 0x1FD, 0x1FF);
+                }
             }
             else if (objNum === 0x3f) {
                 return single_block_image(objNum, settings, tileset, 0x165);
@@ -5761,6 +5767,12 @@ function getWidth(objNum, settings, tileset = 0) {
                     result = height * 2;
                 }
                 else if (type === 3) {
+                    result = height;
+                }
+                else if (type === 0) {
+                    result = height * 2;
+                }
+                else if (type === 1) {
                     result = height;
                 }
             }
@@ -6966,6 +6978,16 @@ function getX(obj, tset = -1) {
                             return obj.x + 1 - width;
                         }
                     }
+                    else if (objNum === 0x39) {
+                        const type = (settings >>> 0) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+                        if (type === 0) {
+                            return obj.x + 2 - width;
+                        }
+                        else if (type === 1) {
+                            return obj.x + 1 - width;
+                        }
+                    }
                 }
                 return obj.x;
             }
@@ -7029,6 +7051,16 @@ function getRealX(x, obj, tset = -1) {
                         if (type === 0) {
                             const width = getWidth(objNum, settings, tset);
                             return x - 1 + width;
+                        }
+                    }
+                    else if (objNum === 0x39) {
+                        const type = (settings >>> 0) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+                        if (type === 0) {
+                            return obj.x - 2 + width;
+                        }
+                        else if (type === 1) {
+                            return obj.x - 1 + width;
                         }
                     }
                 }
