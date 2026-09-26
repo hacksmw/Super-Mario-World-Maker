@@ -3999,8 +3999,65 @@ function hill_image(objNum: number, settings: number, tileset: number) {
         ctx!.putImageData(right, (i - 3 + 6) * 16, i * 16);
     }
 
+    return canvas.toDataURL("image/png");
+}
+
+function hill_rev_image(objNum: number, settings: number, tileset: number) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    const ground = getMap16TileImg(0x1AF);
+    const ground_down = getMap16TileImg(0x1E4);
+    const dirt = getMap16TileImg(0x3F);
+    const coltop = getMap16TileImg(0xAF);
+    const coldown = getMap16TileImg(0x1F9);
+    const left = getMap16TileImg(0xA9);
+    const right = getMap16TileImg(0xAC);
+
+    ctx!.putImageData(coltop, (width - 4 + 0) * 16, 0 * 16);
+    ctx!.putImageData(left, (width - 4 - 1) * 16, 1 * 16);
+    ctx!.putImageData(left, (width - 4 - 2) * 16, 2 * 16);
+    ctx!.putImageData(left, (width - 4 - 3) * 16, 3 * 16);
+
+    ctx!.putImageData(dirt, (width - 4) * 16, 1 * 16);  
+
+    ctx!.putImageData(dirt, (width - 4 + 1) * 16, 2 * 16);
+    ctx!.putImageData(dirt, (width - 4) * 16, 2 * 16);
+    ctx!.putImageData(dirt, (width - 4 - 1) * 16, 2 * 16);
+
+    ctx!.putImageData(dirt, (width - 4 - 2) * 16, 3 * 16);
+    ctx!.putImageData(dirt, (width - 4 - 1) * 16, 3 * 16);
+    ctx!.putImageData(dirt, (width - 4) * 16, 3 * 16);
+    ctx!.putImageData(dirt, (width - 4 + 1) * 16, 3 * 16);
+    ctx!.putImageData(dirt, (width - 4 + 2) * 16, 3 * 16);
 
 
+    ctx!.putImageData(ground, (width - 4 + 1) * 16, 0 * 16);
+    ctx!.putImageData(ground_down, (width - 4 + 1) * 16, 1 * 16);
+    ctx!.putImageData(ground, (width - 4 + 2) * 16, 1 * 16);
+    ctx!.putImageData(ground_down, (width - 4 + 2) * 16, 2 * 16);
+    ctx!.putImageData(ground, (width - 4 + 3) * 16, 2 * 16);
+    ctx!.putImageData(coldown, (width - 4 + 3) * 16, 3 * 16);
+
+    
+    for (let i = 4; i < height; i++) {
+        ctx!.putImageData(left, (width-4-i+0) * 16, i * 16);
+        ctx!.putImageData(dirt, (width-4-i+1) * 16, i * 16);
+        ctx!.putImageData(dirt, (width-4-i+2) * 16, i * 16);
+        ctx!.putImageData(dirt, (width-4-i+3) * 16, i * 16);
+        ctx!.putImageData(dirt, (width-4-i+4) * 16, i * 16);
+        ctx!.putImageData(dirt, (width-4-i+5) * 16, i * 16);
+        ctx!.putImageData(right, (width-4-i+6) * 16, i * 16);
+        
+    }
+    
 
     return canvas.toDataURL("image/png");
 }
@@ -5530,6 +5587,8 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
                 return diagonal_pipe_image(objNum, settings, tileset);
             } else if (objNum === 0x3A) {
                 return hill_image(objNum, settings, tileset);
+            } else if (objNum === 0x3B) {
+                return hill_rev_image(objNum, settings, tileset);
             }
         } else if (tileset === 2) {
             // athletic
