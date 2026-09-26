@@ -4753,6 +4753,15 @@ function getObjImg(objNum, settings, tileset = 0) {
                 else if (type === 5) {
                     return steep_slope_image(objNum, settings, tileset, 0x95, 0x25, 0x25);
                 }
+                else if (type === 0) {
+                    return normal_slope_2_image(objNum, settings, tileset, 0x8C, 0x8D, 0x25, 0x25);
+                }
+                else if (type === 1) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x86, 0x25, 0x25);
+                }
+                else if (type === 4) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x94, 0x25, 0x25);
+                }
             }
             else if (objNum === 0x3c) {
                 return grass_like_image(objNum, settings, tileset, 0x107, 0x108, 0x109);
@@ -5736,6 +5745,15 @@ function getWidth(objNum, settings, tileset = 0) {
                         result = height;
                         break;
                     case 5:
+                        result = height;
+                        break;
+                    case 0:
+                        result = height * 2;
+                        break;
+                    case 1:
+                        result = height;
+                        break;
+                    case 4:
                         result = height;
                         break;
                 }
@@ -7027,6 +7045,19 @@ function getX(obj, tset = -1) {
                             return obj.x + 1 - width;
                         }
                     }
+                    else if (objNum === 0x3a) {
+                        const type = (settings) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+                        if (type === 0) {
+                            return obj.x + 2 - width;
+                        }
+                        else if (type === 1) {
+                            return obj.x + 1 - width;
+                        }
+                        else if (type === 4) {
+                            return obj.x + 1 - width;
+                        }
+                    }
                 }
                 return obj.x;
             }
@@ -7129,6 +7160,19 @@ function getRealX(x, obj, tset = -1) {
                         const type = (settings >>> 4) & 0b1111;
                         if (type === 0) {
                             return (obj.x - 1) + getWidth(objNum, settings, tset);
+                        }
+                    }
+                    else if (objNum === 0x3a) {
+                        const type = (settings) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+                        if (type === 0) {
+                            return obj.x - 2 + width;
+                        }
+                        else if (type === 1) {
+                            return obj.x - 1 + width;
+                        }
+                        else if (type === 4) {
+                            return obj.x - 1 + width;
                         }
                     }
                 }
