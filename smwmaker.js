@@ -5051,6 +5051,12 @@ function getObjImg(objNum, settings, tileset = 0) {
                 else if (type === 3) {
                     return steep_slope_image(objNum, settings, tileset, 0x1D0, 0x1F5, 0X3F);
                 }
+                else if (type === 0) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x1D1, 0x1F6, 0x3F);
+                }
+                else if (type === 1) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x1CE, 0x1F3, 0x3F);
+                }
             }
             else if (objNum === 0x3f) {
                 const mode = ((settings >>> 0) & 0b1111);
@@ -5651,6 +5657,9 @@ function getWidth(objNum, settings, tileset = 0) {
                 type = (settings >>> 0) & 0b1111;
                 height = ((settings >>> 4) & 0b1111) + 1;
                 if (type === 2 || type === 3) {
+                    result = height;
+                }
+                else if (type === 0 || type === 1) {
                     result = height;
                 }
             }
@@ -6930,6 +6939,23 @@ function getX(obj, tset = -1) {
                         return obj.x + 2 - getHeight(objNum, settings, tset);
                     }
                 }
+                else if (tset === 1) {
+                    // castle
+                    if (objNum === 0x3D) {
+                        // escalator
+                        let height, type;
+                        type = (settings >>> 0) & 0b1111;
+                        height = ((settings >>> 4) & 0b1111) + 1;
+                        if (type === 0) {
+                            //console.log(tset);
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        }
+                        else if (type === 1) {
+                            //console.log(tset);
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        }
+                    }
+                }
                 else if (tset === 3) {
                     // underground
                     if (objNum === 0x3C) {
@@ -7003,6 +7029,16 @@ function getRealX(x, obj, tset = -1) {
                         if (type === 0) {
                             const width = getWidth(objNum, settings, tset);
                             return x - 1 + width;
+                        }
+                    }
+                }
+                else if (tset === 1) {
+                    if (objNum === 0x3D) {
+                        // escalator
+                        let type;
+                        type = (settings >>> 0) & 0b1111;
+                        if (type === 0 || type === 1) {
+                            return obj.x - 1 + getWidth(objNum, settings, tset);
                         }
                     }
                 }
