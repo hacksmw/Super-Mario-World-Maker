@@ -5636,7 +5636,7 @@ function getWidth(objNum, settings, tileset = 0) {
                 return getHeight(objNum, settings, tileset) + 3;
             }
             else if (objNum == 0x3B) {
-                // todo
+                return getHeight(objNum, settings, tileset) + 3;
             }
             else if (objNum == 0x3C) {
                 result = (settings & 0b1111) * 3 + 1;
@@ -6988,6 +6988,9 @@ function getX(obj, tset = -1) {
                     else if (objNum === 0x39) {
                         return obj.x + 2 - getHeight(objNum, settings, tset);
                     }
+                    else if (objNum === 0x3B) {
+                        return obj.x + 1 - getHeight(objNum, settings, tset);
+                    }
                 }
                 else if (tset === 1) {
                     // castle
@@ -7107,11 +7110,16 @@ function getRealX(x, obj, tset = -1) {
         default:
             {
                 if (tset === 0) {
+                    // plain
                     if (objNum === 0x3a) {
                         return x + 2;
                     }
                     else if (objNum === 0x39) {
                         return obj.x - 2 + getHeight(objNum, settings, tset);
+                    }
+                    else if (objNum === 0x3B) {
+                        return ;
+                        return obj.x - 1 + getHeight(objNum, settings, tset);
                     }
                 }
                 else if (tset === 3) {
