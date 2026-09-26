@@ -5412,6 +5412,10 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
                     return steep_slope_image(objNum, settings, tileset, 0x1CF, 0x1F4, 0x25);
                 } else if (mode === 3) {
                     return steep_slope_image(objNum, settings, tileset, 0x1D0, 0x1F5, 0x25);
+                } else if (mode === 0) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x1CE, 0x1F3, 0x25);
+                } else if (mode === 1) {
+                    return steep_slope_2_image(objNum, settings, tileset, 0x1D1, 0x1F6, 0x25);
                 }
             } else if (objNum === 0x3B) {
                 const type = (settings >>> 4) & 0b1111;
@@ -6309,6 +6313,7 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
     if (objNum >= 0x2E || objNum <= 0x3F) {
         // tileset spec width
         if (tileset == 0) {
+            // forest
             if (objNum == 0x30) {
                 result = 2;
             } else if (objNum >= 0x31 && objNum <= 0x32) {
@@ -6346,6 +6351,7 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
                 result = (settings & 0b1111) + 1;
             }
         } else if (tileset == 1) {
+            // castle
             if (objNum == 0x34) {
                 result = 2;
             } else if (objNum == 0x35) {
@@ -6397,7 +6403,11 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
                     result = height;
                 } else if (type === 3) {
                     result = height;
-                }               
+                } else if (type === 0) {
+                    result = height;
+                } else if (type === 1) {
+                    result = height;
+                }
             } else if (objNum == 0x38) {
                 result = ((settings & 0b1111) + 1);
             } else if (objNum == 0x39) {
@@ -7657,6 +7667,15 @@ function getX(obj: Obj, tset: number = -1): number {
                             return obj.x + 1 - width;
                         }
                     }
+                } else if (tset === 2) {
+                    if (objNum === 0x37) {
+                        const type = (settings >>> 0) & 0b1111;
+                        if (type === 0) {
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        } else if (type === 1) {
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        }
+                    }
                 }
                 return obj.x;
             }
@@ -7743,6 +7762,15 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
 
                         if (type === 0 || type === 1) {
                             return obj.x -1 + getWidth(objNum, settings, tset);
+                        }
+                    }
+                } else if (tset === 2) {
+                    if (objNum === 0x37) {
+                        const type = (settings >>> 0) & 0b1111;
+                        if (type === 0) {
+                            return obj.x-1+getWidth(objNum, settings, tset);
+                        } else if (type === 1) {
+                            return obj.x-1+getWidth(objNum, settings, tset);
                         }
                     }
                 }
