@@ -5586,9 +5586,9 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             } else if (objNum === 0x39) {
                 return diagonal_pipe_image(objNum, settings, tileset);
             } else if (objNum === 0x3A) {
-                return hill_image(objNum, settings, tileset);
+                //return hill_image(objNum, settings, tileset);
             } else if (objNum === 0x3B) {
-                return hill_rev_image(objNum, settings, tileset);
+                //return hill_rev_image(objNum, settings, tileset);
             }
         } else if (tileset === 2) {
             // athletic

@@ -4855,10 +4855,10 @@ function getObjImg(objNum, settings, tileset = 0) {
                 return diagonal_pipe_image(objNum, settings, tileset);
             }
             else if (objNum === 0x3A) {
-                return hill_image(objNum, settings, tileset);
+                //return hill_image(objNum, settings, tileset);
             }
             else if (objNum === 0x3B) {
-                return hill_rev_image(objNum, settings, tileset);
+                //return hill_rev_image(objNum, settings, tileset);
             }
         }
         else if (tileset === 2) {
