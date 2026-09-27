@@ -3313,6 +3313,19 @@ function hill_image(objNum, settings, tileset) {
     return canvas.toDataURL("image/png");
 }
 function canvas_image(objNum, settings, tileset) {
+    const result = canvas_image_real(objNum, settings, tileset);
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(result, 0, 0);
+    return canvas.toDataURL("image/png");
+}
+function canvasses_image(objNum, settings, tileset) {
+}
+function canvas_image_real(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
     const height = getHeight(objNum, settings, tileset);
@@ -3341,7 +3354,7 @@ function canvas_image(objNum, settings, tileset) {
         ctx.putImageData(curtainBottom, i * 16, 5 * 16);
     }
     ctx.putImageData(curtainLedge, 3 * 16, 4 * 16);
-    return canvas.toDataURL("image/png");
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 function hill_rev_image(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
@@ -5976,7 +5989,8 @@ function getWidth(objNum, settings, tileset = 0) {
                 result = ((settings & 0b1111) + 1);
             }
             else if (objNum == 0x37) {
-                result = 1;
+                const width = ((settings >>> 0) & 0b1111) + 1;
+                return width * 16;
             }
             else if (objNum == 0x38) {
                 result = 1;
@@ -6309,7 +6323,7 @@ function getHeight(objNum, settings, tileset = 0) {
                 result = (((settings >> 4) & 0b1111) + 1);
             }
             else if (objNum == 0x37) {
-                result = 1;
+                result = 18;
             }
             else if (objNum == 0x38) {
                 result = (((settings >> 4) & 0b1111) + 1);
@@ -7224,6 +7238,10 @@ function getX(obj, tset = -1) {
                             return obj.x + 1 - width;
                         }
                     }
+                    else if (objNum === 0x37) {
+                        // canvasses
+                        return 0;
+                    }
                 }
                 else if (tset === 2) {
                     // athletic
@@ -7264,9 +7282,28 @@ function getX(obj, tset = -1) {
     return obj.x;
 }
 function getY(obj, tset = -1) {
+    const objNum = obj.objNum;
+    if (tset === -1) {
+        tset = tileset;
+    }
+    if (tset === 3) {
+        if (objNum === 0x37) {
+            // canvasses
+            return 5;
+        }
+    }
     return obj.y;
 }
 function getRealY(y, obj, tset = -1) {
+    const objNum = obj.objNum;
+    if (tset === -1) {
+        tset = tileset;
+    }
+    if (tset === 3) {
+        if (objNum === 0x37) {
+            return 0;
+        }
+    }
     return y;
 }
 function getRealX(x, obj, tset = -1) {
@@ -7337,6 +7374,9 @@ function getRealX(x, obj, tset = -1) {
                         else if (type === 1) {
                             return x - 1 + width;
                         }
+                    }
+                    else if (objNum === 0x37) {
+                        return 0;
                     }
                 }
                 else if (tset === 1) {

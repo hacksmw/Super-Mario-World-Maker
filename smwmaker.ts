@@ -3999,7 +3999,29 @@ function hill_image(objNum: number, settings: number, tileset: number) {
     return canvas.toDataURL("image/png");
 }
 
-function canvas_image(objNum: number, settings: number, tileset:number) {
+function canvas_image(objNum: number, settings: number, tileset: number) {
+    const result: any = canvas_image_real(objNum, settings, tileset);
+
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx!.putImageData(result, 0, 0);
+    
+    return canvas.toDataURL("image/png");
+}
+
+function canvasses_image(objNum: number, settings: number, tileset: number) {
+
+}
+
+function canvas_image_real(objNum: number, settings: number, tileset:number) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
     const width = getWidth(objNum, settings, tileset);
@@ -4037,7 +4059,7 @@ function canvas_image(objNum: number, settings: number, tileset:number) {
 
     ctx!.putImageData(curtainLedge, 3*16, 4*16);
 
-    return canvas.toDataURL("image/png");    
+    return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
 
 function hill_rev_image(objNum: number, settings: number, tileset: number) {
@@ -6707,7 +6729,8 @@ function getWidth(objNum: number, settings: number, tileset: number = 0): number
             } else if (objNum == 0x36) {
                 result = ((settings & 0b1111) + 1);
             } else if (objNum == 0x37) {
-                result = 1;
+                const width = ((settings >>> 0) & 0b1111) + 1;
+                return width * 16;
             } else if (objNum == 0x38) {
                 result = 1;
             } else if (objNum == 0x39) {
@@ -6982,7 +7005,7 @@ function getHeight(objNum: number, settings: number, tileset = 0): number {
             } else if (objNum == 0x36) {
                 result = (((settings >> 4) & 0b1111) + 1);
             } else if (objNum == 0x37) {
-                result = 1;
+                result = 18;
             } else if (objNum == 0x38) {
                 result = (((settings >> 4) & 0b1111) + 1);
             } else if (objNum == 0x39) {
@@ -7937,6 +7960,9 @@ function getX(obj: Obj, tset: number = -1): number {
                         } else if (type === 1) {
                             return obj.x + 1 - width;
                         }
+                    } else if (objNum === 0x37) {
+                        // canvasses
+                        return 0;
                     }
                 } else if (tset === 2) {
                     // athletic
@@ -7978,10 +8004,35 @@ function getX(obj: Obj, tset: number = -1): number {
 }
 
 function getY(obj: Obj, tset: number = -1): number {
+    const objNum = obj.objNum;
+    
+    if (tset === -1) {
+        tset = tileset;
+    }
+
+    if (tset === 3) {
+        if (objNum === 0x37) {
+            // canvasses
+            return 5;
+        }
+    }
+
     return obj.y;
 }
 
 function getRealY(y: number, obj: Obj, tset: number = -1): number {
+    const objNum = obj.objNum;
+
+    if (tset === -1) {
+        tset = tileset;
+    }
+
+    if (tset === 3) {
+        if (objNum === 0x37) {
+            return 0;
+        }
+    }
+
     return y;
 }
 
@@ -8053,6 +8104,8 @@ function getRealX(x: number, obj: Obj, tset: number = -1): number {
                         } else if (type === 1) {
                             return x - 1 + width;
                         }
+                    } else if (objNum === 0x37) {
+                        return 0;
                     }
                 } else if (tset === 1) {
                     // castle
