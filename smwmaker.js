@@ -3368,6 +3368,58 @@ function canvasses_image(objNum, settings, tileset) {
     }
     return canvas.toDataURL("image/png");
 }
+function canvas2_image(objNum, settings, tileset) {
+    const result = canvas2_image_real(objNum, settings, tileset);
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(result, 0, 0);
+    return canvas.toDataURL("image/png");
+}
+function canvas2_image_real(objNum, settings, tileset) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * 4;
+    canvas.height = 16 * 6;
+    const top1 = getMap16TileImg(0x77);
+    const top2 = getMap16TileImg(0x78);
+    const top3 = getMap16TileImg(0x79);
+    const btm1 = getMap16TileImg(0x7A);
+    const btm2 = getMap16TileImg(0x7B);
+    const btm3 = getMap16TileImg(0x7C);
+    const curtainTopLeft = getMap16TileImg(0x15C);
+    const curtainTop = getMap16TileImg(0x15D);
+    const curtainTopRight = getMap16TileImg(0x15E);
+    const curtainBottom = getMap16TileImg(0x76);
+    const curtainLedge = getMap16TileImg(0x15F);
+    const curtainTopLedge = getMap16TileImg(0x160);
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(curtainTopLeft, 0 * 16, 0 * 16);
+    ctx.putImageData(curtainTop, 1 * 16, 0 * 16);
+    ctx.putImageData(curtainTopRight, 2 * 16, 0 * 16);
+    ctx.putImageData(curtainTopLedge, 3 * 16, 0 * 16);
+    ctx.putImageData(top1, 0 * 16, 1 * 16);
+    ctx.putImageData(top2, 1 * 16, 1 * 16);
+    ctx.putImageData(top3, 2 * 16, 1 * 16);
+    ctx.putImageData(btm1, 0 * 16, 2 * 16);
+    ctx.putImageData(btm2, 1 * 16, 2 * 16);
+    ctx.putImageData(btm3, 2 * 16, 2 * 16);
+    ctx.putImageData(top1, 0 * 16, 3 * 16);
+    ctx.putImageData(top2, 1 * 16, 3 * 16);
+    ctx.putImageData(top3, 2 * 16, 3 * 16);
+    ctx.putImageData(btm1, 0 * 16, 4 * 16);
+    ctx.putImageData(btm2, 1 * 16, 4 * 16);
+    ctx.putImageData(btm3, 2 * 16, 4 * 16);
+    for (let i = 0; i < 3; i++) {
+        ctx.putImageData(curtainBottom, i * 16, 5 * 16);
+    }
+    ctx.putImageData(curtainLedge, 3 * 16, 4 * 16);
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
 function canvas_image_real(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
@@ -4323,7 +4375,12 @@ function getObjImg(objNum, settings, tileset = 0) {
         return canvas_image(objNum, settings, tileset);
     }
     else if (objNum === 0x00 && settings === 0x73) {
+        // canvas 3
         return canvas3_image(objNum, settings, tileset);
+    }
+    else if (objNum === 0x00 && settings === 0x72) {
+        // canvas 2
+        return canvas2_image(objNum, settings, tileset);
     }
     else if (objNum === 0x00 && settings === 0x75) {
         // canvas tile 1
