@@ -3324,13 +3324,41 @@ function canvas_image(objNum, settings, tileset) {
     return canvas.toDataURL("image/png");
 }
 function canvasses_image(objNum, settings, tileset) {
-}
-function canvas_image_real(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
     const height = getHeight(objNum, settings, tileset);
     canvas.width = 16 * width;
     canvas.height = 16 * height;
+    const ledge = getMap16TileImg(0x161);
+    const cvs = canvas_image_real(objNum, settings, tileset);
+    const ctx = canvas.getContext("2d");
+    for (let i = 0; i < height; i += 4) {
+        for (let j = 0; j < width; j++) {
+            ctx.putImageData(ledge, j * 16, i * 16);
+        }
+    }
+    for (let i = 0; i < 4; i++) {
+        if (i % 2 === 0) {
+            for (let j = 0; j < width; j += 8) {
+                ctx.putImageData(cvs, j * 16, (i * 4) * 16);
+            }
+        }
+        else {
+            for (let j = 4; j < width; j += 8) {
+                ctx.putImageData(cvs, j * 16, (i * 4) * 16);
+            }
+        }
+    }
+    return canvas.toDataURL("image/png");
+}
+function canvas_image_real(objNum, settings, tileset) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * 4;
+    canvas.height = 16 * 6;
+    console.log(width);
+    console.log(height);
     const curtain = getMap16TileImg(0x74);
     const curtain2 = getMap16TileImg(0x163);
     const curtainLeft = getMap16TileImg(0x73);
@@ -3340,11 +3368,12 @@ function canvas_image_real(objNum, settings, tileset) {
     const curtainTopRight = getMap16TileImg(0x15E);
     const curtainBottom = getMap16TileImg(0x76);
     const curtainLedge = getMap16TileImg(0x15F);
+    const curtainTopLedge = getMap16TileImg(0x160);
     const ctx = canvas.getContext("2d");
     ctx.putImageData(curtainTopLeft, 0 * 16, 0 * 16);
     ctx.putImageData(curtainTop, 1 * 16, 0 * 16);
     ctx.putImageData(curtainTopRight, 2 * 16, 0 * 16);
-    ctx.putImageData(curtainLedge, 3 * 16, 0 * 16);
+    ctx.putImageData(curtainTopLedge, 3 * 16, 0 * 16);
     for (let i = 0; i < 4; i++) {
         ctx.putImageData(curtainLeft, 0 * 16, (i + 1) * 16);
         ctx.putImageData(curtain, 1 * 16, (i + 1) * 16);
@@ -5167,6 +5196,9 @@ function getObjImg(objNum, settings, tileset = 0) {
             // underground
             if (objNum === 0x34) {
                 return single_block_image(objNum, settings, tileset, 0x16C);
+            }
+            else if (objNum === 0x37) {
+                return canvasses_image(objNum, settings, tileset);
             }
             else if (objNum === 0x35) {
                 return single_block_image(objNum, settings, tileset, 0x16D);
