@@ -3653,6 +3653,35 @@ midLeftBlock = 0x131, midCenterBlock = 0x131, midRightBlock = 0x131, btmLeftBloc
     return canvas.toDataURL('image/png');
 }
 
+function forest_tree_top_image(objNum: number, settings: number, tileset: number) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    
+    canvas.width = width * 16;
+    canvas.height = height * 16; 
+    
+    const data = image_real(objNum, settings, tileset, [
+        [0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4], 
+        [0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4], 
+        [0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB5, 0xB3, 0xB5, 0xB3], 
+        [0xB3, 0xB4, 0xB4, 0xB5, 0xB3, 0xB4, 0xB4, 0xB4, 0xB4, 0xB5, 0xB3, 0xB5, 0xB6, 0xB1, 0xB6, 0xB1], 
+        [0xB1, 0xB3, 0xB5, 0xB6, 0xB1, 0xB3, 0xB5, 0xB3, 0xB5, 0xB6, 0xB1, 0xB6, 0x25, 0x25, 0x25, 0x25], 
+        [0x25, 0xB1, 0xB6, 0x25, 0x25, 0xB1, 0xB6, 0xB1, 0xB6, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25], 
+    ]);
+
+    const ctx = canvas.getContext("2d");
+
+    const j = intdiv(width, 16);
+
+    for (let i = 0; i < j; i++) {
+        ctx!.putImageData(data, (i*16)*16, 0);  
+    }
+
+    return canvas.toDataURL('image/png');
+}
+
 function image_real(objNum: number, settings: number, tileset: number, tilesTable: number[][]) {
 	const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
@@ -5745,6 +5774,8 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             if (objNum === 0x3F && ((settings >>> 4) & 0b1111) === 0) {
                 // grass
                 return grass_like_image(objNum, settings, tileset, 0x73, 0x74, 0x79);
+            } else if (objNum === 0x33) {
+                return forest_tree_top_image(objNum, settings, tileset);
             } else if (objNum === 0x3F && ((settings >>> 4) & 0b1111) === 1) {
                 // grass 2
                 return grass_like_image(objNum, settings, tileset, 0x7A, 0x7B, 0x80);

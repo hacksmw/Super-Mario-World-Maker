@@ -3071,6 +3071,27 @@ function stone_like_image(objNum, settings, tileset = 0, topLeftBlock = 0x131, t
     ctx.putImageData(stone_like_image_real(objNum, settings, tileset, topLeftBlock, topCenterBlock, topRightBlock, midLeftBlock, midCenterBlock, midRightBlock, btmLeftBlock, btmCenterBlock, btmRightBlock), 0, 0);
     return canvas.toDataURL('image/png');
 }
+function forest_tree_top_image(objNum, settings, tileset) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = width * 16;
+    canvas.height = height * 16;
+    const data = image_real(objNum, settings, tileset, [
+        [0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4],
+        [0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4],
+        [0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0xB5, 0xB3, 0xB5, 0xB3],
+        [0xB3, 0xB4, 0xB4, 0xB5, 0xB3, 0xB4, 0xB4, 0xB4, 0xB4, 0xB5, 0xB3, 0xB5, 0xB6, 0xB1, 0xB6, 0xB1],
+        [0xB1, 0xB3, 0xB5, 0xB6, 0xB1, 0xB3, 0xB5, 0xB3, 0xB5, 0xB6, 0xB1, 0xB6, 0x25, 0x25, 0x25, 0x25],
+        [0x25, 0xB1, 0xB6, 0x25, 0x25, 0xB1, 0xB6, 0xB1, 0xB6, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25],
+    ]);
+    const ctx = canvas.getContext("2d");
+    const j = intdiv(width, 16);
+    for (let i = 0; i < j; i++) {
+        ctx.putImageData(data, (i * 16) * 16, 0);
+    }
+    return canvas.toDataURL('image/png');
+}
 function image_real(objNum, settings, tileset, tilesTable) {
     const canvas = document.createElement("canvas");
     const height = getHeight(objNum, settings, tileset);
@@ -4902,6 +4923,9 @@ function getObjImg(objNum, settings, tileset = 0) {
             if (objNum === 0x3F && ((settings >>> 4) & 0b1111) === 0) {
                 // grass
                 return grass_like_image(objNum, settings, tileset, 0x73, 0x74, 0x79);
+            }
+            else if (objNum === 0x33) {
+                return forest_tree_top_image(objNum, settings, tileset);
             }
             else if (objNum === 0x3F && ((settings >>> 4) & 0b1111) === 1) {
                 // grass 2
