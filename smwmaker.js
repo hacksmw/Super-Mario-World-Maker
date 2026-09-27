@@ -2289,7 +2289,7 @@ function load(lvlNum) {
     let gameTitle;
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        alert("Wrong game title");
+        //alert("Wrong game title");
         return false;
     }
     // expand the rom
@@ -3070,6 +3070,34 @@ function stone_like_image(objNum, settings, tileset = 0, topLeftBlock = 0x131, t
     const ctx = canvas.getContext("2d");
     ctx.putImageData(stone_like_image_real(objNum, settings, tileset, topLeftBlock, topCenterBlock, topRightBlock, midLeftBlock, midCenterBlock, midRightBlock, btmLeftBlock, btmCenterBlock, btmRightBlock), 0, 0);
     return canvas.toDataURL('image/png');
+}
+function image_real(objNum, settings, tileset, tilesTable) {
+    const canvas = document.createElement("canvas");
+    const height = getHeight(objNum, settings, tileset);
+    const width = getWidth(objNum, settings, tileset);
+    canvas.width = width * 16;
+    canvas.height = height * 16;
+    const ctx = canvas.getContext("2d");
+    for (let i = 0; i < tilesTable.length; i++) {
+        const row = tilesTable[i];
+        for (let j = 0; j < row.length; j++) {
+            const tile = row[j];
+            const img = getMap16TileImg(tile);
+            ctx.putImageData(img, j * 16, i * 16);
+        }
+    }
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+function image(objNum, settings, tileset, tilesTable) {
+    const canvas = document.createElement("canvas");
+    const height = getHeight(objNum, settings, tileset);
+    const width = getWidth(objNum, settings, tileset);
+    canvas.width = width * 16;
+    canvas.height = height * 16;
+    const ctx = canvas.getContext("2d");
+    const result = image_real(objNum, settings, tileset, tilesTable);
+    ctx.putImageData(result, 0, 0);
+    return canvas.toDataURL("image/png");
 }
 function stone_like_image_real(objNum, settings, tileset = 0, topLeftBlock = 0x131, topCenterBlock = 0x131, topRightBlock = 0x131, midLeftBlock = 0x131, midCenterBlock = 0x131, midRightBlock = 0x131, btmLeftBlock = 0x131, btmCenterBlock = 0x131, btmRightBlock = 0x131) {
     const topLeft = getMap16TileImg(topLeftBlock);
@@ -3989,6 +4017,14 @@ function getObjImg(objNum, settings, tileset = 0) {
     else if (objNum === 0x00 && settings == 0x47) {
         // Door
         return bone_like_image(objNum, settings, tileset, 0x1F, 0x20, 0x20);
+    }
+    else if (objNum === 0x00 && settings === 0x83) {
+        return image(objNum, settings, tileset, [
+            [0x25, 0x25, 0x4B, 0x4C, 0x25, 0x25],
+            [0x25, 0x54, 0x49, 0x5F, 0x63, 0x25],
+            [0x25, 0x57, 0x49, 0x52, 0x4A, 0x5D],
+            [0x5A, 0x49, 0x49, 0x49, 0x4F, 0x60],
+        ]);
     }
     else if (objNum === 0x00 && settings == 0x81) {
         // weed
