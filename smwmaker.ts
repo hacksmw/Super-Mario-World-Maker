@@ -4005,6 +4005,9 @@ function hill_rev_image(objNum: number, settings: number, tileset: number) {
     const width = getWidth(objNum, settings, tileset);
     const height = getHeight(objNum, settings, tileset);
 
+    const a = ((settings >> 4) & 0b1111);
+    const b = ((settings >> 0) & 0b1111);
+
     canvas.width = 16 * width;
     canvas.height = 16 * height;
 
@@ -4018,43 +4021,41 @@ function hill_rev_image(objNum: number, settings: number, tileset: number) {
     const left = getMap16TileImg(0xA9);
     const right = getMap16TileImg(0xAC);
 
-    ctx!.putImageData(coltop, (width - 4 + 0) * 16, 0 * 16);
-    ctx!.putImageData(left, (width - 4 - 1) * 16, 1 * 16);
-    ctx!.putImageData(left, (width - 4 - 2) * 16, 2 * 16);
-    ctx!.putImageData(left, (width - 4 - 3) * 16, 3 * 16);
-
-    ctx!.putImageData(dirt, (width - 4) * 16, 1 * 16);  
-
-    ctx!.putImageData(dirt, (width - 4 + 1) * 16, 2 * 16);
-    ctx!.putImageData(dirt, (width - 4) * 16, 2 * 16);
-    ctx!.putImageData(dirt, (width - 4 - 1) * 16, 2 * 16);
-
-    ctx!.putImageData(dirt, (width - 4 - 2) * 16, 3 * 16);
-    ctx!.putImageData(dirt, (width - 4 - 1) * 16, 3 * 16);
-    ctx!.putImageData(dirt, (width - 4) * 16, 3 * 16);
-    ctx!.putImageData(dirt, (width - 4 + 1) * 16, 3 * 16);
-    ctx!.putImageData(dirt, (width - 4 + 2) * 16, 3 * 16);
-
-
-    ctx!.putImageData(ground, (width - 4 + 1) * 16, 0 * 16);
-    ctx!.putImageData(ground_down, (width - 4 + 1) * 16, 1 * 16);
-    ctx!.putImageData(ground, (width - 4 + 2) * 16, 1 * 16);
-    ctx!.putImageData(ground_down, (width - 4 + 2) * 16, 2 * 16);
-    ctx!.putImageData(ground, (width - 4 + 3) * 16, 2 * 16);
-    ctx!.putImageData(coldown, (width - 4 + 3) * 16, 3 * 16);
-
-    
-    for (let i = 4; i < height; i++) {
-        ctx!.putImageData(left, (width-4-i+0) * 16, i * 16);
-        ctx!.putImageData(dirt, (width-4-i+1) * 16, i * 16);
-        ctx!.putImageData(dirt, (width-4-i+2) * 16, i * 16);
-        ctx!.putImageData(dirt, (width-4-i+3) * 16, i * 16);
-        ctx!.putImageData(dirt, (width-4-i+4) * 16, i * 16);
-        ctx!.putImageData(dirt, (width-4-i+5) * 16, i * 16);
-        ctx!.putImageData(right, (width-4-i+6) * 16, i * 16);
+    for (let i = 0; i < b+1; i++) {
+        ctx!.putImageData(ground, (width-(b+1)+i) * 16, i * 16);
+        ctx!.putImageData(ground_down, (width-(b+1)+i-1) * 16, i * 16);
+        
+        for (let j = 0; j < i; j++) {
+            ctx!.putImageData(dirt, (width-(b+1)+j-1) * 16, i * 16);
+        }
+        
         
     }
+
+    const length = width-height+b+1;
+
+    for (let i = 0; i < height-(b+1); i++) {
+        ctx!.putImageData(left, i * 16, ((height - i -1)) * 16)
+        for (let j = i+1; j < (i+1)+length; j++){
+            ctx!.putImageData(dirt, j * 16, ((height - i -1)) * 16);
+        }
+    }
+
     
+    for (let i = height-(b+1); i < height; i++) {
+        ctx!.putImageData(left, i * 16, (height - i - 1) * 16)
+        for (let j = i+1; j < (width-(b+1)); j++) {
+            ctx!.putImageData(dirt, j*16, (height - i - 1) * 16)
+        }
+    }
+
+    for (let i = b+1; i < height; i++) {
+        
+        ctx!.putImageData(right, ((width-1) - (i-(b+1)))*16, i*16);  
+    }
+   
+    ctx!.putImageData(coltop, (width-(b+1)-1) * 16, 0);
+    ctx!.putImageData(coldown, (width - 1) * 16, ((b+1))*16);
 
     return canvas.toDataURL("image/png");
 }
@@ -5585,7 +5586,7 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             } else if (objNum === 0x3A) {
                 return hill_image(objNum, settings, tileset);
             } else if (objNum === 0x3B) {
-                //return hill_rev_image(objNum, settings, tileset);
+                return hill_rev_image(objNum, settings, tileset);
             }
         } else if (tileset === 2) {
             // athletic
