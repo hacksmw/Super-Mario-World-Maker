@@ -4017,6 +4017,32 @@ function canvas_image(objNum: number, settings: number, tileset: number) {
     return canvas.toDataURL("image/png");
 }
 
+function canvas3_image(objNum: number, settings: number, tileset: number) {
+    const result: any = canvas_image_real(objNum, settings, tileset);
+
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx!.putImageData(result, 0, 0);
+
+    const top_hole = getMap16TileImg(0x7D);
+    const mid_hole = getMap16TileImg(0x7E);
+    const btm_hole = getMap16TileImg(0x7F);
+
+    ctx!.putImageData(top_hole, 1*16, 1*16);
+    ctx!.putImageData(mid_hole, 1*16, 2*16);
+    ctx!.putImageData(btm_hole, 0*16, 4*16);
+    
+    return canvas.toDataURL("image/png");
+}
+
 function canvasses_image(objNum: number, settings: number, tileset: number) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
@@ -5096,6 +5122,9 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
     } else if (objNum === 0x00 && settings === 0x71) {
         // canvas 1
         return canvas_image(objNum, settings, tileset);
+    } else if (objNum === 0x00 && settings === 0x73) {
+        return canvas3_image(objNum, settings, tileset);
+
     } else if (objNum === 0x00 && settings === 0x75) {
         // canvas tile 1
         return single_block_image(objNum, settings, tileset, 0x7D);
