@@ -3340,6 +3340,29 @@ function canvas3_image(objNum, settings, tileset) {
     ctx.putImageData(btm_hole, 0 * 16, 4 * 16);
     return canvas.toDataURL("image/png");
 }
+function canvas4_image(objNum, settings, tileset) {
+    const result = canvas2_image_real(objNum, settings, tileset);
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(result, 0, 0);
+    const top1 = getMap16TileImg(0x81);
+    const top2 = getMap16TileImg(0x82);
+    const top3 = getMap16TileImg(0x83);
+    const btm1 = getMap16TileImg(0x84);
+    const btm2 = getMap16TileImg(0x85);
+    const btm3 = getMap16TileImg(0x86);
+    ctx.putImageData(top2, 1 * 16, 1 * 16);
+    ctx.putImageData(btm2, 1 * 16, 2 * 16);
+    ctx.putImageData(top3, 2 * 16, 1 * 16);
+    ctx.putImageData(btm3, 2 * 16, 2 * 16);
+    ctx.putImageData(top1, 0 * 16, 3 * 16);
+    ctx.putImageData(btm1, 0 * 16, 4 * 16);
+    return canvas.toDataURL("image/png");
+}
 function canvasses_image(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
@@ -4381,6 +4404,9 @@ function getObjImg(objNum, settings, tileset = 0) {
     else if (objNum === 0x00 && settings === 0x72) {
         // canvas 2
         return canvas2_image(objNum, settings, tileset);
+    }
+    else if (objNum === 0x00 && settings === 0x74) {
+        return canvas4_image(objNum, settings, tileset);
     }
     else if (objNum === 0x00 && settings === 0x75) {
         // canvas tile 1
