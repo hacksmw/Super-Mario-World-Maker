@@ -3312,6 +3312,37 @@ function hill_image(objNum, settings, tileset) {
     ctx.putImageData(coltop, (b + 1) * 16, 0);
     return canvas.toDataURL("image/png");
 }
+function canvas_image(objNum, settings, tileset) {
+    const canvas = document.createElement("canvas");
+    const width = getWidth(objNum, settings, tileset);
+    const height = getHeight(objNum, settings, tileset);
+    canvas.width = 16 * width;
+    canvas.height = 16 * height;
+    const curtain = getMap16TileImg(0x74);
+    const curtain2 = getMap16TileImg(0x163);
+    const curtainLeft = getMap16TileImg(0x73);
+    const curtainRight = getMap16TileImg(0x75);
+    const curtainTopLeft = getMap16TileImg(0x15C);
+    const curtainTop = getMap16TileImg(0x15D);
+    const curtainTopRight = getMap16TileImg(0x15E);
+    const curtainBottom = getMap16TileImg(0x76);
+    const curtainLedge = getMap16TileImg(0x15F);
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(curtainTopLeft, 0 * 16, 0 * 16);
+    ctx.putImageData(curtainTop, 1 * 16, 0 * 16);
+    ctx.putImageData(curtainTopRight, 2 * 16, 0 * 16);
+    ctx.putImageData(curtainLedge, 3 * 16, 0 * 16);
+    for (let i = 0; i < 4; i++) {
+        ctx.putImageData(curtainLeft, 0 * 16, (i + 1) * 16);
+        ctx.putImageData(curtain, 1 * 16, (i + 1) * 16);
+        ctx.putImageData(curtainRight, 2 * 16, (i + 1) * 16);
+    }
+    for (let i = 0; i < 3; i++) {
+        ctx.putImageData(curtainBottom, i * 16, 5 * 16);
+    }
+    ctx.putImageData(curtainLedge, 3 * 16, 4 * 16);
+    return canvas.toDataURL("image/png");
+}
 function hill_rev_image(objNum, settings, tileset) {
     const canvas = document.createElement("canvas");
     const width = getWidth(objNum, settings, tileset);
@@ -4227,6 +4258,10 @@ function getObjImg(objNum, settings, tileset = 0) {
     else if (objNum === 0x00 && settings === 0x70) {
         // bit of canvas
         return grass_like_image(objNum, settings, tileset, 0x84, 0x85, 0x85);
+    }
+    else if (objNum === 0x00 && settings === 0x71) {
+        // canvas 1
+        return canvas_image(objNum, settings, tileset);
     }
     else if (objNum === 0x00 && settings === 0x75) {
         // canvas tile 1
