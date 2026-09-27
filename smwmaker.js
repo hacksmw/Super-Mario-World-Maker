@@ -5223,6 +5223,21 @@ function getObjImg(objNum, settings, tileset = 0) {
             else if (objNum === 0x3A && ((settings >>> 0) & 0b1111) === 3) {
                 return single_block_image(objNum, settings, tileset, 0x15b);
             }
+            else if (objNum === 0x3A && ((settings >>> 0) & 0b1111) === 4) {
+                return single_block_image(objNum, settings, tileset, 0x1A5);
+            }
+            else if (objNum === 0x3A && ((settings >>> 0) & 0b1111) === 5) {
+                return single_block_image(objNum, settings, tileset, 0x159);
+            }
+            else if (objNum === 0x3A && ((settings >>> 0) & 0b1111) === 6) {
+                return single_block_image(objNum, settings, tileset, 0x129);
+            }
+            else if (objNum === 0x3A && ((settings >>> 0) & 0b1111) === 7) {
+                return single_block_image(objNum, settings, tileset, 0x10F);
+            }
+            else if (objNum === 0x3A && ((settings >>> 0) & 0b1111) === 8) {
+                return single_block_image(objNum, settings, tileset, 0x1AA);
+            }
             else if (objNum === 0x2E) {
                 return single_block_image(objNum, settings, tileset, 0x159);
             }
