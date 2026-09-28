@@ -1294,29 +1294,33 @@ function btn16x16_onclick() {
         return;
     }
     
-    let blocks = map16;
-
     let canvas = document.createElement("canvas");
 
     canvas.id = "cnv16x16";
     canvas.style.border = "1px solid black";
     canvas.width = 16 * 16;
-    canvas.height = 16  * 16 * 2 * 2;
     
     let ctx = canvas.getContext("2d");
 
-    for (let i = 0x0; i <= 0x1ff; i++) {
+    const blksLength = map16.length;
+    const bgTilesLength = bgTiles.length;
+
+    const blksHeight = Math.ceil(blksLength / 16);
+    const bgTilesHeight = Math.ceil(bgTilesLength / 16);
+
+    canvas.height = blksHeight * 16 + bgTilesHeight * 16;
+
+    for (let i = 0x0; i < blksLength; i++) {
         const tile = getMap16TileImg(i);
         ctx!.putImageData(tile, (i % 16) * 16, intdiv(i, 16) * 16);
-    }
+    }   
 
     // background tiles
-    blocks = bgTiles;  
 
-    for (let i = 0x0; i <= 0x1ff; i++) {
+    for (let i = 0x0; i <= bgTilesLength; i++) {
         const tile = getMap16TileImg(i, true);
-        ctx!.putImageData(tile, (i % 16) * 16, (0x1F * 16) + (intdiv(i, 16) * 16));
-    }    
+        ctx!.putImageData(tile, (i % 16) * 16, (blksHeight * 16) + (intdiv(i, 16) * 16));
+    }
     
     document.body.appendChild(canvas);
 }
@@ -3573,6 +3577,23 @@ function load16x16() {
         getMap16(0x107, 0x110, 0x0DE768, blocks);
         getMap16(0x153, 0x16D, 0x0DE7B8, blocks);        
     }
+
+    /*
+    const start = 0x200;
+    const end = start + (0x100 - 1);
+
+    let addr = ((fileData[snes2pc(0x06F557)] << 16) | ((fileData[snes2pc(0x06F553+1)] << 8) | fileData[snes2pc(0x06F553+0)]));
+
+    getMap16(start, end, addr, blocks);
+    */
+
+    /*
+    for (let i = 2; i < 0x10; i++) {
+        const start = i * 0x100;
+        const end = start + (0x100 - 1);
+        
+    }
+    */
 
     map16 = blocks;
     bgTiles = bgBlocks;  
@@ -6705,7 +6726,7 @@ function getMap16TileImg(index: number, bg: boolean = false): any {
 
     let ctx = canvas.getContext("2d");
 
-    let blocks;
+    let blocks: Tile[];
     
     let firstBmp, secondBmp, thirdBmp, fourthBmp;
 
@@ -6727,12 +6748,33 @@ function getMap16TileImg(index: number, bg: boolean = false): any {
         blockx = i % 16;
         blocky = Math.floor(i / 16);
 
-        if (typeof blocks[i] == "undefined") throw new Error('block is undefined.');
+        let block = blocks[i];
+
+        if (typeof block == "undefined") {
+            //throw new Error("undefined block");
+            
+            const tilePart: TilePart = new TilePart();
+
+            
+            tilePart.gfx = 0x4;
+
+            tilePart.pal = 0x4;
+            
+            block = new Tile();
+
+            block.upleft = tilePart;
+            block.upright = tilePart;
+            block.lowleft = tilePart;
+            block.lowright = tilePart;
+            
+        }
+
+        
 
 
 
         
-        const col = [blocks[i].upleft, blocks[i].upright, blocks[i].lowleft, blocks[i].lowright];
+        const col = [block.upleft, block.upright, block.lowleft, block.lowright];
 
         for (let j = 0; j < 4; j++) {
             const gfx = col[j].gfx;
