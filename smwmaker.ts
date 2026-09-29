@@ -3579,20 +3579,6 @@ function load16x16() {
         getMap16(0x153, 0x16D, 0x0DE7B8, blocks);        
     }
 
-    for (let i = 0x200; i < 0x300; i++) {
-        let tilePart = new TilePart();
-        tilePart.gfx = 0x4;
-        tilePart.pal = 0x4;
-
-        let tile = new Tile();
-        tile.upleft = tilePart;
-        tile.upright = tilePart;
-        tile.lowleft = tilePart;
-        tile.lowright = tilePart;
-
-        blocks[i] = tile;
-    }
-
     if (isLMModified) {
         const pointer = ((fileData[snes2pc(0x06F557)] << 16) | (((((fileData[snes2pc(0x06F553+1)] << 8) | fileData[snes2pc(0x06F553+0)])) + 0x1000)));  
         
