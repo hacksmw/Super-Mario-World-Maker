@@ -33,6 +33,7 @@ class Tile {
     upright: TilePart;
     lowleft: TilePart;
     lowright: TilePart;
+    actLike: number = 0x130;
 
     constructor() {
         this.upleft = new TilePart();
@@ -3597,17 +3598,15 @@ function load16x16() {
     const isPage2TilesetSpecific = (fileData[snes2pc(0x06F547)] !== 0? true: false);
 
     if (isPage2TilesetSpecific) {
-        //log("Tileset-specific");
         const pointer = ((fileData[snes2pc(0x06F58A)] << 16) | (((((fileData[snes2pc(0x06F586+1)] << 8) | fileData[snes2pc(0x06F586+0)]))))) + 0x1000; 
         const address = pointer + (fgbgGFX << 11);
         getMap16(0x200, 0x2FF, address, blocks);
         
     } else {
-        //log("Not Tileset-specific");
         getMap16(0x200, 0x2FF, pointer, blocks);
     }      
 
-    for (let i = 0x3; i < 0xF; i++) {
+    for (let i = 0x3; i < 0x10; i++) {
         const start = i * 0x100;
         const end = start + (0x100 - 1);
 
@@ -3615,6 +3614,22 @@ function load16x16() {
 
         getMap16(start, end, address, blocks);
     }
+
+    /*
+    const bgPointer = ((fileData[snes2pc(0x0EFD50 + 2)] << 16) | (fileData[snes2pc(0x0EFD50 + 1)] << 8) | (fileData[snes2pc(0x0EFD50 + 0)]));  
+
+    for (let i = 0x2; i < 0x10; i++) {
+        const start = i * 0x100;
+        const end = start + (0x100 - 1);
+
+        const address = bgPointer + (i-2) * 3;
+
+        let addr = ((fileData[snes2pc(address + 2)] << 16) | (fileData[snes2pc(address + 1)] << 8) | (fileData[snes2pc(address + 0)]))
+
+        getMap16(start + 0x1000, end + 0x1000, addr, bgBlocks);
+        break;
+    } 
+    */
 
     map16 = blocks;
     bgTiles = bgBlocks;  
