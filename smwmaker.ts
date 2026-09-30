@@ -201,33 +201,6 @@ let prevPosX = 0, prevPosY = 0;
 let target: Nullable<HTMLDivElement> = null;
 let prevObjLeft: number, prevObjTop: number;
 
-function getFreeSpace(dataSize: number) {
-    let romData = stripHeader(fileData);
-    let counter = 0;
-    for (let i = 0x80000; i < romData.length; i++) {
-        if (i < romData.length - 7 && 
-            String.fromCharCode(romData[i], romData[i+1], romData[i+2], romData[i+3]) == "STAR") {
-            let size = (romData[i+5] << 8) | romData[i+4];
-            let invSize = (romData[i+7] << 8) | romData[i+6];
-            if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
-                counter = 0;
-                i += size + 8;
-                continue;
-            }                
-        }
-        counter++;
-        if (counter === dataSize + 12) {
-            if (intdiv(i, 0x8000) != intdiv(i-counter+1, 0x8000)) {
-                counter = (i % 0x8000) + 1;
-                continue;
-            } else {
-                return (i-counter+1) + 0x200;
-            }
-        }
-    }
-    return 0;
-}
-
 function save() {
     let low: number, high: number, bank: number;
     let primaryLevelHeader = [0, 0, 0, 0, 0];
@@ -647,6 +620,33 @@ function save() {
 
         fileData[snes2pc(0x0EF310 + levelNum)] = (((bgfg) & 0b1) << 1) | ((flag & 0b1) << 2) | ((bgPage & 0b1111) << 4);
     }
+}
+
+function getFreeSpace(dataSize: number) {
+    let romData = stripHeader(fileData);
+    let counter = 0;
+    for (let i = 0x80000; i < romData.length; i++) {
+        if (i < romData.length - 7 && 
+            String.fromCharCode(romData[i], romData[i+1], romData[i+2], romData[i+3]) == "STAR") {
+            let size = (romData[i+5] << 8) | romData[i+4];
+            let invSize = (romData[i+7] << 8) | romData[i+6];
+            if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
+                counter = 0;
+                i += size + 8;
+                continue;
+            }                
+        }
+        counter++;
+        if (counter === dataSize + 12) {
+            if (intdiv(i, 0x8000) != intdiv(i-counter+1, 0x8000)) {
+                counter = (i % 0x8000) + 1;
+                continue;
+            } else {
+                return (i-counter+1) + 0x200;
+            }
+        }
+    }
+    return 0;
 }
 
 function stage_onmousemove(this: any, e: MouseEvent): void {
