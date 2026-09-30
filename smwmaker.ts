@@ -677,19 +677,17 @@ function stage_onmousemove(this: any, e: MouseEvent): void {
         return;
     }
 
-
     if (editMode == "layer1" || editMode == "layer2") {
-        data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16);
+        data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111, data[index]);
-            data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]); 
+            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111, data[index]) & 0b11111;
+            data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]) & 0b1111; 
         } else {
-            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111, data[index]);
-            data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]); 
+            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111, data[index]) & 0b1111;
+            data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]) & 0b11111; 
         }
-        
     } else {
-        sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16);
+        sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
             sprites[index].yPosition = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111;
             sprites[index].xPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b1111; 
@@ -732,6 +730,9 @@ function obj_onmousedown(this: any, e: MouseEvent) {
     target = this;
 }
 
+function obj_onmouseup(this: any, e: MouseEvent) {   
+}
+
 function stage_onmousedown(this: any) {
     let objects = document.querySelectorAll(".object, .sprite");
     for (let i = 0; i < objects.length ; i++) {
@@ -745,27 +746,6 @@ function stage_onmousedown(this: any) {
 function stage_onmouseup() {
     isPress = false;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function stage_onkeydown(this: any, e: KeyboardEvent): void {
     if (e.code == "Insert") {
@@ -816,7 +796,7 @@ function stage_onkeydown(this: any, e: KeyboardEvent): void {
 
             let stage = document.querySelector("#stage");
 
-            let myObject = create_object_view(obj, data.length - 1, editMode)
+            let myObject = create_object_view(obj, data.length - 1, editMode);
 
             stage!.appendChild(myObject);
             
@@ -1065,7 +1045,18 @@ function obj_ondblclick(this: any, e: MouseEvent): void {
         this.style.backgroundImage = `url(${img})`;
     }
 
-    
+    const screen = obj.screen;
+
+    const x = getX(obj);
+    const y = getY(obj);
+
+    if (isVertical) {
+        this.style.top = ((256 * screen) + (x * 16)) + 'px';
+        this.style.left = (y * 16) + 'px';
+    } else {
+        this.style.top = (y * 16) + 'px';
+        this.style.left = ((256 * screen) + (x * 16)) + 'px';
+    }
 }
 
 function spr_ondblclick(this: any, e: MouseEvent): void {
@@ -2467,6 +2458,7 @@ function create_object_view(obj: any, index: number, type: string = "layer1") {
         myObject.style.height = (getObjHeight(obj) * 16 ) + 'px';
 
         myObject.onmousedown = obj_onmousedown;
+        myObject.onmouseup = obj_onmouseup;
         myObject.onkeydown = obj_onkeydown;
         myObject.ondblclick = obj_ondblclick;
         
@@ -2491,6 +2483,7 @@ function create_object_view(obj: any, index: number, type: string = "layer1") {
         myObject.ondblclick = spr_ondblclick;
         myObject.onkeydown = spr_onkeydown;
         myObject.onmousedown = obj_onmousedown;
+        myObject.onmouseup = obj_onmouseup
 
     } else {
         throw new TypeError();
@@ -2807,7 +2800,7 @@ function load(lvlNum: number): boolean {
     }
 
     levelNum = lvlNum;
-    editMode = "sprite";
+    editMode = "layer1";
     isBGEdited = false;
     isLMModified = lmModified;
     levelMode = lvlMode;

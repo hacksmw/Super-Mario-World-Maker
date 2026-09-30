@@ -578,18 +578,18 @@ function stage_onmousemove(e) {
         return;
     }
     if (editMode == "layer1" || editMode == "layer2") {
-        data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16);
+        data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111, data[index]);
-            data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]);
+            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111, data[index]) & 0b11111;
+            data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]) & 0b1111;
         }
         else {
-            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111, data[index]);
-            data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]);
+            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111, data[index]) & 0b1111;
+            data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]) & 0b11111;
         }
     }
     else {
-        sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16);
+        sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
             sprites[index].yPosition = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111;
             sprites[index].xPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b1111;
@@ -624,6 +624,8 @@ function obj_onmousedown(e) {
     prevPosX = e.clientX;
     prevPosY = e.clientY;
     target = this;
+}
+function obj_onmouseup(e) {
 }
 function stage_onmousedown() {
     let objects = document.querySelectorAll(".object, .sprite");
@@ -889,6 +891,17 @@ function obj_ondblclick(e) {
         this.style.border = "";
         this.style.backgroundColor = '';
         this.style.backgroundImage = `url(${img})`;
+    }
+    const screen = obj.screen;
+    const x = getX(obj);
+    const y = getY(obj);
+    if (isVertical) {
+        this.style.top = ((256 * screen) + (x * 16)) + 'px';
+        this.style.left = (y * 16) + 'px';
+    }
+    else {
+        this.style.top = (y * 16) + 'px';
+        this.style.left = ((256 * screen) + (x * 16)) + 'px';
     }
 }
 function spr_ondblclick(e) {
@@ -2076,6 +2089,7 @@ function create_object_view(obj, index, type = "layer1") {
         myObject.style.width = (getObjWidth(obj) * 16) + 'px';
         myObject.style.height = (getObjHeight(obj) * 16) + 'px';
         myObject.onmousedown = obj_onmousedown;
+        myObject.onmouseup = obj_onmouseup;
         myObject.onkeydown = obj_onkeydown;
         myObject.ondblclick = obj_ondblclick;
     }
@@ -2093,6 +2107,7 @@ function create_object_view(obj, index, type = "layer1") {
         myObject.ondblclick = spr_ondblclick;
         myObject.onkeydown = spr_onkeydown;
         myObject.onmousedown = obj_onmousedown;
+        myObject.onmouseup = obj_onmouseup;
     }
     else {
         throw new TypeError();
@@ -2348,7 +2363,7 @@ function load(lvlNum) {
         sprGFX = 0;
     }
     levelNum = lvlNum;
-    editMode = "sprite";
+    editMode = "layer1";
     isBGEdited = false;
     isLMModified = lmModified;
     levelMode = lvlMode;
