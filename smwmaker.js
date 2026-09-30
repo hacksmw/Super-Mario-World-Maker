@@ -617,7 +617,7 @@ function stage_onkeydown(e) {
             //render();      
             let stage = document.querySelector("#stage");
             let myObject = document.createElement("div");
-            myObject.innerHTML = hex(obj.objNum) + "<br>" + hex(obj.settings);
+            myObject.title = hex(obj.objNum) + "\n" + hex(obj.settings);
             let bgColor, zIndex;
             if (editMode == "layer1") {
                 myObject.className = "object layer1";
@@ -650,7 +650,6 @@ function stage_onkeydown(e) {
             if (img) {
                 myObject.style.border = "";
                 myObject.style.backgroundColor = '';
-                //myObject.innerHTML = "";
                 myObject.style.backgroundImage = `url(${img})`;
             }
             stage.appendChild(myObject);
@@ -684,7 +683,7 @@ function stage_onkeydown(e) {
             let stage = document.querySelector("#stage");
             let myObject = document.createElement("div");
             myObject.className = "sprite";
-            myObject.innerHTML = hex(spr.spriteID) + "<br>" + hex(spr.extra);
+            myObject.title = hex(spr.spriteID) + "\n" + hex(spr.extra);
             //myObject.style.border = "1px solid black";
             myObject.style.position = "absolute";
             myObject.style.backgroundColor = 'lightblue';
@@ -703,7 +702,6 @@ function stage_onkeydown(e) {
             if (img) {
                 myObject.style.border = "";
                 myObject.style.backgroundColor = '';
-                //myObject.innerHTML = "";
                 myObject.style.backgroundImage = `url(${img})`;
             }
             stage.appendChild(myObject);
@@ -913,7 +911,7 @@ function obj_ondblclick(e) {
         return;
     }
     data[index].settings = val & 0xFF;
-    this.innerHTML = (hex(objNum) + '<br>') + hex(val);
+    this.title = (hex(objNum) + "\n") + hex(val);
     width = getObjWidth(obj);
     height = getObjHeight(obj);
     this.style.width = (width * 16) + 'px';
@@ -922,7 +920,6 @@ function obj_ondblclick(e) {
     if (img) {
         this.style.border = "";
         this.style.backgroundColor = '';
-        //this.innerHTML = "";
         this.style.backgroundImage = `url(${img})`;
     }
 }
@@ -952,13 +949,12 @@ function spr_ondblclick(e) {
         return;
     }
     sprites[index].extra = val & 0b11;
-    this.innerHTML = hex(sprites[index].spriteID) + '<br>' + hex(val);
+    this.title = hex(sprites[index].spriteID) + "\n" + hex(val);
     const spr = sprites[index];
     const img = getSprImg(spr.spriteID, spr.extra);
     if (img) {
         this.style.border = "";
         this.style.backgroundColor = '';
-        //myObject.innerHTML = "";
         this.style.backgroundImage = `url(${img})`;
     }
 }
@@ -2111,6 +2107,75 @@ function getObjHeight(obj) {
     }
     return getHeight(obj.objNum, obj.settings, tileset);
 }
+function create_object_view(obj, index, type = "layer1") {
+    const myObject = document.createElement("div");
+    let img;
+    let screen, x, y;
+    let num;
+    let data;
+    myObject.style.width = '16px';
+    myObject.style.height = '16px';
+    if (type === "layer1" || type === "layer2") {
+        num = obj.objNum;
+        data = obj.settings;
+        img = getObjImage(obj);
+        screen = obj.screen;
+        x = getX(obj);
+        y = getY(obj);
+        if (type === "layer1") {
+            myObject.className = "object layer1";
+            myObject.style.backgroundColor = 'chartreuse';
+            myObject.style.zIndex = (index + 0x800000) + "";
+        }
+        else {
+            myObject.className = "object layer2";
+            myObject.style.backgroundColor = 'red';
+            myObject.style.zIndex = (index + 0x000000) + "";
+        }
+        myObject.style.width = (getObjWidth(obj) * 16) + 'px';
+        myObject.style.height = (getObjHeight(obj) * 16) + 'px';
+        myObject.onmousedown = obj_onmousedown;
+        myObject.onkeydown = obj_onkeydown;
+        myObject.ondblclick = obj_ondblclick;
+    }
+    else if (type === "sprite") {
+        const spr = obj;
+        num = spr.spriteID;
+        data = spr.extra;
+        img = getSprImg(num, data);
+        screen = spr.screenNum;
+        x = spr.xPosition;
+        y = spr.yPosition;
+        myObject.className = "sprite";
+        myObject.style.backgroundColor = 'lightblue';
+        myObject.style.zIndex = (0x1800000).toString();
+        myObject.ondblclick = spr_ondblclick;
+        myObject.onkeydown = spr_onkeydown;
+        myObject.onmousedown = obj_onmousedown;
+    }
+    else {
+        throw new TypeError();
+    }
+    if (isVertical) {
+        myObject.style.top = ((256 * screen) + (x * 16)) + 'px';
+        myObject.style.left = (y * 16) + 'px';
+    }
+    else {
+        myObject.style.top = (y * 16) + 'px';
+        myObject.style.left = ((256 * screen) + (x * 16)) + 'px';
+    }
+    myObject.title = hex(num) + "\n" + hex(data);
+    myObject.setAttribute("data-index", index.toString());
+    myObject.tabIndex = -1;
+    myObject.style.position = "absolute";
+    myObject.style.fontSize = '8px';
+    if (img) {
+        myObject.style.border = "";
+        myObject.style.backgroundColor = '';
+        myObject.style.backgroundImage = `url(${img})`;
+    }
+    return myObject;
+}
 function render() {
     /* Rendering */
     // create view
@@ -2121,18 +2186,16 @@ function render() {
     }
     stage = document.createElement("div");
     stage.id = "stage";
-    stage.style.backgroundColor = `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`;
     stage.tabIndex = -1;
     stage.style.position = "relative";
+    stage.style.backgroundColor = `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`;
     if (isVertical) {
-        main.style.width = '100%';
         main.style.overflowX = "hidden";
         main.style.overflowY = "show";
         stage.style.height = (256 * (screenLength + 1)) + 'px';
         stage.style.width = (16 * 32) + 'px';
     }
     else {
-        main.style.width = '100%';
         main.style.overflowX = "show";
         main.style.overflowY = "hidden";
         stage.style.height = (16 * 27) + 'px';
@@ -2145,106 +2208,20 @@ function render() {
     document.querySelector("#main").appendChild(stage);
     // render layer 1
     for (let i = 0; i < layer1Data.length; i++) {
-        let obj = layer1Data[i];
-        let myObject = document.createElement("div");
-        myObject.innerHTML = hex(obj.objNum) + "<br>" + hex(obj.settings);
-        myObject.className = "object layer1";
-        //myObject.style.border = "1px solid black";
-        myObject.style.position = "absolute";
-        myObject.style.backgroundColor = 'chartreuse';
-        if (isVertical) {
-            myObject.style.top = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
-            myObject.style.left = (getY(obj) * 16) + 'px';
-        }
-        else {
-            myObject.style.top = (getY(obj) * 16) + 'px';
-            myObject.style.left = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
-        }
-        myObject.style.zIndex = (i + 0x800000) + "";
-        myObject.setAttribute("data-index", i.toString());
-        myObject.tabIndex = -1;
-        myObject.style.width = (getObjWidth(obj) * 16) + 'px';
-        myObject.style.height = (getObjHeight(obj) * 16) + 'px';
-        let img = getObjImage(obj);
-        if (img) {
-            myObject.style.border = "";
-            myObject.style.backgroundColor = '';
-            //myObject.innerHTML = "";
-            myObject.style.backgroundImage = `url(${img})`;
-        }
-        myObject.style.fontSize = '8px';
-        myObject.onmousedown = obj_onmousedown;
-        myObject.onkeydown = obj_onkeydown;
-        myObject.ondblclick = obj_ondblclick;
+        const obj = layer1Data[i];
+        const myObject = create_object_view(obj, i, "layer1");
         stage.appendChild(myObject);
     }
+    // render layer 2
     for (let i = 0; i < layer2Data.length; i++) {
-        let obj = layer2Data[i];
-        let myObject = document.createElement("div");
-        myObject.innerHTML = hex(obj.objNum) + "<br>" + hex(obj.settings);
-        myObject.className = "object layer2";
-        //myObject.style.border = "1px solid black";
-        myObject.style.position = "absolute";
-        myObject.style.backgroundColor = 'red';
-        if (isVertical) {
-            myObject.style.top = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
-            myObject.style.left = (getY(obj) * 16) + 'px';
-        }
-        else {
-            myObject.style.top = (getY(obj) * 16) + 'px';
-            myObject.style.left = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
-        }
-        myObject.style.zIndex = (i) + "";
-        myObject.setAttribute("data-index", i.toString());
-        myObject.tabIndex = -1;
-        myObject.style.width = (getObjWidth(obj) * 16) + 'px';
-        myObject.style.height = (getObjHeight(obj) * 16) + 'px';
-        let img = getObjImage(obj);
-        if (img) {
-            myObject.style.border = "";
-            myObject.style.backgroundColor = '';
-            //myObject.innerHTML = "";
-            myObject.style.backgroundImage = `url(${img})`;
-        }
-        myObject.style.fontSize = '8px';
-        myObject.onmousedown = obj_onmousedown;
-        myObject.onkeydown = obj_onkeydown;
-        myObject.ondblclick = obj_ondblclick;
+        const obj = layer2Data[i];
+        const myObject = create_object_view(obj, i, "layer2");
         stage.appendChild(myObject);
     }
     // render sprite
     for (let i = 0; i < sprites.length; i++) {
-        let spr = sprites[i];
-        let myObject = document.createElement("div");
-        myObject.className = "sprite";
-        myObject.innerHTML = hex(spr.spriteID) + "<br>" + hex(spr.extra);
-        //myObject.style.border = "1px solid black";
-        myObject.style.position = "absolute";
-        myObject.style.backgroundColor = 'lightblue';
-        const img = getSprImg(spr.spriteID, spr.extra);
-        if (img) {
-            myObject.style.border = "";
-            myObject.style.backgroundColor = '';
-            //myObject.innerHTML = "";
-            myObject.style.backgroundImage = `url(${img})`;
-        }
-        if (isVertical) {
-            myObject.style.top = ((256 * spr.screenNum) + (spr.xPosition * 16)) + 'px';
-            myObject.style.left = (spr.yPosition * 16) + 'px';
-        }
-        else {
-            myObject.style.top = (spr.yPosition * 16) + 'px';
-            myObject.style.left = ((256 * spr.screenNum) + (spr.xPosition * 16)) + 'px';
-        }
-        myObject.style.zIndex = (0x1800000).toString();
-        myObject.setAttribute("data-index", i.toString());
-        myObject.tabIndex = -1;
-        myObject.style.width = '16px';
-        myObject.style.height = '16px';
-        myObject.style.fontSize = '8px';
-        myObject.ondblclick = spr_ondblclick;
-        myObject.onkeydown = spr_onkeydown;
-        myObject.onmousedown = obj_onmousedown;
+        const spr = sprites[i];
+        const myObject = create_object_view(spr, i, "sprite");
         stage.appendChild(myObject);
     }
     btnSwitchBG.click();
