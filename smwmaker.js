@@ -185,6 +185,33 @@ let isPress = false;
 let prevPosX = 0, prevPosY = 0;
 let target = null;
 let prevObjLeft, prevObjTop;
+function getFreeSpace(dataSize) {
+    let romData = stripHeader(fileData);
+    let counter = 0;
+    for (let i = 0x80000; i < romData.length; i++) {
+        if (i < romData.length - 7 &&
+            String.fromCharCode(romData[i], romData[i + 1], romData[i + 2], romData[i + 3]) == "STAR") {
+            let size = (romData[i + 5] << 8) | romData[i + 4];
+            let invSize = (romData[i + 7] << 8) | romData[i + 6];
+            if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
+                counter = 0;
+                i += size + 8;
+                continue;
+            }
+        }
+        counter++;
+        if (counter === dataSize + 12) {
+            if (intdiv(i, 0x8000) != intdiv(i - counter + 1, 0x8000)) {
+                counter = (i % 0x8000) + 1;
+                continue;
+            }
+            else {
+                return (i - counter + 1) + 0x200;
+            }
+        }
+    }
+    return 0;
+}
 function save() {
     let low, high, bank;
     let primaryLevelHeader = [0, 0, 0, 0, 0];
@@ -708,6 +735,43 @@ function stage_onkeydown(e) {
         }
     }
 }
+function obj_onmousedown(e) {
+    if (!this.classList.contains(editMode)) {
+        return;
+    }
+    let objects = document.querySelectorAll(".object, .sprite");
+    for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i];
+        //obj.style.border = "1px solid black";
+        //obj.style.color = "black";
+        obj.style.filter = '';
+        obj.blur();
+    }
+    //this.style.border = "1px solid red";
+    this.style.filter = 'invert(100%)';
+    this.focus();
+    e.stopPropagation();
+    isPress = true;
+    prevObjLeft = this.offsetLeft;
+    prevObjTop = this.offsetTop;
+    prevPosX = e.clientX;
+    prevPosY = e.clientY;
+    target = this;
+}
+function stage_onmousedown() {
+    let objects = document.querySelectorAll(".object, .sprite");
+    for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i];
+        //obj.style.border = "1px solid black";
+        //obj.style.color = "black";
+        obj.style.filter = '';
+        obj.blur();
+    }
+    isPress = false;
+}
+function stage_onmouseup() {
+    isPress = false;
+}
 function obj_onkeydown(e) {
     let data;
     if (!this.classList.contains(editMode)) {
@@ -807,43 +871,6 @@ function obj_onkeydown(e) {
             return;
         }
     }
-}
-function obj_onmousedown(e) {
-    if (!this.classList.contains(editMode)) {
-        return;
-    }
-    let objects = document.querySelectorAll(".object, .sprite");
-    for (let i = 0; i < objects.length; i++) {
-        let obj = objects[i];
-        //obj.style.border = "1px solid black";
-        //obj.style.color = "black";
-        obj.style.filter = '';
-        obj.blur();
-    }
-    //this.style.border = "1px solid red";
-    this.style.filter = 'invert(100%)';
-    this.focus();
-    e.stopPropagation();
-    isPress = true;
-    prevObjLeft = this.offsetLeft;
-    prevObjTop = this.offsetTop;
-    prevPosX = e.clientX;
-    prevPosY = e.clientY;
-    target = this;
-}
-function stage_onmousedown() {
-    let objects = document.querySelectorAll(".object, .sprite");
-    for (let i = 0; i < objects.length; i++) {
-        let obj = objects[i];
-        //obj.style.border = "1px solid black";
-        //obj.style.color = "black";
-        obj.style.filter = '';
-        obj.blur();
-    }
-    isPress = false;
-}
-function stage_onmouseup() {
-    isPress = false;
 }
 function spr_onkeydown(e) {
     if (!this.classList.contains(editMode)) {
@@ -2049,33 +2076,6 @@ function btnGFX_onclick() {
     const selSprGFX = document.getElementById("selSprGFX");
     selFGBGGFX.value = fgbgGFX.toString();
     selSprGFX.value = sprGFX.toString();
-}
-function getFreeSpace(dataSize) {
-    let romData = stripHeader(fileData);
-    let counter = 0;
-    for (let i = 0x80000; i < romData.length; i++) {
-        if (i < romData.length - 7 &&
-            String.fromCharCode(romData[i], romData[i + 1], romData[i + 2], romData[i + 3]) == "STAR") {
-            let size = (romData[i + 5] << 8) | romData[i + 4];
-            let invSize = (romData[i + 7] << 8) | romData[i + 6];
-            if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
-                counter = 0;
-                i += size + 8;
-                continue;
-            }
-        }
-        counter++;
-        if (counter === dataSize + 12) {
-            if (intdiv(i, 0x8000) != intdiv(i - counter + 1, 0x8000)) {
-                counter = (i % 0x8000) + 1;
-                continue;
-            }
-            else {
-                return (i - counter + 1) + 0x200;
-            }
-        }
-    }
-    return 0;
 }
 function getObjImage(obj) {
     if ((obj.objNum === 0x22 || obj.objNum === 0x23)) {
