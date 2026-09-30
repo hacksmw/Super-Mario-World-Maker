@@ -554,7 +554,6 @@ function save() {
         fileData[snes2pc(0x0EF310 + levelNum)] = (((bgfg) & 0b1) << 1) | ((flag & 0b1) << 2) | ((bgPage & 0b1111) << 4);
     }
 }
-
 function stage_onmousemove(e) {
     if (!isPress)
         return;
@@ -603,7 +602,6 @@ function stage_onmousemove(e) {
     target.style.left = (prevObjLeft + deltaX) + "px";
     target.style.top = (prevObjTop + deltaY) + "px";
 }
-
 function obj_onmousedown(e) {
     if (!this.classList.contains(editMode)) {
         return;
@@ -639,31 +637,6 @@ function stage_onmousedown() {
 function stage_onmouseup() {
     isPress = false;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function stage_onkeydown(e) {
     if (e.code == "Insert") {
         let data;
@@ -704,11 +677,11 @@ function stage_onkeydown(e) {
             obj = new Obj(val, 0, 0, initValue);
             data.push(obj);
             //render();      
-
             let stage = document.querySelector("#stage");
             let myObject = create_object_view(obj, data.length - 1, editMode);
             stage.appendChild(myObject);
-        } else {
+        }
+        else {
             let input;
             let val;
             input = prompt("Object Number? (in hex)", "01");
@@ -734,14 +707,12 @@ function stage_onkeydown(e) {
             spr.spriteID = val;
             sprites.push(spr);
             //render();
-
             let stage = document.querySelector("#stage");
             let myObject = create_object_view(spr, sprites.length - 1, "sprite");
             stage.appendChild(myObject);
         }
     }
 }
-
 function obj_onkeydown(e) {
     let data;
     if (!this.classList.contains(editMode)) {
@@ -2377,7 +2348,7 @@ function load(lvlNum) {
         sprGFX = 0;
     }
     levelNum = lvlNum;
-    editMode = "layer1";
+    editMode = "sprite";
     isBGEdited = false;
     isLMModified = lmModified;
     levelMode = lvlMode;

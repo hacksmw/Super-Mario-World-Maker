@@ -703,6 +703,70 @@ function stage_onmousemove(this: any, e: MouseEvent): void {
     target!.style.top = (prevObjTop + deltaY) + "px";
 }
 
+function obj_onmousedown(this: any, e: MouseEvent) {
+    if (!this.classList.contains(editMode)) {
+        return;
+    }
+
+    let objects = document.querySelectorAll(".object, .sprite");
+    for (let i = 0; i < objects.length ; i++) {
+        let obj: any = objects[i];
+        //obj.style.border = "1px solid black";
+        //obj.style.color = "black";
+        obj.style.filter = '';
+        obj.blur();
+    }
+
+    //this.style.border = "1px solid red";
+    this.style.filter = 'invert(100%)';
+
+    this.focus();
+
+    e.stopPropagation();
+
+    isPress = true;
+    prevObjLeft = this.offsetLeft;
+    prevObjTop = this.offsetTop;
+    prevPosX = e.clientX;
+    prevPosY = e.clientY;
+    target = this;
+}
+
+function stage_onmousedown(this: any) {
+    let objects = document.querySelectorAll(".object, .sprite");
+    for (let i = 0; i < objects.length ; i++) {
+        let obj: any = objects[i];
+        obj.style.filter = '';
+        obj.blur();
+    }
+    isPress = false;
+}
+
+function stage_onmouseup() {
+    isPress = false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function stage_onkeydown(this: any, e: KeyboardEvent): void {
     if (e.code == "Insert") {
         let data: Obj[];
@@ -793,79 +857,13 @@ function stage_onkeydown(this: any, e: KeyboardEvent): void {
 
             let stage = document.querySelector("#stage");
 
-            let myObject = create_object_view(spr, sprites.length, "sprite");
+            let myObject = create_object_view(spr, sprites.length - 1, "sprite");
 
             stage!.appendChild(myObject);      
             
         }
     }
 }
-
-function obj_onmousedown(this: any, e: MouseEvent) {
-    if (!this.classList.contains(editMode)) {
-        return;
-    }
-
-    let objects = document.querySelectorAll(".object, .sprite");
-    for (let i = 0; i < objects.length ; i++) {
-        let obj: any = objects[i];
-        //obj.style.border = "1px solid black";
-        //obj.style.color = "black";
-        obj.style.filter = '';
-        obj.blur();
-    }
-
-    //this.style.border = "1px solid red";
-    this.style.filter = 'invert(100%)';
-
-    this.focus();
-
-    e.stopPropagation();
-
-    isPress = true;
-    prevObjLeft = this.offsetLeft;
-    prevObjTop = this.offsetTop;
-    prevPosX = e.clientX;
-    prevPosY = e.clientY;
-    target = this;
-}
-
-function stage_onmousedown(this: any) {
-    let objects = document.querySelectorAll(".object, .sprite");
-    for (let i = 0; i < objects.length ; i++) {
-        let obj: any = objects[i];
-        obj.style.filter = '';
-        obj.blur();
-    }
-    isPress = false;
-}
-
-function stage_onmouseup() {
-    isPress = false;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function obj_onkeydown(this: any, e: KeyboardEvent): void {
     let data: Obj[];
