@@ -554,6 +554,7 @@ function save() {
         fileData[snes2pc(0x0EF310 + levelNum)] = (((bgfg) & 0b1) << 1) | ((flag & 0b1) << 2) | ((bgPage & 0b1111) << 4);
     }
 }
+
 function stage_onmousemove(e) {
     if (!isPress)
         return;
@@ -602,6 +603,67 @@ function stage_onmousemove(e) {
     target.style.left = (prevObjLeft + deltaX) + "px";
     target.style.top = (prevObjTop + deltaY) + "px";
 }
+
+function obj_onmousedown(e) {
+    if (!this.classList.contains(editMode)) {
+        return;
+    }
+    let objects = document.querySelectorAll(".object, .sprite");
+    for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i];
+        //obj.style.border = "1px solid black";
+        //obj.style.color = "black";
+        obj.style.filter = '';
+        obj.blur();
+    }
+    //this.style.border = "1px solid red";
+    this.style.filter = 'invert(100%)';
+    this.focus();
+    e.stopPropagation();
+    isPress = true;
+    prevObjLeft = this.offsetLeft;
+    prevObjTop = this.offsetTop;
+    prevPosX = e.clientX;
+    prevPosY = e.clientY;
+    target = this;
+}
+function stage_onmousedown() {
+    let objects = document.querySelectorAll(".object, .sprite");
+    for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i];
+        obj.style.filter = '';
+        obj.blur();
+    }
+    isPress = false;
+}
+function stage_onmouseup() {
+    isPress = false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function stage_onkeydown(e) {
     if (e.code == "Insert") {
         let data;
@@ -642,46 +704,11 @@ function stage_onkeydown(e) {
             obj = new Obj(val, 0, 0, initValue);
             data.push(obj);
             //render();      
+
             let stage = document.querySelector("#stage");
-            let myObject = document.createElement("div");
-            myObject.title = hex(obj.objNum) + "\n" + hex(obj.settings);
-            let bgColor, zIndex;
-            if (editMode == "layer1") {
-                myObject.className = "object layer1";
-                bgColor = 'chartreuse';
-                zIndex = (data.length - 1) + 0x800000;
-            }
-            else if (editMode == "layer2") {
-                myObject.className = "object layer2";
-                bgColor = "red";
-                zIndex = (data.length - 1);
-            }
-            else {
-                throw new Error("unimplemented");
-            }
-            //myObject.style.border = "1px solid black";
-            myObject.style.position = "absolute";
-            myObject.style.backgroundColor = bgColor;
-            myObject.style.top = (getY(obj) * 16) + 'px';
-            myObject.style.left = ((256 * obj.screen) + (getX(obj) * 16)) + 'px';
-            myObject.style.zIndex = zIndex + "";
-            myObject.onmousedown = obj_onmousedown;
-            myObject.onkeydown = obj_onkeydown;
-            myObject.ondblclick = obj_ondblclick;
-            myObject.setAttribute("data-index", (data.length - 1).toString());
-            myObject.tabIndex = -1;
-            myObject.style.width = (getObjWidth(obj) * 16) + 'px';
-            myObject.style.height = (getObjHeight(obj) * 16) + 'px';
-            myObject.style.fontSize = '8px';
-            const img = getObjImage(obj);
-            if (img) {
-                myObject.style.border = "";
-                myObject.style.backgroundColor = '';
-                myObject.style.backgroundImage = `url(${img})`;
-            }
+            let myObject = create_object_view(obj, data.length - 1, editMode);
             stage.appendChild(myObject);
-        }
-        else {
+        } else {
             let input;
             let val;
             input = prompt("Object Number? (in hex)", "01");
@@ -707,71 +734,14 @@ function stage_onkeydown(e) {
             spr.spriteID = val;
             sprites.push(spr);
             //render();
+
             let stage = document.querySelector("#stage");
-            let myObject = document.createElement("div");
-            myObject.className = "sprite";
-            myObject.title = hex(spr.spriteID) + "\n" + hex(spr.extra);
-            //myObject.style.border = "1px solid black";
-            myObject.style.position = "absolute";
-            myObject.style.backgroundColor = 'lightblue';
-            myObject.style.top = (spr.yPosition * 16) + 'px';
-            myObject.style.left = ((256 * spr.screenNum) + (spr.xPosition * 16)) + 'px';
-            myObject.style.zIndex = (0x1800000).toString();
-            myObject.setAttribute("data-index", (sprites.length - 1).toString());
-            myObject.tabIndex = -1;
-            myObject.ondblclick = spr_ondblclick;
-            myObject.onkeydown = spr_onkeydown;
-            myObject.onmousedown = obj_onmousedown;
-            myObject.style.width = '16px';
-            myObject.style.height = '16px';
-            myObject.style.fontSize = '8px';
-            const img = getSprImg(spr.spriteID, spr.extra);
-            if (img) {
-                myObject.style.border = "";
-                myObject.style.backgroundColor = '';
-                myObject.style.backgroundImage = `url(${img})`;
-            }
+            let myObject = create_object_view(spr, sprites.length - 1, "sprite");
             stage.appendChild(myObject);
         }
     }
 }
-function obj_onmousedown(e) {
-    if (!this.classList.contains(editMode)) {
-        return;
-    }
-    let objects = document.querySelectorAll(".object, .sprite");
-    for (let i = 0; i < objects.length; i++) {
-        let obj = objects[i];
-        //obj.style.border = "1px solid black";
-        //obj.style.color = "black";
-        obj.style.filter = '';
-        obj.blur();
-    }
-    //this.style.border = "1px solid red";
-    this.style.filter = 'invert(100%)';
-    this.focus();
-    e.stopPropagation();
-    isPress = true;
-    prevObjLeft = this.offsetLeft;
-    prevObjTop = this.offsetTop;
-    prevPosX = e.clientX;
-    prevPosY = e.clientY;
-    target = this;
-}
-function stage_onmousedown() {
-    let objects = document.querySelectorAll(".object, .sprite");
-    for (let i = 0; i < objects.length; i++) {
-        let obj = objects[i];
-        //obj.style.border = "1px solid black";
-        //obj.style.color = "black";
-        obj.style.filter = '';
-        obj.blur();
-    }
-    isPress = false;
-}
-function stage_onmouseup() {
-    isPress = false;
-}
+
 function obj_onkeydown(e) {
     let data;
     if (!this.classList.contains(editMode)) {
