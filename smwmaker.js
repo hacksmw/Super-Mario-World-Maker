@@ -259,6 +259,10 @@ function save() {
     let secondaryLevelHeader = [0, 0, 0, 0];
     let spriteHeader = 0;
     const oldFileData = fileData.slice();
+    if (!isLMModified) {
+        alert("Only Modified ROM by Lunar Magic is supported.");
+        return;
+    }
     // make headers    
     primaryLevelHeader[0] = ((bgPalNum & 0b111) << 5) | (screenLength & 0b11111);
     primaryLevelHeader[1] = ((backAreaColorNum & 0b111) << 5) | (levelMode & 0b11111);
@@ -2296,7 +2300,20 @@ function load(lvlNum) {
     /* get secondary exits */
     secondExits = getSecondaryExits();
     /* Get Layer 2 Objects */
-    isLayer2 = (layer2List[levelMode] == 1);
+    if (lmModified) {
+        const header = fileData[snes2pc(0x0EF310 + lvlNum)];
+        const v = (header >>> 3) & 0b1;
+        const c = (header >>> 1) & 0b1;
+        if (v === 0 && c === 0) {
+            isLayer2 = true;
+        }
+        else {
+            isLayer2 = false;
+        }
+    }
+    else {
+        isLayer2 = (layer2List[levelMode] == 1);
+    }
     bgPointer = 0;
     bgPage = 0;
     if (!isLayer2) {
