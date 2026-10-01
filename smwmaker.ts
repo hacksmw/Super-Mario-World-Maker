@@ -33,7 +33,7 @@ class Tile {
     upright: TilePart;
     lowleft: TilePart;
     lowright: TilePart;
-    actLike: number = 0x130;
+    actsLike: number = 0x130;
 
     constructor() {
         this.upleft = new TilePart();
@@ -1984,7 +1984,7 @@ function selBG_onchange(this: any) {
     const canvas: HTMLCanvasElement = (document.getElementById("bgPreview") as any);
 
     canvas.width = 32 * 16;
-    canvas.height = 27 * 16;
+    canvas.height = 32 * 16;
 
     canvas.style.backgroundColor = `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`;
 
@@ -2774,6 +2774,7 @@ function load(lvlNum: number): boolean {
                 bgPage = getBGPage(bgPointer);
                 layer2DataPointer = 0;
             } else {
+                console.log("custom bg")
                 bgPointer = layer2DataPointer;
                 bgPage = nibble;
                 layer2DataPointer = 0;
@@ -3518,6 +3519,7 @@ function load16x16() {
 
             getMap16(start, end, address, blocks);
         }
+
     }
 
     map16 = blocks;
@@ -3535,6 +3537,14 @@ function getMap16(start: number, end: number, tblAddr: number, blocks: (number |
         tile.lowright = new TilePart();
 
         const col = [tile.upleft, tile.lowleft, tile.upright, tile.lowright];
+
+        const pointer = ((fileData[snes2pc(0x06F624 + 2)] << 16) | (fileData[snes2pc(0x06F624 + 1)] << 8) | fileData[snes2pc(0x06F624 + 0)]);
+        
+        const actsLike = fileData[snes2pc(pointer + (2 * (start + i)))];
+        
+        tile.actsLike = actsLike;
+
+
         
         for (let j = 0; j < col.length; j++) {
             const part = col[j];
@@ -6474,6 +6484,10 @@ function loadBG(bgPointer: number): Nullable<number[]> {
             
     for (let i = 0; i < Math.floor(temp.length / 2); i++) {
         temp1[intdiv(i, 16) * 16 + i] = temp[i];
+    }
+
+    for (let i = Math.floor(temp.length / 2); i < temp.length; i++) {
+        //console.log(temp[i]);
     }
 
     temp = temp.slice(Math.floor(temp.length / 2));

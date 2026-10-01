@@ -28,7 +28,7 @@ class Tile {
     upright;
     lowleft;
     lowright;
-    actLike = 0x130;
+    actsLike = 0x130;
     constructor() {
         this.upleft = new TilePart();
         this.upright = new TilePart();
@@ -1681,7 +1681,7 @@ function selBG_onchange() {
     let bgBitmap = getBG(bgData, bgp);
     const canvas = document.getElementById("bgPreview");
     canvas.width = 32 * 16;
-    canvas.height = 27 * 16;
+    canvas.height = 32 * 16;
     canvas.style.backgroundColor = `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`;
     let ctx = canvas.getContext("2d");
     try {
@@ -2336,6 +2336,7 @@ function load(lvlNum) {
                 layer2DataPointer = 0;
             }
             else {
+                console.log("custom bg");
                 bgPointer = layer2DataPointer;
                 bgPage = nibble;
                 layer2DataPointer = 0;
@@ -2955,6 +2956,9 @@ function getMap16(start, end, tblAddr, blocks) {
         tile.lowleft = new TilePart();
         tile.lowright = new TilePart();
         const col = [tile.upleft, tile.lowleft, tile.upright, tile.lowright];
+        const pointer = ((fileData[snes2pc(0x06F624 + 2)] << 16) | (fileData[snes2pc(0x06F624 + 1)] << 8) | fileData[snes2pc(0x06F624 + 0)]);
+        const actsLike = fileData[snes2pc(pointer + (2 * (start + i)))];
+        tile.actsLike = actsLike;
         for (let j = 0; j < col.length; j++) {
             const part = col[j];
             part.gfx = ((fileData[snes2pc(tblAddr + (i * 8 + (j * 2 + 1)))] & 0b11) << 8) | fileData[snes2pc(tblAddr + (i * 8 + (j * 2)))];
@@ -5687,6 +5691,9 @@ function loadBG(bgPointer) {
     }
     for (let i = 0; i < Math.floor(temp.length / 2); i++) {
         temp1[intdiv(i, 16) * 16 + i] = temp[i];
+    }
+    for (let i = Math.floor(temp.length / 2); i < temp.length; i++) {
+        //console.log(temp[i]);
     }
     temp = temp.slice(Math.floor(temp.length / 2));
     for (let i = 0; i < temp.length; i++) {
