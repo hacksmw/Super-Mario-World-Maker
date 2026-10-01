@@ -153,6 +153,7 @@ let ones: number;
 let resetTheTime: boolean;
 let sprGFXindex: number;
 let fgbgGFXindex: number;
+let customPalette: number;
 
 let btnOpen: HTMLButtonElement
 let btnPalette: HTMLButtonElement
@@ -2705,11 +2706,21 @@ function load(lvlNum: number): boolean {
 
     /* Load Palette */
 
+    customPalette = ((fileData[snes2pc(0x0EF600 + (3 * lvlNum) + 2)] << 16) | (fileData[snes2pc(0xEF600 + (3 * lvlNum) + 1)] << 8) | (fileData[snes2pc(0x0EF600 + (3 * lvlNum) + 0)] << 0));
+
     // get palette
     pal = getPalette(bgPalNum, fgPalNum, spPalNum);
 
     // Get back area color
     bgColor = getBackAreaColor(backAreaColorNum);
+
+    // get custom palette
+    if (lmModified && customPalette !== 0) {
+        pal = getCustomPalette();
+        bgColor = getCustomBackAreaColor();
+    }
+
+    
 
     /* Load Graphics */
     loadGraphics();
@@ -3135,6 +3146,74 @@ function loadSprites() {
 
         pointer += 3;
     }
+}
+
+function getCustomBackAreaColor() {
+    let temp: number;
+    let r: number, g: number, b: number;
+    let bgColor: RGB;
+
+    temp = fileData[snes2pc(customPalette + 1)] << 8 | fileData[snes2pc(customPalette)];
+
+    // convert bgColor
+    r = (temp & 0b11111) * 8;
+    g = ((temp >> 5) & 0b11111) * 8;
+    b = ((temp >> 10)  & 0b11111) * 8;
+
+    bgColor = new RGB();
+    bgColor.r = r;
+    bgColor.g = g;
+    bgColor.b = b;
+
+    return bgColor;
+}
+
+function getCustomPalette() {
+    let palette: number[][];
+    let data: number;
+
+    // reset palette array
+    palette = new Array(16);
+
+    for (let i = 0; i < palette.length; i++) {
+        palette[i] = new Array(16);
+        for (let j = 0; j < palette[i].length; j++) {
+            palette[i][j] = 0;
+        }
+        palette[i][0] = 0;
+        palette[i][1] = 0b11111_11111_11111;
+    }
+
+    const addr = customPalette + 2;
+
+    for (let i = 0; i < palette.length; i++) {
+        for (let j = 0; j < palette[i].length; j++) {
+            const data = readPal(addr, (i*16) + j);
+            palette[i][j] = data;
+        }
+    }
+
+    /* Convert palettes */
+
+    let pal: RGB[][] = new Array(16);
+
+    for (let i = 0; i < 16; i++) {
+        pal[i] = new Array(16);
+        for (let j = 0; j < 16; j++) {
+            let r: number, g: number, b: number;
+            r = ((palette[i][j]) & 0b11111) * 8;
+            g = ((palette[i][j] >>> 5) & 0b11111) * 8;
+            b = ((palette[i][j] >>> 10) & 0b11111) * 8;   
+            
+            pal[i][j] = {
+                r: r,
+                g: g,
+                b: b,
+            };            
+        }
+    }
+
+    return pal;
 }
 
 function readPal(addr: number, index: number = 0) {

@@ -140,6 +140,7 @@ let ones;
 let resetTheTime;
 let sprGFXindex;
 let fgbgGFXindex;
+let customPalette;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -2278,10 +2279,16 @@ function load(lvlNum) {
     sprGFXindex = -1;
     fgbgGFXindex = -1;
     /* Load Palette */
+    customPalette = ((fileData[snes2pc(0x0EF600 + (3 * lvlNum) + 2)] << 16) | (fileData[snes2pc(0xEF600 + (3 * lvlNum) + 1)] << 8) | (fileData[snes2pc(0x0EF600 + (3 * lvlNum) + 0)] << 0));
     // get palette
     pal = getPalette(bgPalNum, fgPalNum, spPalNum);
     // Get back area color
     bgColor = getBackAreaColor(backAreaColorNum);
+    // get custom palette
+    if (lmModified && customPalette !== 0) {
+        pal = getCustomPalette();
+        bgColor = getCustomBackAreaColor();
+    }
     /* Load Graphics */
     loadGraphics();
     /* Load Map16 */
@@ -2629,6 +2636,59 @@ function loadSprites() {
         });
         pointer += 3;
     }
+}
+function getCustomBackAreaColor() {
+    let temp;
+    let r, g, b;
+    let bgColor;
+    temp = fileData[snes2pc(customPalette + 1)] << 8 | fileData[snes2pc(customPalette)];
+    // convert bgColor
+    r = (temp & 0b11111) * 8;
+    g = ((temp >> 5) & 0b11111) * 8;
+    b = ((temp >> 10) & 0b11111) * 8;
+    bgColor = new RGB();
+    bgColor.r = r;
+    bgColor.g = g;
+    bgColor.b = b;
+    return bgColor;
+}
+function getCustomPalette() {
+    let palette;
+    let data;
+    // reset palette array
+    palette = new Array(16);
+    for (let i = 0; i < palette.length; i++) {
+        palette[i] = new Array(16);
+        for (let j = 0; j < palette[i].length; j++) {
+            palette[i][j] = 0;
+        }
+        palette[i][0] = 0;
+        palette[i][1] = 32767;
+    }
+    const addr = customPalette + 2;
+    for (let i = 0; i < palette.length; i++) {
+        for (let j = 0; j < palette[i].length; j++) {
+            const data = readPal(addr, (i * 16) + j);
+            palette[i][j] = data;
+        }
+    }
+    /* Convert palettes */
+    let pal = new Array(16);
+    for (let i = 0; i < 16; i++) {
+        pal[i] = new Array(16);
+        for (let j = 0; j < 16; j++) {
+            let r, g, b;
+            r = ((palette[i][j]) & 0b11111) * 8;
+            g = ((palette[i][j] >>> 5) & 0b11111) * 8;
+            b = ((palette[i][j] >>> 10) & 0b11111) * 8;
+            pal[i][j] = {
+                r: r,
+                g: g,
+                b: b,
+            };
+        }
+    }
+    return pal;
 }
 function readPal(addr, index = 0) {
     return fileData[snes2pc((addr + ((index * 2)) + 1))] << 8 | fileData[snes2pc(addr + (index * 2))];
