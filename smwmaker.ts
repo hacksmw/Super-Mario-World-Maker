@@ -201,13 +201,95 @@ let prevPosX = 0, prevPosY = 0;
 let target: Nullable<HTMLDivElement> = null;
 let prevObjLeft: number, prevObjTop: number;
 
+function make_layer_data(layerData: Obj[], layerDataBinary: number[]) {
+    let currentScreen: number = 0;
+
+    for (let i = 0; i < layerData.length; i++) {
+        const obj = layerData[i];
+        let newScreenFlag: number = 0;
+
+        if (obj.screen == currentScreen) {
+            newScreenFlag = 0;
+        } else if (obj.screen == currentScreen + 1) {
+            newScreenFlag = 1;
+            currentScreen++;
+        } else if (obj.screen > currentScreen + 1) {
+            newScreenFlag = 0;
+            layerDataBinary[layerDataBinary.length] = obj.screen & 0b11111;
+            layerDataBinary[layerDataBinary.length] = 0;
+            layerDataBinary[layerDataBinary.length] = 1;
+            currentScreen = obj.screen;
+        } else if (obj.screen < currentScreen) {
+            newScreenFlag = 0;
+            layerDataBinary[layerDataBinary.length] = obj.screen & 0b11111;
+            layerDataBinary[layerDataBinary.length] = 0;
+            layerDataBinary[layerDataBinary.length] = 1;
+            currentScreen = obj.screen;            
+        }
+
+        layerDataBinary[layerDataBinary.length] = (newScreenFlag << 7) | (((obj.objNum >>> 4) & 0b11) << 5) | (obj.y & 0b11111);
+        layerDataBinary[layerDataBinary.length] = ((obj.objNum & 0b1111) << 4) | (obj.x & 0b1111);
+        layerDataBinary[layerDataBinary.length] = obj.settings & 0xFF;
+    }
+}
+
+function delete_data(pointer: number) {
+if (snes2pc(pointer) - 8 >= 0x80200 && 
+    String.fromCharCode(
+        fileData[snes2pc(pointer)-8], 
+        fileData[snes2pc(pointer)-7], 
+        fileData[snes2pc(pointer)-6],
+        fileData[snes2pc(pointer)-5]
+    ) == "STAR") {
+        let size =    (fileData[snes2pc(pointer)-3] << 8) | fileData[snes2pc(pointer)-4];
+        let invSize = (fileData[snes2pc(pointer)-1] << 8) | fileData[snes2pc(pointer)-2];
+        if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
+            size++;
+            fileData[snes2pc(pointer)-8] = 0;
+            fileData[snes2pc(pointer)-7] = 0;
+            fileData[snes2pc(pointer)-6] = 0;
+            fileData[snes2pc(pointer)-5] = 0;
+            fileData[snes2pc(pointer)-4] = 0;
+            fileData[snes2pc(pointer)-3] = 0;
+            fileData[snes2pc(pointer)-2] = 0;
+            fileData[snes2pc(pointer)-1] = 0;
+
+            for (let i = 0; i < size; i++) {
+                fileData[snes2pc(pointer)+i] = 0;
+            }            
+        }       
+    }
+}
+
+function write_data(layerDataBinary: number[]) {
+    const free = getFreeSpace(layerDataBinary.length);
+    
+    fileData[free+0] = "S".charCodeAt(0);
+    fileData[free+1] = "T".charCodeAt(0);
+    fileData[free+2] = "A".charCodeAt(0);
+    fileData[free+3] = "R".charCodeAt(0);
+    fileData[free+4] = ((layerDataBinary.length - 1) >>> 0) & 0xFF;
+    fileData[free+5] = ((layerDataBinary.length - 1) >>> 8) & 0xFF;
+    fileData[free+6] = (~(fileData[free+4])) & 0xFF;
+    fileData[free+7] = (~(fileData[free+5])) & 0xFF;
+
+    for (let i = 0; i < layerDataBinary.length; i++) {
+        fileData[free+8+i] = layerDataBinary[i];
+    }
+
+    return free+8;
+}
+
 function save() {
     let low: number, high: number, bank: number;
     let primaryLevelHeader = [0, 0, 0, 0, 0];
     let secondaryLevelHeader = [0, 0, 0, 0];
     let spriteHeader = 0;
+    
+    const oldFileData = fileData.slice();
 
     // make headers    
+
     primaryLevelHeader[0] = ((bgPalNum & 0b111) << 5) | (screenLength & 0b11111);
     primaryLevelHeader[1] = ((backAreaColorNum & 0b111) << 5) | (levelMode & 0b11111);
     primaryLevelHeader[2] = ((((layer3Prior & 0b1) << 7) | ((music & 0b111) << 4)) | (sprGFX & 0b1111));
@@ -274,6 +356,7 @@ function save() {
     }
 
     // second exits
+
     for (let i = 0; i < secondExits.length; i++) {
         let exit = secondExits[i];
         if (exit.modified) {        
@@ -292,48 +375,19 @@ function save() {
     }
 
     // make layer1 data
+
     let layer1DataBinary = new Array(); 
+
     layer1DataBinary[0] = primaryLevelHeader[0];
     layer1DataBinary[1] = primaryLevelHeader[1];
     layer1DataBinary[2] = primaryLevelHeader[2];
     layer1DataBinary[3] = primaryLevelHeader[3];
     layer1DataBinary[4] = primaryLevelHeader[4];
 
-    let currentScreen: number;
-
-    currentScreen = 0;
-
-    for (let i = 0; i < layer1Data.length; i++) {
-        let obj = layer1Data[i];
-        let newScreenFlag: number;
-
-        newScreenFlag = 0;
-
-        if (obj.screen == currentScreen) {
-            newScreenFlag = 0;
-        } else if (obj.screen == currentScreen + 1) {
-            newScreenFlag = 1;
-            currentScreen++;
-        } else if (obj.screen > currentScreen + 1) {
-            newScreenFlag = 0;
-            layer1DataBinary[layer1DataBinary.length] = obj.screen & 0b11111;
-            layer1DataBinary[layer1DataBinary.length] = 0;
-            layer1DataBinary[layer1DataBinary.length] = 1;
-            currentScreen = obj.screen;
-        } else if (obj.screen < currentScreen) {
-            newScreenFlag = 0;
-            layer1DataBinary[layer1DataBinary.length] = obj.screen & 0b11111;
-            layer1DataBinary[layer1DataBinary.length] = 0;
-            layer1DataBinary[layer1DataBinary.length] = 1;
-            currentScreen = obj.screen;            
-        }
-
-        layer1DataBinary[layer1DataBinary.length] = (newScreenFlag << 7) | (((obj.objNum >>> 4) & 0b11) << 5) | (obj.y & 0b11111);
-        layer1DataBinary[layer1DataBinary.length] = ((obj.objNum & 0b1111) << 4) | (obj.x & 0b1111);
-        layer1DataBinary[layer1DataBinary.length] = obj.settings & 0xFF;
-    }
+    make_layer_data(layer1Data, layer1DataBinary); 
 
     // exits
+
     for (let i = 0; i < exits.length; i++) {
         let exit = exits[i];
         layer1DataBinary[layer1DataBinary.length] = exit.scrNumber & 0b11111;
@@ -352,6 +406,7 @@ function save() {
     let bgDataBinary: number[];
 
     // make layer2 data
+
     let layer2DataBinary = new Array();
     if (isLayer2) {
         layer2DataBinary[0] = 0;
@@ -360,37 +415,7 @@ function save() {
         layer2DataBinary[3] = 0;
         layer2DataBinary[4] = 0;
 
-        currentScreen = 0;
-
-        for (let i = 0; i < layer2Data.length; i++) {
-            let obj = layer2Data[i];
-            let newScreenFlag: number;
-    
-            newScreenFlag = 0;
-    
-            if (obj.screen == currentScreen) {
-                newScreenFlag = 0;
-            } else if (obj.screen == currentScreen + 1) {
-                newScreenFlag = 1;
-                currentScreen++;
-            } else if (obj.screen > currentScreen + 1) {
-                newScreenFlag = 0;
-                layer2DataBinary[layer2DataBinary.length] = obj.screen & 0b11111;
-                layer2DataBinary[layer2DataBinary.length] = 0;
-                layer2DataBinary[layer2DataBinary.length] = 1;
-                currentScreen = obj.screen;
-            } else if (obj.screen < currentScreen) {
-                newScreenFlag = 0;
-                layer2DataBinary[layer2DataBinary.length] = obj.screen & 0b11111;
-                layer2DataBinary[layer2DataBinary.length] = 0;
-                layer2DataBinary[layer2DataBinary.length] = 1;
-                currentScreen = obj.screen;            
-            }
-    
-            layer2DataBinary[layer2DataBinary.length] = (newScreenFlag << 7) | (((obj.objNum >>> 4) & 0b11) << 5) | (obj.y & 0b11111);
-            layer2DataBinary[layer2DataBinary.length] = ((obj.objNum & 0b1111) << 4) | (obj.x & 0b1111);
-            layer2DataBinary[layer2DataBinary.length] = obj.settings & 0xFF;
-        }
+        make_layer_data(layer2Data, layer2DataBinary); 
 
         layer2DataBinary[layer2DataBinary.length] = 0xFF;
     } else {
@@ -413,10 +438,10 @@ function save() {
         if (arrayCompare(arr, decompress_rle1(bgDataBinary as any)) != true) {
             throw new Error();
         }
-
     }
 
     // make sprite data
+
     let spriteDataBinary = new Array((sprites.length * 3) + 2);
     spriteDataBinary[0] = spriteHeader;
     for (let i = 0; i < sprites.length; i++) {
@@ -428,109 +453,17 @@ function save() {
     }
     spriteDataBinary[spriteDataBinary.length - 1] = 0xFF;
 
-    // delete old sprite data
-    if (snes2pc(oldSpriteDataPointer) - 8 >= 0x80200 && 
-    String.fromCharCode(
-        fileData[snes2pc(oldSpriteDataPointer)-8], 
-        fileData[snes2pc(oldSpriteDataPointer)-7], 
-        fileData[snes2pc(oldSpriteDataPointer)-6],
-        fileData[snes2pc(oldSpriteDataPointer)-5]
-    ) == "STAR") {
-        let size =    (fileData[snes2pc(oldSpriteDataPointer)-3] << 8) | fileData[snes2pc(oldSpriteDataPointer)-4];
-        let invSize = (fileData[snes2pc(oldSpriteDataPointer)-1] << 8) | fileData[snes2pc(oldSpriteDataPointer)-2];
-        if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
-            size++;
-            fileData[snes2pc(oldSpriteDataPointer)-8] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-7] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-6] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-5] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-4] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-3] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-2] = 0;
-            fileData[snes2pc(oldSpriteDataPointer)-1] = 0;
-
-            for (let i = 0; i < size; i++) {
-                fileData[snes2pc(oldSpriteDataPointer)+i] = 0;
-            }            
-        }       
-    }
-
-    // delete old layer1 data
-    if (snes2pc(oldLayer1DataPointer) - 8 >= 0x80200 && 
-    String.fromCharCode(
-        fileData[snes2pc(oldLayer1DataPointer)-8], 
-        fileData[snes2pc(oldLayer1DataPointer)-7], 
-        fileData[snes2pc(oldLayer1DataPointer)-6],
-        fileData[snes2pc(oldLayer1DataPointer)-5]
-    ) == "STAR") {
-        let size =    (fileData[snes2pc(oldLayer1DataPointer)-3] << 8) | fileData[snes2pc(oldLayer1DataPointer)-4];
-        let invSize = (fileData[snes2pc(oldLayer1DataPointer)-1] << 8) | fileData[snes2pc(oldLayer1DataPointer)-2];
-        if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
-            size++;
-            fileData[snes2pc(oldLayer1DataPointer)-8] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-7] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-6] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-5] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-4] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-3] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-2] = 0;
-            fileData[snes2pc(oldLayer1DataPointer)-1] = 0;
-
-            for (let i = 0; i < size; i++) {
-                fileData[snes2pc(oldLayer1DataPointer)+i] = 0;
-            }            
-        }
-    }
-
-    // delete old layer2/bg data
-    if (snes2pc(oldLayer2DataPointer) - 8 >= 0x80200 && 
-    String.fromCharCode(
-        fileData[snes2pc(oldLayer2DataPointer)-8], 
-        fileData[snes2pc(oldLayer2DataPointer)-7], 
-        fileData[snes2pc(oldLayer2DataPointer)-6],
-        fileData[snes2pc(oldLayer2DataPointer)-5]
-    ) == "STAR") {
-        console.log("Deleting Layer 2 / BG: " + oldLayer2DataPointer);
-
-        let size =    (fileData[snes2pc(oldLayer2DataPointer)-3] << 8) | fileData[snes2pc(oldLayer2DataPointer)-4];
-        let invSize = (fileData[snes2pc(oldLayer2DataPointer)-1] << 8) | fileData[snes2pc(oldLayer2DataPointer)-2];
-        if (((~size) & 0xFFFF) === (invSize & 0xFFFF)) {
-            size++;
-            fileData[snes2pc(oldLayer2DataPointer)-8] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-7] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-6] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-5] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-4] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-3] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-2] = 0;
-            fileData[snes2pc(oldLayer2DataPointer)-1] = 0;
-
-            for (let i = 0; i < size; i++) {
-                fileData[snes2pc(oldLayer2DataPointer)+i] = 0;
-            }            
-        }       
-    }
-
-    let free: number;
+    // delete old data
+    
+    delete_data(oldSpriteDataPointer);
+    delete_data(oldLayer1DataPointer);
+    delete_data(oldLayer2DataPointer);
 
     // write sprite data
-    free = getFreeSpace(spriteDataBinary.length);
-    
-    fileData[free+0] = "S".charCodeAt(0);
-    fileData[free+1] = "T".charCodeAt(0);
-    fileData[free+2] = "A".charCodeAt(0);
-    fileData[free+3] = "R".charCodeAt(0);
-    fileData[free+4] = ((spriteDataBinary.length - 1) >>> 0) & 0xFF;
-    fileData[free+5] = ((spriteDataBinary.length - 1) >>> 8) & 0xFF;
-    fileData[free+6] = (~(fileData[free+4])) & 0xFF;
-    fileData[free+7] = (~(fileData[free+5])) & 0xFF;
-
-    for (let i = 0; i < spriteDataBinary.length; i++) {
-        fileData[free+8+i] = spriteDataBinary[i];
-    }
     
     let addr: number;
-    addr = pc2snes(free+8);
+
+    addr = write_data(spriteDataBinary);
 
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
@@ -540,24 +473,10 @@ function save() {
     } else {
         fileData[snes2pc(0x0EF100 + levelNum)] = ((addr >>> 16) & 0xFF);
     }
-    
-    // write layer 1 data
-    free = getFreeSpace(layer1DataBinary.length);
-    
-    fileData[free+0] = "S".charCodeAt(0);
-    fileData[free+1] = "T".charCodeAt(0);
-    fileData[free+2] = "A".charCodeAt(0);
-    fileData[free+3] = "R".charCodeAt(0);
-    fileData[free+4] = ((layer1DataBinary.length - 1) >>> 0) & 0xFF;
-    fileData[free+5] = ((layer1DataBinary.length - 1) >>> 8) & 0xFF;
-    fileData[free+6] = (~(fileData[free+4])) & 0xFF;
-    fileData[free+7] = (~(fileData[free+5])) & 0xFF;
 
-    for (let i = 0; i < layer1DataBinary.length; i++) {
-        fileData[free+8+i] = layer1DataBinary[i];
-    }
+    // write layer 1 data    
 
-    addr = pc2snes(free+8);
+    addr = write_data(layer1DataBinary);
 
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
@@ -565,47 +484,18 @@ function save() {
 
     if (isLayer2) {
         // write layer 2 data
-        free = getFreeSpace(layer2DataBinary.length);
-
-        fileData[free+0] = "S".charCodeAt(0);
-        fileData[free+1] = "T".charCodeAt(0);
-        fileData[free+2] = "A".charCodeAt(0);
-        fileData[free+3] = "R".charCodeAt(0);
-        fileData[free+4] = ((layer2DataBinary.length - 1) >>> 0) & 0xFF;
-        fileData[free+5] = ((layer2DataBinary.length - 1) >>> 8) & 0xFF;
-        fileData[free+6] = (~(fileData[free+4])) & 0xFF;
-        fileData[free+7] = (~(fileData[free+5])) & 0xFF;
-
-        for (let i = 0; i < layer2DataBinary.length; i++) {
-            fileData[free+8+i] = layer2DataBinary[i];
-        }
-
-        addr = pc2snes(free+8);
+        const addr = write_data(layer2DataBinary);
 
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
     } else {  
         // write background data
-        if (defaultBGList.indexOf(bgPointer) === -1) {
-            free = getFreeSpace(bgDataBinary!.length);
+        let free: number;
 
-            fileData[free+0] = "S".charCodeAt(0);
-            fileData[free+1] = "T".charCodeAt(0);
-            fileData[free+2] = "A".charCodeAt(0);
-            fileData[free+3] = "R".charCodeAt(0);
-            fileData[free+4] = ((bgDataBinary!.length - 1) >>> 0) & 0xFF;
-            fileData[free+5] = ((bgDataBinary!.length - 1) >>> 8) & 0xFF;
-            fileData[free+6] = (~(fileData[free+4])) & 0xFF;
-            fileData[free+7] = (~(fileData[free+5])) & 0xFF;
+        if (defaultBGList.indexOf(bgPointer) === -1) {     
+            const addr = write_data(bgDataBinary!);
 
-            for (let i = 0; i < bgDataBinary!.length; i++) {
-                fileData[free+8+i] = bgDataBinary![i];
-            }
-
-            addr = pc2snes(free+8);
-
-            
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8 ) & 0xFF);
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);    
