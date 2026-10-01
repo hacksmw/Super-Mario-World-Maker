@@ -250,7 +250,7 @@ function write_data(layerDataBinary) {
     for (let i = 0; i < layerDataBinary.length; i++) {
         fileData[free + 8 + i] = layerDataBinary[i];
     }
-    return free + 8;
+    return pc2snes(free + 8);
 }
 function save() {
     let low, high, bank;
@@ -5726,7 +5726,7 @@ function fileOpen() {
             btnSwitchBG.disabled = false;
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
-            //btnSave.disabled = false;
+            btnSave.disabled = false;
         };
         fr.readAsArrayBuffer(this.files[0]);
     };

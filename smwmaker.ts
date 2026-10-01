@@ -234,7 +234,7 @@ function make_layer_data(layerData: Obj[], layerDataBinary: number[]) {
 }
 
 function delete_data(pointer: number) {
-if (snes2pc(pointer) - 8 >= 0x80200 && 
+    if (snes2pc(pointer) - 8 >= 0x80200 && 
     String.fromCharCode(
         fileData[snes2pc(pointer)-8], 
         fileData[snes2pc(pointer)-7], 
@@ -277,7 +277,7 @@ function write_data(layerDataBinary: number[]) {
         fileData[free+8+i] = layerDataBinary[i];
     }
 
-    return free+8;
+    return pc2snes(free+8);
 }
 
 function save() {
@@ -462,7 +462,7 @@ function save() {
     // write sprite data
     
     let addr: number;
-
+    
     addr = write_data(spriteDataBinary);
 
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
@@ -473,9 +473,11 @@ function save() {
     } else {
         fileData[snes2pc(0x0EF100 + levelNum)] = ((addr >>> 16) & 0xFF);
     }
+   
 
     // write layer 1 data    
 
+    
     addr = write_data(layer1DataBinary);
 
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0 ) & 0xFF);
@@ -6512,7 +6514,7 @@ function fileOpen(): void {
             btnSwitchBG.disabled = false;
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
-            //btnSave.disabled = false;
+            btnSave.disabled = false;
         }
 
         fr.readAsArrayBuffer(this.files[0]);
