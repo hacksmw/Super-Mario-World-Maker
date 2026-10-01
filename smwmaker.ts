@@ -6514,7 +6514,7 @@ function fileOpen(): void {
             btnSwitchBG.disabled = false;
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
-            btnSave.disabled = false;
+            //btnSave.disabled = false;
         }
 
         fr.readAsArrayBuffer(this.files[0]);
