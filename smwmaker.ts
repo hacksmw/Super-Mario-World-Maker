@@ -6471,28 +6471,15 @@ function loadBG(bgPointer: number): Nullable<number[]> {
     for (let i = 0; i < temp1.length; i++) {
         temp1[i] = 0;
     }
-    
-    let counter: number;
-    
-    counter = 0;
             
     for (let i = 0; i < Math.floor(temp.length / 2); i++) {
-        if (i % 16 == 0 && i != 0) {
-            counter += 16;
-        }
-        temp1[counter] = temp[i];
-        counter++;
+        temp1[intdiv(i, 16) * 16 + i] = temp[i];
     }
 
     temp = temp.slice(Math.floor(temp.length / 2));
 
-    counter = 0;
     for (let i = 0; i < temp.length; i++) {
-        if (i % 16 == 0) {
-            counter += 16;
-        }
-        temp1[counter] = temp[i];
-        counter++;
+        temp1[(intdiv(i, 16) + 1) * 16 + i] = temp[i];
     }
 
     bgData = temp1;
@@ -6769,7 +6756,7 @@ function getBG(bgData: Nullable<number[]>, bgPage: number) {
     const canvas = document.createElement("canvas");
     
     canvas.width = 32 * 16;
-    canvas.height = 27 * 16;  
+    canvas.height = 32 * 16;  
     
     const ctx = canvas.getContext("2d");
 
