@@ -995,7 +995,7 @@ function btn16x16_onclick() {
     // background tiles
     for (let i = 0x0; i <= bgTilesLength; i++) {
         const tile = getMap16TileImg(i, true);
-        ctx.putImageData(tile, (i % 16) * 16, (blksHeight * 16) + (intdiv(i, 16) * 16));
+        ctx.putImageData(tile, ((i % 16) * 16), ((blksHeight * 16) + (intdiv(i, 16) * 16)));
     }
     document.body.appendChild(canvas);
 }
@@ -2946,6 +2946,15 @@ function load16x16() {
     }
     map16 = blocks;
     bgTiles = bgBlocks;
+}
+function read3(address) {
+    return ((fileData[snes2pc(address + 2)] << 16) | (((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
+}
+function read2(address) {
+    return ((((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
+}
+function read1(address) {
+    return fileData[snes2pc(address + 0)];
 }
 function getMap16(start, end, tblAddr, blocks) {
     for (let i = 0; i <= end - start; i++) {
