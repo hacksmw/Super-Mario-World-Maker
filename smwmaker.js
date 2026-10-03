@@ -141,6 +141,7 @@ let resetTheTime;
 let sprGFXindex;
 let fgbgGFXindex;
 let customPalette;
+let useNewSpriteSystem;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -2633,8 +2634,17 @@ function loadSprites() {
     buoyancy = spriteHeader >>> 7;
     buoyancy2 = (spriteHeader >>> 6) & 1;
     sprMemory = (spriteHeader >>> 0) & 0b11111;
+    useNewSpriteSystem = (spriteHeader >>> 5) & 0b1;
     let pointer = (spriteDataPointer + 1);
     sprites = [];
+    if (useNewSpriteSystem) {
+        alert("unsupported new sprite system");
+        unload();
+    }
+    if (read1(0x0EF30F) === 0x42) {
+        alert("unsupported sprite extensions");
+        unload();
+    }
     while (fileData[snes2pc(pointer)] != 0xFF) {
         let xPosition, yPosition;
         let spriteID;
