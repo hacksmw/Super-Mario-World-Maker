@@ -2945,6 +2945,25 @@ function loadGraphics() {
     sp2bmp = convertGraphics(sp2gfx);
     sp3bmp = convertGraphics(sp3gfx);
     sp4bmp = convertGraphics(sp4gfx);
+    original_animation();
+}
+function original_animation() {
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x68, 0xC8);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x60, 0xD0);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x78, 0xD0);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x6C, 0xB4);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x64, 0xD4);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x74, 0x114);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x5C, 0x138);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x50, 0xA4);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x54, 0xDC);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x58, 0xDC);
+    animate_4_8x8s_line(fg2bmp, anibmp, 0x5A, 0xA0);
+}
+function animate_4_8x8s_line(dest, src, destStart, srcStart) {
+    for (let i = 0; i < 4; i++) {
+        dest[destStart + i] = src[srcStart + i];
+    }
 }
 function getSecondaryExits() {
     const secondaryExits = new Array();
@@ -5860,7 +5879,7 @@ function loadBG(bgPointer) {
 }
 function convertGraphics(org) {
     let bitmapTiles = new Array(16 * 8);
-    for (let i = 0; i < 128; i++) {
+    for (let i = 0; i < 512; i++) {
         let bitmap = new Array(64);
         for (let c = 0; c < 8; c++) {
             for (let k = 0; k < 8; k++) {
