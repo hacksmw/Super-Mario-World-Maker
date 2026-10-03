@@ -144,7 +144,7 @@ let bgPointer: number;
 let isLayer2: boolean;
 let secondExits: SecondExit[];
 let isBGEdited: boolean = false;
-let lmVer: string;
+let lmVer: number;
 let romType: string;
 let bypassedMusic: number;
 let isTimeBypassed: boolean;
@@ -2551,7 +2551,7 @@ function load(lvlNum: number): boolean {
     let pointer: number;
     let lmModified: boolean;
     let lvlMode: number;
-    let lunarMagicVer: string;
+    let lunarMagicVer: number;
 
     // check file size
     switch (fileData.length) {
@@ -2621,6 +2621,7 @@ function load(lvlNum: number): boolean {
         }
 
         let verStr = "";
+        let flag: boolean = false;
 
         for (let i = snes2pc(0x0FF0A0, fileType) + signature.length; ; i++) {
             if (fileData[i] === " ".charCodeAt(0)) {
@@ -2629,17 +2630,18 @@ function load(lvlNum: number): boolean {
 
             if ("0".charCodeAt(0) <= fileData[i] && fileData[i] <= "9".charCodeAt(0)) {
                 verStr += String.fromCharCode(fileData[i]);
-            } else if (fileData[i] === ".".charCodeAt(0)) {
+            } else if (fileData[i] === ".".charCodeAt(0) && (!flag)) {
                 verStr += String.fromCharCode(fileData[i]);
+                flag = true;
             } else {
                 alert("Not valid ROM.");
                 return false;
             }
         }
 
-        lunarMagicVer = verStr;
+        lunarMagicVer = parseFloat(verStr);
     } else {
-        lunarMagicVer = "0";
+        lunarMagicVer = parseFloat("0");
     }
 
     if (lmModified) {

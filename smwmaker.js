@@ -2226,6 +2226,7 @@ function load(lvlNum) {
             return false;
         }
         let verStr = "";
+        let flag = false;
         for (let i = snes2pc(0x0FF0A0, fileType) + signature.length;; i++) {
             if (fileData[i] === " ".charCodeAt(0)) {
                 break;
@@ -2233,18 +2234,19 @@ function load(lvlNum) {
             if ("0".charCodeAt(0) <= fileData[i] && fileData[i] <= "9".charCodeAt(0)) {
                 verStr += String.fromCharCode(fileData[i]);
             }
-            else if (fileData[i] === ".".charCodeAt(0)) {
+            else if (fileData[i] === ".".charCodeAt(0) && (!flag)) {
                 verStr += String.fromCharCode(fileData[i]);
+                flag = true;
             }
             else {
                 alert("Not valid ROM.");
                 return false;
             }
         }
-        lunarMagicVer = verStr;
+        lunarMagicVer = parseFloat(verStr);
     }
     else {
-        lunarMagicVer = "0";
+        lunarMagicVer = parseFloat("0");
     }
     if (lmModified) {
         //alert("Lunar Magic Modified ROM is not supproted yet.");
