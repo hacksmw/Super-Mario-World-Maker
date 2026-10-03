@@ -214,9 +214,19 @@ function make_layer_data(layerData, layerDataBinary) {
             layerDataBinary[layerDataBinary.length] = 1;
             currentScreen = obj.screen;
         }
-        layerDataBinary[layerDataBinary.length] = (newScreenFlag << 7) | (((obj.objNum >>> 4) & 0b11) << 5) | (obj.y & 0b11111);
-        layerDataBinary[layerDataBinary.length] = ((obj.objNum & 0b1111) << 4) | (obj.x & 0b1111);
-        layerDataBinary[layerDataBinary.length] = obj.settings & 0xFF;
+        const objNum = obj.objNum;
+        const settings = obj.settings;
+        if (objNum === 0 && settings < 0x10) {
+            throw new Error("Not valid Extended Object.");
+        }
+        else if (0x21 < objNum && objNum < 0x30) {
+            throw new Error("Not valid Special Object.");
+        }
+        else {
+            layerDataBinary[layerDataBinary.length] = (newScreenFlag << 7) | (((obj.objNum >>> 4) & 0b11) << 5) | (obj.y & 0b11111);
+            layerDataBinary[layerDataBinary.length] = ((obj.objNum & 0b1111) << 4) | (obj.x & 0b1111);
+            layerDataBinary[layerDataBinary.length] = obj.settings & 0xFF;
+        }
     }
 }
 function delete_data(pointer) {
@@ -242,6 +252,9 @@ function delete_data(pointer) {
 }
 function write_data(layerDataBinary) {
     const free = getFreeSpace(layerDataBinary.length);
+    if (free === 0) {
+        throw new Error("Space is not enough.");
+    }
     fileData[free + 0] = "S".charCodeAt(0);
     fileData[free + 1] = "T".charCodeAt(0);
     fileData[free + 2] = "A".charCodeAt(0);
@@ -337,7 +350,14 @@ function save() {
     layer1DataBinary[2] = primaryLevelHeader[2];
     layer1DataBinary[3] = primaryLevelHeader[3];
     layer1DataBinary[4] = primaryLevelHeader[4];
-    make_layer_data(layer1Data, layer1DataBinary);
+    try {
+        make_layer_data(layer1Data, layer1DataBinary);
+    }
+    catch (e) {
+        alert(e.message + "");
+        fileData = oldFileData;
+        return;
+    }
     // exits
     for (let i = 0; i < exits.length; i++) {
         let exit = exits[i];
@@ -348,7 +368,7 @@ function save() {
         layer1DataBinary[layer1DataBinary.length] = exit.destLevel & 0xFF;
     }
     if (!isLMModified) {
-        throw new TypeError();
+        throw new Error();
     }
     layer1DataBinary[layer1DataBinary.length] = 0xFF;
     let bgDataBinary;
@@ -360,7 +380,14 @@ function save() {
         layer2DataBinary[2] = 0;
         layer2DataBinary[3] = 0;
         layer2DataBinary[4] = 0;
-        make_layer_data(layer2Data, layer2DataBinary);
+        try {
+            make_layer_data(layer2Data, layer2DataBinary);
+        }
+        catch (e) {
+            alert(e.message + "");
+            fileData = oldFileData;
+            return;
+        }
         layer2DataBinary[layer2DataBinary.length] = 0xFF;
     }
     else {
@@ -398,7 +425,14 @@ function save() {
     delete_data(oldLayer2DataPointer);
     // write sprite data
     let addr;
-    addr = write_data(spriteDataBinary);
+    try {
+        addr = write_data(spriteDataBinary);
+    }
+    catch (e) {
+        alert(e.message + "");
+        fileData = oldFileData;
+        return;
+    }
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
     fileData[snes2pc(spriteDataTable + (2 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
     if (!isLMModified) {
@@ -408,13 +442,28 @@ function save() {
         fileData[snes2pc(0x0EF100 + levelNum)] = ((addr >>> 16) & 0xFF);
     }
     // write layer 1 data    
-    addr = write_data(layer1DataBinary);
+    try {
+        addr = write_data(layer1DataBinary);
+    }
+    catch (e) {
+        alert(e.message + "");
+        fileData = oldFileData;
+        return;
+    }
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
     fileData[snes2pc(layer1DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
     if (isLayer2) {
         // write layer 2 data
-        const addr = write_data(layer2DataBinary);
+        let addr;
+        try {
+            addr = write_data(layer2DataBinary);
+        }
+        catch (e) {
+            alert(e.message + "");
+            fileData = oldFileData;
+            return;
+        }
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
         fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
@@ -423,7 +472,15 @@ function save() {
         // write background data
         let free;
         if (defaultBGList.indexOf(bgPointer) === -1) {
-            const addr = write_data(bgDataBinary);
+            let addr;
+            try {
+                addr = write_data(bgDataBinary);
+            }
+            catch (e) {
+                alert(e.message + "");
+                fileData = oldFileData;
+                return;
+            }
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 0)] = ((addr >>> 0) & 0xFF);
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 1)] = ((addr >>> 8) & 0xFF);
             fileData[snes2pc(layer2DatasTable + (3 * levelNum) + 2)] = ((addr >>> 16) & 0xFF);
