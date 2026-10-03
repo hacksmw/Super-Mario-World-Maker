@@ -156,6 +156,7 @@ let sprGFXindex: number;
 let fgbgGFXindex: number;
 let customPalette: number;
 let useNewSpriteSystem: number;
+let anibmp: number[][];
 
 let btnOpen: HTMLButtonElement
 let btnPalette: HTMLButtonElement
@@ -3438,6 +3439,7 @@ function getCompressedGraphicsAddr(index: number) {
 function loadGraphics() {
     let fg1gfx: number[], fg2gfx: number[], bggfx: number[], fg3gfx: number[];
     let sp1gfx: number[], sp2gfx: number[], sp3gfx: number[], sp4gfx: number[];
+    let anigfx: number[];
 
     // get tileset
     tileset = tilesetList[fgbgGFX];
@@ -3475,7 +3477,18 @@ function loadGraphics() {
 
     sp4gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp4)));
 
+    // Animation graphics
+    let gfx33Pointer = 0x8bfc0;
+
+    if (isLMModified) {
+        gfx33Pointer = (((read1(0x00B890) << 16) | read2(0x00B88B)));
+    }
+
+    anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
+    
     /* Convert Graphics */
+
+    anibmp = convertGraphics(anigfx);
 
     fg1bmp = convertGraphics(fg1gfx);
     fg2bmp = convertGraphics(fg2gfx);
@@ -4968,7 +4981,7 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
 }
 
 function getFg8x8Img(index: number = 0, palette: number = 0) {
-    index = index % 0x200;
+    index = index % 0x400;
 
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 

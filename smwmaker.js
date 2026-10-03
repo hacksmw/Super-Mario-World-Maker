@@ -143,6 +143,7 @@ let sprGFXindex;
 let fgbgGFXindex;
 let customPalette;
 let useNewSpriteSystem;
+let anibmp;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -2895,6 +2896,7 @@ function getCompressedGraphicsAddr(index) {
 function loadGraphics() {
     let fg1gfx, fg2gfx, bggfx, fg3gfx;
     let sp1gfx, sp2gfx, sp3gfx, sp4gfx;
+    let anigfx;
     // get tileset
     tileset = tilesetList[fgbgGFX];
     /* Get Level's graphics number */
@@ -2917,7 +2919,14 @@ function loadGraphics() {
     sp2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp2)));
     sp3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp3)));
     sp4gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp4)));
+    // Animation graphics
+    let gfx33Pointer = 0x8bfc0;
+    if (isLMModified) {
+        gfx33Pointer = (((read1(0x00B890) << 16) | read2(0x00B88B)));
+    }
+    anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
     /* Convert Graphics */
+    anibmp = convertGraphics(anigfx);
     fg1bmp = convertGraphics(fg1gfx);
     fg2bmp = convertGraphics(fg2gfx);
     fg3bmp = convertGraphics(fg3gfx);
@@ -3990,7 +3999,7 @@ function getSprImg(sprNum = 0, extra = 0) {
     }
 }
 function getFg8x8Img(index = 0, palette = 0) {
-    index = index % 0x200;
+    index = index % 0x400;
     const canvas = document.createElement("canvas");
     canvas.width = 8;
     canvas.height = 8;
