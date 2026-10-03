@@ -986,15 +986,16 @@ function btn16x16_onclick() {
     let ctx = canvas.getContext("2d");
     const blksLength = map16.length;
     const bgTilesLength = bgTiles.length;
-    const blksHeight = Math.ceil(blksLength / 16);
-    const bgTilesHeight = Math.ceil(bgTilesLength / 16);
+    const limit = 0x200;
+    const blksHeight = Math.ceil(limit / 16);
+    const bgTilesHeight = Math.ceil(limit / 16);
     canvas.height = blksHeight * 16 + bgTilesHeight * 16;
-    for (let i = 0x0; i < blksLength; i++) {
+    for (let i = 0x0; i < limit; i++) {
         const tile = getMap16TileImg(i);
         ctx.putImageData(tile, (i % 16) * 16, intdiv(i, 16) * 16);
     }
     // background tiles
-    for (let i = 0x0; i <= bgTilesLength; i++) {
+    for (let i = 0x0; i < limit; i++) {
         const tile = getMap16TileImg(i, true);
         ctx.putImageData(tile, ((i % 16) * 16), ((blksHeight * 16) + (intdiv(i, 16) * 16)));
     }
@@ -2937,21 +2938,41 @@ function load16x16() {
         getMap16(0x153, 0x16D, 0x0DE7B8, blocks);
     }
     if (isLMModified) {
-        const pointer = ((fileData[snes2pc(0x06F557)] << 16) | (((((fileData[snes2pc(0x06F553 + 1)] << 8) | fileData[snes2pc(0x06F553 + 0)])) + 0x1000)));
-        const isPage2TilesetSpecific = (fileData[snes2pc(0x06F547)] !== 0 ? true : false);
+        const pointers = [
+            ((read1(0x06F557) << 16) | (read2(0x06F553))),
+            ((read1(0x06F560) << 16) | (read2(0x06F55C))),
+            ((read1(0x06F56B) << 16) | (read2(0x06F567))) + 1,
+            ((read1(0x06F574) << 16) | (read2(0x06F570))) + 1,
+            ((read1(0x06F598) << 16) | (read2(0x06F594))),
+            ((read1(0x06F5A1) << 16) | (read2(0x06F59D))),
+            ((read1(0x06F5AC) << 16) | (read2(0x06F5A8))) + 1,
+            ((read1(0x06F5B5) << 16) | (read2(0x06F5B1))) + 1,
+        ];
+        const isPage2TilesetSpecific = (read1(0x06F547) !== 0 ? true : false);
         if (isPage2TilesetSpecific) {
-            const pointer = ((fileData[snes2pc(0x06F58A)] << 16) | (((((fileData[snes2pc(0x06F586 + 1)] << 8) | fileData[snes2pc(0x06F586 + 0)]))))) + 0x1000;
+            const pointer = ((read1(0x06F58A) << 16) | (read2(0x06F586))) + 0x1000;
             const address = pointer + (fgbgGFX << 11);
             getMap16(0x200, 0x2FF, address, blocks);
         }
         else {
+            const pointer = pointers[0];
             getMap16(0x200, 0x2FF, pointer, blocks);
         }
+        const pointer = pointers[0];
         for (let i = 0x3; i < 0x10; i++) {
             const start = i * 0x100;
             const end = start + (0x100 - 1);
             const address = pointer + (i - 2) * (0x100 * 8);
             getMap16(start, end, address, blocks);
+        }
+        for (let k = 1; k < pointers.length; k++) {
+            const pointer = pointers[k];
+            for (let i = 0x0; i < 0x10; i++) {
+                const start = (k * 0x1000) + (i * 0x100);
+                const end = start + (0x100 - 1);
+                const address = pointer + (i - 2) * (0x100 * 8);
+                getMap16(start, end, address, blocks);
+            }
         }
     }
     map16 = blocks;
@@ -2975,8 +2996,26 @@ function getMap16(start, end, tblAddr, blocks) {
         tile.lowleft = new TilePart();
         tile.lowright = new TilePart();
         const col = [tile.upleft, tile.lowleft, tile.upright, tile.lowright];
-        const pointer = ((fileData[snes2pc(0x06F624 + 2)] << 16) | (fileData[snes2pc(0x06F624 + 1)] << 8) | fileData[snes2pc(0x06F624 + 0)]);
-        const actsLike = fileData[snes2pc(pointer + (2 * (start + i)))];
+        let actsLike;
+        if (!isLMModified) {
+            actsLike = i;
+        }
+        else {
+            const pointer1 = read3(0x06F624);
+            const pointer2 = read3(0x06F63A);
+            let pgGroup = intdiv(start, 0x4000);
+            if (pgGroup === 0) {
+                const pointer = pointer1;
+                actsLike = read2(pointer + (2 * (start + i)));
+            }
+            else if (pgGroup === 1) {
+                const pointer = pointer2;
+                actsLike = read2(pointer + (2 * ((start - 0x4000) + i)));
+            }
+            else {
+                throw new Error("Map16 tile number is bigger than 0x7FFF.");
+            }
+        }
         tile.actsLike = actsLike;
         for (let j = 0; j < col.length; j++) {
             const part = col[j];
