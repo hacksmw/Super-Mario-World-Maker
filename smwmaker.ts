@@ -103,6 +103,7 @@ let bgColor: RGB;
 let bgData: Nullable<number[]>;
 let map16: Tile[], bgTiles: Tile[];
 let fg1bmp: number[][], fg2bmp: number[][], bgbmp: number[][], fg3bmp: number[][];
+let bg2bmp: number[][], bg3bmp: number[][];
 let sp1bmp: number[][], sp2bmp: number[][], sp3bmp: number[][], sp4bmp: number[][];
 let fileData: Uint8Array;
 let fileName: string = "";
@@ -1217,7 +1218,7 @@ function btn8x8_onclick () {
 
     let ctx = canvas.getContext("2d");
     
-    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
+    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
 
     for (let i = 0; i < bitmaps.length; i++) {
         const bitmap = bitmaps[i];
@@ -3425,6 +3426,18 @@ function loadGraphics() {
     fg3bmp = convertGraphics(fg3gfx);
     bgbmp  = convertGraphics(bggfx);
 
+    bg2bmp = new Array(0x80);
+    bg3bmp = new Array(0x80);
+
+    for (let i = 0; i < 0x80; i++) {
+        bg2bmp[i] = new Array(64);
+        bg3bmp[i] = new Array(64);
+        for (let j = 0; j < 64; j++) {
+            bg2bmp[i][j] = 0;
+            bg3bmp[i][j] = 0;
+        }
+    }
+
     sp1bmp = convertGraphics(sp1gfx);
     sp2bmp = convertGraphics(sp2gfx);
     sp3bmp = convertGraphics(sp3gfx);
@@ -4905,6 +4918,12 @@ function getFg8x8Img(index: number = 0, palette: number = 0) {
             break;
         case 3:
             gfx = fg3bmp;
+            break;
+        case 4:
+            gfx = bg2bmp;
+            break;
+        case 5:
+            gfx = bg3bmp;
             break;
         default:
             throw new Error();
@@ -6782,6 +6801,10 @@ function getMap16TileImg(index: number, bg: boolean = false): any {
                 bitmap = bgbmp;
             } else if (div === 3) {
                 bitmap = fg3bmp
+            } else if (div === 4) {
+                bitmap = bg2bmp;
+            } else if (div === 5) {
+                bitmap = bg3bmp;
             } else {
                 return ctx!.getImageData(0, 0, 16, 16);
             }

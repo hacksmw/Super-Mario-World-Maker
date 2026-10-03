@@ -90,6 +90,7 @@ let bgColor;
 let bgData;
 let map16, bgTiles;
 let fg1bmp, fg2bmp, bgbmp, fg3bmp;
+let bg2bmp, bg3bmp;
 let sp1bmp, sp2bmp, sp3bmp, sp4bmp;
 let fileData;
 let fileName = "";
@@ -1019,7 +1020,7 @@ function btn8x8_onclick() {
     canvas.width = dotSize * 8 * 16;
     canvas.height = dotSize * 8 * 16 * 2 * 2;
     let ctx = canvas.getContext("2d");
-    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
+    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
     for (let i = 0; i < bitmaps.length; i++) {
         const bitmap = bitmaps[i];
         for (let j = 0; j < bitmap.length; j++) {
@@ -2861,6 +2862,16 @@ function loadGraphics() {
     fg2bmp = convertGraphics(fg2gfx);
     fg3bmp = convertGraphics(fg3gfx);
     bgbmp = convertGraphics(bggfx);
+    bg2bmp = new Array(0x80);
+    bg3bmp = new Array(0x80);
+    for (let i = 0; i < 0x80; i++) {
+        bg2bmp[i] = new Array(64);
+        bg3bmp[i] = new Array(64);
+        for (let j = 0; j < 64; j++) {
+            bg2bmp[i][j] = 0;
+            bg3bmp[i][j] = 0;
+        }
+    }
     sp1bmp = convertGraphics(sp1gfx);
     sp2bmp = convertGraphics(sp2gfx);
     sp3bmp = convertGraphics(sp3gfx);
@@ -3926,6 +3937,12 @@ function getFg8x8Img(index = 0, palette = 0) {
             break;
         case 3:
             gfx = fg3bmp;
+            break;
+        case 4:
+            gfx = bg2bmp;
+            break;
+        case 5:
+            gfx = bg3bmp;
             break;
         default:
             throw new Error();
@@ -5934,6 +5951,12 @@ function getMap16TileImg(index, bg = false) {
             }
             else if (div === 3) {
                 bitmap = fg3bmp;
+            }
+            else if (div === 4) {
+                bitmap = bg2bmp;
+            }
+            else if (div === 5) {
+                bitmap = bg3bmp;
             }
             else {
                 return ctx.getImageData(0, 0, 16, 16);
