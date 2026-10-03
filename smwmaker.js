@@ -988,15 +988,16 @@ function btn16x16_onclick() {
     const blksLength = map16.length;
     const bgTilesLength = bgTiles.length;
     const limit = 0x200;
+    const bgLimit = 0x200;
     const blksHeight = Math.ceil(limit / 16);
-    const bgTilesHeight = Math.ceil(limit / 16);
+    const bgTilesHeight = Math.ceil(bgLimit / 16);
     canvas.height = blksHeight * 16 + bgTilesHeight * 16;
     for (let i = 0x0; i < limit; i++) {
         const tile = getMap16TileImg(i);
         ctx.putImageData(tile, (i % 16) * 16, intdiv(i, 16) * 16);
     }
     // background tiles
-    for (let i = 0x0; i < limit; i++) {
+    for (let i = 0x0; i < bgLimit; i++) {
         const tile = getMap16TileImg(i, true);
         ctx.putImageData(tile, ((i % 16) * 16), ((blksHeight * 16) + (intdiv(i, 16) * 16)));
     }
@@ -2983,6 +2984,18 @@ function load16x16() {
                 const end = start + (0x100 - 1);
                 const address = pointer + (i - 2) * (0x100 * 8);
                 getMap16(start, end, address, blocks);
+            }
+        }
+        const bgPointers = 0x0EFD50;
+        for (let k = 0; k < 8; k++) {
+            const bgPointer = read3(bgPointers + (3 * k));
+            if (bgPointer === 0)
+                break;
+            for (let i = 0x0; i < 0x10; i++) {
+                const start = (k * 0x1000) + (i * 0x100);
+                const end = start + (0x100 - 1);
+                const address = bgPointer + i * (0x100 * 8);
+                getMap16(start, end, address, bgBlocks);
             }
         }
     }
