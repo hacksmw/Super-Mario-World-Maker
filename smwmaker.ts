@@ -3520,14 +3520,50 @@ function original_animation() {
     animate_4_8x8s_line(fg1bmp, anibmp, 0x68, 0xC8);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x60, 0xD0);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x78, 0xD0);
-    animate_4_8x8s_line(fg1bmp, anibmp, 0x6C, 0xB4);
+    
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x6C, 0xDC);
+
     animate_4_8x8s_line(fg1bmp, anibmp, 0x64, 0xD4);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x74, 0x114);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x5C, 0x138);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x50, 0xA4);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x54, 0xDC);
-    animate_4_8x8s_line(fg1bmp, anibmp, 0x58, 0xDC);
+    
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x58, 0xB4);
+
     animate_4_8x8s_line(fg2bmp, anibmp, 0x5A, 0xA0);
+    animate_4_8x8s_line(fg2bmp, anibmp, 0x6A, 0xD8);
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x70, 0x110);
+
+    animate_4_8x8s_line(fg1bmp, anibmp, 0x7C, 0x178);
+
+    if (tileset === 0) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x14C);
+    } else if (tileset === 1) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0x118);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x10);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0x30);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x9C);
+    } else if (tileset === 2) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x144);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0x164);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x150);
+    } else if (tileset === 3) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0x14);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x18);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0x1C);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x34);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x70, 0x11C);
+    } else if (tileset === 4) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x14C);
+    }
 }
 
 function animate_4_8x8s_line(dest: any, src: any, destStart: number, srcStart: number) {
