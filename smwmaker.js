@@ -6415,7 +6415,15 @@ function loadBG(bgPointer) {
     bgData = temp1;
     return bgData;
 }
-function convertGraphics(org) {
+function convertGraphics(org, is4bpp = false) {
+    if (is4bpp) {
+        return convertGraphics4bpp(org);
+    }
+    else {
+        return convertGraphics3bpp(org);
+    }
+}
+function convertGraphics3bpp(org) {
     let bitmapTiles = new Array(16 * 8);
     const limit = 768;
     for (let i = 0; i < limit; i++) {
@@ -6427,43 +6435,36 @@ function convertGraphics(org) {
             for (let k = 0; k < 8; k++) {
                 bitmap[8 * c + k] |= ((org[(i * 24) + 2 * c + 1] >>> (7 - k)) & 1) << 1;
             }
-            /*
-            
-            bitmap[8*c+0] = ((org[(i*24)+2*c+0] >>> 7) & 1) << 0;
-            bitmap[8*c+1] = ((org[(i*24)+2*c+0] >>> 6) & 1) << 0;
-            bitmap[8*c+2] = ((org[(i*24)+2*c+0] >>> 5) & 1) << 0;
-            bitmap[8*c+3] = ((org[(i*24)+2*c+0] >>> 4) & 1) << 0;
-            bitmap[8*c+4] = ((org[(i*24)+2*c+0] >>> 3) & 1) << 0;
-            bitmap[8*c+5] = ((org[(i*24)+2*c+0] >>> 2) & 1) << 0;
-            bitmap[8*c+6] = ((org[(i*24)+2*c+0] >>> 1) & 1) << 0;
-            bitmap[8*c+7] = ((org[(i*24)+2*c+0] >>> 0) & 1) << 0;
-            
-            
-            
-            bitmap[8*c+0] |= ((org[(i*24)+2*c+1] >>> 7) & 1) << 1;
-            bitmap[8*c+1] |= ((org[(i*24)+2*c+1] >>> 6) & 1) << 1;
-            bitmap[8*c+2] |= ((org[(i*24)+2*c+1] >>> 5) & 1) << 1;
-            bitmap[8*c+3] |= ((org[(i*24)+2*c+1] >>> 4) & 1) << 1;
-            bitmap[8*c+4] |= ((org[(i*24)+2*c+1] >>> 3) & 1) << 1;
-            bitmap[8*c+5] |= ((org[(i*24)+2*c+1] >>> 2) & 1) << 1;
-            bitmap[8*c+6] |= ((org[(i*24)+2*c+1] >>> 1) & 1) << 1;
-            bitmap[8*c+7] |= ((org[(i*24)+2*c+1] >>> 0) & 1) << 1;
-            */
         }
         for (let c = 0; c < 8; c++) {
             for (let k = 0; k < 8; k++) {
                 bitmap[8 * c + k] |= ((org[(i * 24) + 16 + c] >>> (7 - k)) & 1) << 2;
             }
-            /*
-            bitmap[8*c+0] |= ((org[(i*24)+16+c] >>> 7) & 1) << 2;
-            bitmap[8*c+1] |= ((org[(i*24)+16+c] >>> 6) & 1) << 2;
-            bitmap[8*c+2] |= ((org[(i*24)+16+c] >>> 5) & 1) << 2;
-            bitmap[8*c+3] |= ((org[(i*24)+16+c] >>> 4) & 1) << 2;
-            bitmap[8*c+4] |= ((org[(i*24)+16+c] >>> 3) & 1) << 2;
-            bitmap[8*c+5] |= ((org[(i*24)+16+c] >>> 2) & 1) << 2;
-            bitmap[8*c+6] |= ((org[(i*24)+16+c] >>> 1) & 1) << 2;
-            bitmap[8*c+7] |= ((org[(i*24)+16+c] >>> 0) & 1) << 2;
-            */
+        }
+        bitmapTiles[i] = bitmap;
+    }
+    return bitmapTiles;
+}
+function convertGraphics4bpp(org) {
+    let bitmapTiles = new Array(16 * 8);
+    const limit = 768;
+    for (let i = 0; i < limit; i++) {
+        let bitmap = new Array(64);
+        for (let c = 0; c < 8; c++) {
+            for (let k = 0; k < 8; k++) {
+                bitmap[8 * c + k] = ((org[(i * 32) + 2 * c + 0] >>> (7 - k)) & 1) << 0;
+            }
+            for (let k = 0; k < 8; k++) {
+                bitmap[8 * c + k] |= ((org[(i * 32) + 2 * c + 1] >>> (7 - k)) & 1) << 1;
+            }
+        }
+        for (let c = 0; c < 8; c++) {
+            for (let k = 0; k < 8; k++) {
+                bitmap[8 * c + k] |= ((org[(i * 32) + 16 + 2 * c + 0] >>> (7 - k)) & 1) << 2;
+            }
+            for (let k = 0; k < 8; k++) {
+                bitmap[8 * c + k] |= ((org[(i * 32) + 16 + 2 * c + 1] >>> (7 - k)) & 1) << 3;
+            }
         }
         bitmapTiles[i] = bitmap;
     }
