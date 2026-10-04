@@ -2404,7 +2404,6 @@ function load(lvlNum) {
                 layer2DataPointer = 0;
             }
             else {
-                console.log("custom bg");
                 bgPointer = layer2DataPointer;
                 bgPage = nibble;
                 layer2DataPointer = 0;
@@ -4107,7 +4106,184 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x8A:
+            // bird
+            return getSprImg4x4([null, null, null, 0x1D1], 0xA, true);
+            break;
+        case 0xC6:
+            // dark room with spot light
+            return getSprImg4x4([0x180, 0x181, 0x190, 0x191], 0xE);
+            break;
+        case 0xC2:
+            // blurp fish
+            return getSprImg4x4([0x1A2, 0x1A3, 0x1B2, 0x1B3], 0xD);
+            break;
+        case 0xBE:
+            // swooper bat
+            return getSprImg4x4([0x1AE, 0x1AF, 0x1BE, 0x1BF], 0xD);
+            break;
+        case 0xB6:
+            // reflecting fireball
+            return getSprImg4x4([0x1AC, 0x1AD, 0x1BC, 0x1BD], 0xA);
+            break;
+        case 0xB3:
+            // bowser statue fireball
+            return getSprImg4x4([0x133, 0x134, null, null], 0xC);
+            break;
+        case 0xB2:
+            // falling spike
+            return getSprImg4x4([0x1E0, 0x1E1, 0x1D0, 0x1D1], 0x8);
+            break;
+        case 0xAF:
+            // boo block
+            return getSprImg4x4([0x1C8, 0x1C9, 0x1D8, 0x1D9], 0x9);
+            break;
+        case 0xA5:
+            // fuzzball
+            return getSprImg4x4([0x1C8, 0x1C9, 0x1D8, 0x1D9], 0xA, true);
+            break;
+        case 0x70:
+            // pokey
+            return getSprImg4x4([0x18A, 0x18B, 0x19A, 0x19B], 0xA);
+            break;
+        case 0x87:
+            // lakitu's cloud
+            return getSprImg4x4([0x60, 0x61, 0x70, 0x71], 0x8);
+            break;
+        case 0x64:
+            // rope mechanism
+            return getSprImg4x4([0x1C0, 0x1C1, 0x1D0, 0x1D1], 0xB);
+            break;
+        case 0x4C:
+            // exploding block
+            return getSprImg4x4([0x40, 0x41, 0x50, 0x51], 0x8);
+            break;
+        case 0x2D:
+            // baby green yoshi            
+            return getSprImg4x4([0x100, 0x101, 0x110, 0x111], 0xD);
+            break;
+        case 0x7D:
+            // ballen
+            return getSprImg4x4([0x1E4, 0x1E5, 0x1F4, 0x1F5], 0x8);
+        case 0x6F:
+            // dino torch
+            return getSprImg4x4([0x1AA, 0x1AB, 0x1BA, 0x1BB], 0xF);
+            break;
+        case 0x6A:
+            // coin game cloud
+            return getSprImg4x4([0x60, 0x61, 0x70, 0x71], 0x8);
+            break;
+        case 0x68:
+            // fuzz ball
+            return getSprImg4x4([0x1C8, 0x1C9, 0x1D8, 0x1D9], 0xA);
+            break;
+        case 0x51:
+            // ninji
+            return getSprImg4x4([0x1A7, 0x1A8, 0x1B7, 0x1B8], 0x9);
+            break;
+        case 0x4D:
+        case 0x4E:
+            // monty mole
+            return getSprImg4x4([0x186, 0x187, 0x196, 0x197], 0x8);
+            break;
+        case 0x4A:
+            // goal point sphere
+            return getSprImg4x4([0x18C, 0x18D, 0x19C, 0x19D], 0xD, true);
+            break;
+        case 0x48:
+            // diggin' chuck's rock
+            return getSprImg4x4([0x1C4, 0x1C5, 0x1D4, 0x1D5], 0xE);
+            break;
+        case 0x3D:
+            // rip van fish
+            return getSprImg4x4([0x18C, 0x18D, 0x19C, 0x19D], 0xB);
+            break;
+        case 0x39:
+            // eerie
+            return getSprImg4x4([0x16A, 0x16B, 0x17A, 0x17B], 0xE);
+            break;
+        case 0x38:
+            // eerie
+            return getSprImg4x4([0x1ED, 0x1EE, 0x1FD, 0x1FE], 0xE);
+            break;
+        case 0x37:
+            // boo
+            return getSprImg4x4([0x188, 0x189, 0x198, 0x199], 0x9);
+            break;
+        case 0x33:
+            // fireball
+            {
+                canvas.width = 16;
+                canvas.height = 16;
+                const upleft = getSpr8x8Img(0x248, 0xA);
+                const upright = getSpr8x8Img(0x248, 0xA, true);
+                const dnleft = getSpr8x8Img(0x258, 0xA);
+                const dnright = getSpr8x8Img(0x258, 0xA, true);
+                const ctx = canvas.getContext("2d");
+                ctx.putImageData(upleft, 0, 0);
+                ctx.putImageData(upright, 8, 0);
+                ctx.putImageData(dnleft, 0, 8);
+                ctx.putImageData(dnright, 8, 8);
+                return canvas.toDataURL("image/png");
+            }
+            break;
+        case 0x31:
+            // bony beetle
+            return getSprImg4x4([0x18C, 0x18D, 0x19C, 0x19D], 0x9);
+        case 0x2C:
+            // yoshi egg
+            return getSprImg4x4([0x100, 0x101, 0x110, 0x111], 0xB);
+            break;
+        case 0x2B:
+            // sumo brother's lightning
+            {
+                const upleft = getSpr8x8Img(0x1F3, 0xA);
+                const dnleft = getSpr8x8Img(0x1F3, 0xA, true, true);
+                canvas.width = 16;
+                canvas.height = 16;
+                const ctx = canvas.getContext("2d");
+                ctx.putImageData(upleft, 0, 0);
+                ctx.putImageData(dnleft, 0, 8);
+                return canvas.toDataURL("image/png");
+            }
+            break;
+        case 0x27:
+            // thwimp
+            {
+                const upleft = getSpr8x8Img(0x1A2, 0x9);
+                const upright = getSpr8x8Img(0x1A2, 0x9, true);
+                const dnleft = getSpr8x8Img(0x1B2, 0x9);
+                const dnright = getSpr8x8Img(0x1B2, 0x9, true);
+                canvas.width = 16;
+                canvas.height = 16;
+                const ctx = canvas.getContext("2d");
+                ctx.putImageData(upleft, 0, 0);
+                ctx.putImageData(upright, 8, 0);
+                ctx.putImageData(dnleft, 0, 8);
+                ctx.putImageData(dnright, 8, 8);
+                return canvas.toDataURL("image/png");
+            }
+            break;
+        case 0x1C:
+            // bullet bill
+            return getSprImg4x4([0x18E, 0x18F, 0x19E, 0x19F], 0xA);
+            break;
+        case 0x1B:
+            // football
+            return getSprImg4x4([0x18A, 0x18B, 0x19A, 0x19B], 0x8);
+            break;
+        case 0x16:
+            // fish
+            return getSprImg4x4([0x169, 0x16A, 0x179, 0x17A], 0xA);
+            break;
+        case 0x15:
+        case 0x18:
+        case 0x47:
+            // fishes
+            return getSprImg4x4([0x167, 0x168, 0x177, 0x178], 0xA);
+            break;
         case 0x14:
+            // falling spiny
             {
                 const upleft = getSpr8x8Img(0x184, 0xC);
                 const upright = getSpr8x8Img(0x184, 0xC, true);
@@ -4124,51 +4300,63 @@ function getSprImg(sprNum = 0, extra = 0) {
             }
             break;
         case 0x13:
-            return getSprImg4x4([0x182, 0x183, 0x192, 0x193], 0xC);
-            break;
-        case 0x12:
+            // spiny
             return getSprImg4x4([0x182, 0x183, 0x192, 0x193], 0xC);
             break;
         case 0x11:
+            // buzzy beetle
             return getSprImg4x4([0x182, 0x183, 0x192, 0x193], 0xE);
             break;
         case 0x0D:
+            // bob-omb
             return getSprImg4x4([0x1CA, 0x1CB, 0x1DA, 0x1DB], 0xB);
             break;
         case 0xD1:
+            // jumping fish generator
             return getSprImg4x4([0x167, 0x168, 0x177, 0x178], 0xA);
             break;
         case 0xD5:
+            // bullet bill generator
             return getSprImg4x4([0xA6, 0xA7, 0xB6, 0xB7], 0x9);
             break;
         case 0xD6:
+            // surround bullet bill generator
             return getSprImg4x4([0x1A4, 0x1A5, 0x1B4, 0x1B5], 0x9);
             break;
         case 0xD7:
+            // diagonal bullet bill generator
             return getSprImg4x4([0x1A6, 0x1A7, 0x1B6, 0x1B7], 0x9);
             break;
         case 0xD8:
+            // bowser statue fire breath generator
             return getSprImg4x4([0x133, 0x134, null, null], 0xC);
             break;
         case 0xE5:
+            // reappearing ghosts
             return getSprImg4x4([0x1AE, 0x1AF, 0x1BE, 0x1BF], 0x9, true);
             break;
         case 0xE4:
+            // swooper death bat ceiling
             return getSprImg4x4([0x1AE, 0x1AF, 0x1BE, 0x1BF], 0xB);
             break;
         case 0xE1:
+            // ghost ceiling
             return getSprImg4x4([0x1A8, 0x1A9, 0x1B8, 0x1B9], 0x9);
             break;
         case 0xE6:
+            // candle
             return getSprImg4x4([0x1E2, 0x1E3, 0x1F2, 0x1F3], 0xC);
             break;
         case 0xCB:
+            // eerie generator
             return getSprImg4x4([0x1ED, 0x1EE, 0x1FD, 0x1FE], 0xE);
             break;
         case 0xC9:
+            // bullet bill shooter
             return getSprImg4x4([0xA6, 0xA7, 0xB6, 0xB7], 0x9);
             break;
         case 0x45:
+            // directional coin
             {
                 const up = getSpr8x8Img(0xEA, 0xA);
                 const dn = getSpr8x8Img(0xEA, 0xA, false, true);
@@ -4181,6 +4369,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             }
             break;
         case 0x2F:
+            // spring board
             {
                 const upleft = getSpr8x8Img(0x28, 0xD);
                 const upright = getSpr8x8Img(0x28, 0xD, true);
@@ -4197,62 +4386,82 @@ function getSprImg(sprNum = 0, extra = 0) {
             }
             break;
         case 0x0E:
+            // keyhole
             return getSprImg4x4([null, 0xEB, null, 0xFB], 0x8);
             break;
         case 0xC8:
+            // light switch block
             return getSprImg4x4([0x2A, 0x2B, 0x3A, 0x3B], 0xC);
             break;
         case 0xC7:
+            // invisible mushroom
             return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
             break;
         case 0xBD:
+            // sliding blue koopa with no shell
             return getSprImg4x4([0x86, 0x87, 0x96, 0x97], 0xB);
             break;
         case 0xB9:
+            // message box
             return getSprImg4x4([0xC0, 0xC1, 0xD0, 0xD1], 0xB, true);
             break;
         case 0xB1:
+            // creating eating block
             return getSprImg4x4([0x2E, 0x2F, 0x3E, 0x3F], 0x8);
         case 0x81:
+            // changing item
             return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
             break;
         case 0x80:
+            // key
             return getSprImg4x4([0xEC, 0xED, 0xFC, 0xFD], 0x8, true);
             break;
         case 0x79:
+            // growing vine
             return getSprImg4x4([0xAE, 0xAF, 0xBE, 0xBF], 0xD);
             break;
         case 0x78:
+            // green mushroom
             return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xD);
             break;
         case 0x77:
+            // feather
             return getSprImg4x4([0x0E, 0x0F, 0x1E, 0x1F], 0xA);
             break;
         case 0x76:
+            // star
             return getSprImg4x4([0x48, 0x49, 0x58, 0x59], 0xA);
             break;
         case 0x75:
+            // flower
             return getSprImg4x4([0x26, 0x27, 0x36, 0x37], 0xD);
             break;
         case 0x74:
+            // mushroom
             return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
             break;
         case 0x6D:
+            // invisible brown block
             return getSprImg4x4([0x2E, 0x2F, 0x3E, 0x3F], 0x8);
             break;
         case 0x53:
+            // throw block
             return getSprImg4x4([0x40, 0x41, 0x50, 0x51], 0xB);
             break;
         case 0x3E:
+            // pow switch
             return getSprImg4x4([0x42, 0x43, 0x52, 0x53], 0x9);
             break;
         case 0x21:
+            // moving coin
             return getSprImg4x4([0xE8, 0xE9, 0xF8, 0xF9], 0xA);
             break;
         case 0x1C:
+            // bullet bill
             return getSprImg4x4([0xA6, 0xA7, 0xB6, 0xB7], 0x9);
             break;
         case 0x0F:
+            // goomba
             {
                 const color = 0x0A;
                 return getSprImg4x4([0xA8, 0xA9, 0xB8, 0xB9], color);
@@ -4263,6 +4472,7 @@ function getSprImg(sprNum = 0, extra = 0) {
         case 0xDC:
         case 0xDD:
         case 0xDF:
+            // koopa shell
             {
                 let color;
                 if (sprNum === 0xDA || sprNum === 0xDF) {
@@ -4286,6 +4496,7 @@ function getSprImg(sprNum = 0, extra = 0) {
         case 0:
         case 1:
         case 3:
+            // koopa, no shell
             {
                 let color;
                 if (sprNum === 0x0) {
@@ -4304,6 +4515,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             }
             break;
         case 2:
+            // blue koopa, no shell
             {
                 const color = 0x0B;
                 const result1 = getSpr8x8Img(0xE0, color);
@@ -4366,7 +4578,7 @@ function getFg8x8Img(index = 0, palette = 0) {
     return ctx.getImageData(0, 0, 8, 8);
 }
 function getSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
-    index = index % 0x200;
+    index = index % 0x300;
     const canvas = document.createElement("canvas");
     canvas.width = 8;
     canvas.height = 8;
@@ -4386,7 +4598,9 @@ function getSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
             break;
         case 3:
             gfx = sp4bmp;
-            ;
+            break;
+        case 4:
+            gfx = anibmp;
             break;
         default:
             throw new Error();
