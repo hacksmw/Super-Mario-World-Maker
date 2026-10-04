@@ -2189,7 +2189,7 @@ function load(lvlNum) {
         case 8388608 + 0x200:
             break;
         default:
-            alert("Wrong File Size: " + fileData.length);
+            throw new Error("Wrong File Size: " + fileData.length);
             return false;
             break;
     }
@@ -6504,7 +6504,13 @@ function fileOpen() {
                 }
             }
             let result;
-            result = load(levelNum);
+            try {
+                result = load(levelNum);
+            }
+            catch (e) {
+                alert(e.message);
+                return false;
+            }
             if (!result) {
                 return false;
             }

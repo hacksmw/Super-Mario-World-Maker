@@ -1066,9 +1066,7 @@ function spr_ondblclick(this: any, e: MouseEvent): void {
         this.style.border = "";
         this.style.backgroundColor = '';
         this.style.backgroundImage = `url(${img})`;
-    }
-
-    
+    }   
 }
 
 function window_onload(): void {
@@ -2575,7 +2573,7 @@ function load(lvlNum: number): boolean {
         case 8388608 + 0x200:
             break;
         default:
-            alert("Wrong File Size: " + fileData.length);
+            throw new Error("Wrong File Size: " + fileData.length);
             return false;
             break;
     }
@@ -7374,10 +7372,18 @@ function fileOpen(): void {
                 }
             }
             let result: boolean;
-            result = load(levelNum);
+            
+            try {
+                result = load(levelNum);
+            } catch (e: any) {
+                alert(e.message);
+                return false;
+            }
+
             if (!result) {
                 return false;
             }
+
             btnOpen.disabled = true;
             btnPalette.disabled = false;
             btn8x8.disabled = false;
