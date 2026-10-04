@@ -156,7 +156,7 @@ let sprGFXindex: number;
 let fgbgGFXindex: number;
 let customPalette: number;
 let useNewSpriteSystem: number;
-let anibmp: number[][];
+let anibmp: number[][], ani2bmp: number[][];
 
 let btnOpen: HTMLButtonElement
 let btnPalette: HTMLButtonElement
@@ -2708,6 +2708,11 @@ function load(lvlNum: number): boolean {
     secondaryLevelHeader[1] = fileData[snes2pc(0x05F200 + lvlNum, fileType)];
     secondaryLevelHeader[2] = fileData[snes2pc(0x05F400 + lvlNum, fileType)];
     secondaryLevelHeader[3] = fileData[snes2pc(0x05F600 + lvlNum, fileType)];
+    secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum, fileType)];
+    
+    secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum, fileType)];
+    secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum, fileType)];
+    secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum, fileType)];
 
     /* Get Level Information */
 
@@ -2772,7 +2777,7 @@ function load(lvlNum: number): boolean {
 
     /* Load Palette */
 
-    customPalette = ((fileData[snes2pc(0x0EF600 + (3 * lvlNum) + 2)] << 16) | (fileData[snes2pc(0xEF600 + (3 * lvlNum) + 1)] << 8) | (fileData[snes2pc(0x0EF600 + (3 * lvlNum) + 0)] << 0));
+    customPalette = read3(0x0EF600 + (3 * lvlNum));
 
     // get palette
     pal = getPalette(bgPalNum, fgPalNum, spPalNum);
@@ -2785,8 +2790,7 @@ function load(lvlNum: number): boolean {
         pal = getCustomPalette();
         bgColor = getCustomBackAreaColor();
     }
-
-    
+ 
 
     /* Load Graphics */
     loadGraphics();
@@ -3274,7 +3278,7 @@ function getCustomPalette() {
         palette[i][1] = 0b11111_11111_11111;
     }
 
-    const addr = customPalette + 2;
+    let addr = customPalette + 2;
 
     for (let i = 0; i < palette.length; i++) {
         for (let j = 0; j < palette[i].length; j++) {
@@ -3282,6 +3286,11 @@ function getCustomPalette() {
             palette[i][j] = data;
         }
     }
+
+    // animated color palette
+    addr = (0x00b60c + (0x2 * 0));
+    data = readPal(addr);
+    palette[6][4] = data;
 
     /* Convert palettes */
 
@@ -3439,7 +3448,7 @@ function getCompressedGraphicsAddr(index: number) {
 function loadGraphics() {
     let fg1gfx: number[], fg2gfx: number[], bggfx: number[], fg3gfx: number[];
     let sp1gfx: number[], sp2gfx: number[], sp3gfx: number[], sp4gfx: number[];
-    let anigfx: number[];
+    let anigfx: number[], ani2gfx: number[];
 
     // get tileset
     tileset = tilesetList[fgbgGFX];
@@ -3478,17 +3487,22 @@ function loadGraphics() {
     sp4gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp4)));
 
     // Animation graphics
-    let gfx33Pointer = 0x8bfc0;
+    let gfx33Pointer: number = 0x8bfc0;
+    let gfx32Pointer: number = 0x88000;
 
     if (isLMModified) {
         gfx33Pointer = (((read1(0x00B890) << 16) | read2(0x00B88B)));
     }
 
+    
+    if (isLMModified) {
+        gfx32Pointer = (((read1(0x00B890) << 16) | read2(0x00B8D8)));
+    }
+
     anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
+    ani2gfx = decompress_lz2(fileData.slice(snes2pc(gfx32Pointer)))
     
     /* Convert Graphics */
-
-    anibmp = convertGraphics(anigfx);
 
     fg1bmp = convertGraphics(fg1gfx);
     fg2bmp = convertGraphics(fg2gfx);
@@ -3506,6 +3520,10 @@ function loadGraphics() {
             bg3bmp[i][j] = 0;
         }
     }
+
+
+    anibmp = convertGraphics(anigfx);
+    ani2bmp = convertGraphics(ani2gfx);
 
     sp1bmp = convertGraphics(sp1gfx);
     sp2bmp = convertGraphics(sp2gfx);
@@ -3537,6 +3555,13 @@ function original_animation() {
 
     animate_4_8x8s_line(fg1bmp, anibmp, 0x7C, 0x178);
 
+    /*
+    fg2bmp[0x0] = ani2bmp[0x2E4]; 
+    fg2bmp[0x1] = ani2bmp[0x2E5]; 
+    fg2bmp[0x10] = ani2bmp[0x2E6]; 
+    fg2bmp[0x11] = ani2bmp[0x2E7]; 
+    */
+   
     if (tileset === 0) {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
@@ -5011,32 +5036,154 @@ function gradual_slope_2_image(objNum: number, settings: number, tileset: number
 
 }
 
+function getSprImg4x4(tiles: number[], color: number) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    canvas.width = 16;
+    canvas.height = 16;
+
+    const ctx = canvas.getContext("2d");
+
+    const result1 = getSpr8x8Img(tiles[0], color);
+    const result2 = getSpr8x8Img(tiles[1], color);
+    const result3 = getSpr8x8Img(tiles[2], color);
+    const result4 = getSpr8x8Img(tiles[3], color);   
+
+    ctx!.putImageData(result1, 0, 0);
+    ctx!.putImageData(result2, 8, 0);
+    ctx!.putImageData(result3, 0, 8);
+    ctx!.putImageData(result4, 8, 8);
+
+    return canvas.toDataURL('image/png');
+}
+
 function getSprImg(sprNum: number = 0, extra: number = 0) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    if (extra !== 0) {
+        return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
+    }
+
     switch (sprNum) {
+        case 0xC8:
+            return getSprImg4x4([0x2A, 0x2B, 0x3A, 0x3B], 0xC);
+            break;
+        case 0xC7:
+            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
+            break;
+        case 0xBD:
+            return getSprImg4x4([0x86, 0x87, 0x96, 0x97], 0xB);
+            break;
+        case 0xB9:
+            return getSprImg4x4([0xC0, 0xC1, 0xD0, 0xD1], 0xB);
+            break;
+        case 0xB1:
+            return getSprImg4x4([0x2E, 0x2F, 0x3E, 0x3F], 0x8);
+        case 0x81:
+            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
+            break;
+        case 0x80:
+            return getSprImg4x4([0xEC, 0xED, 0xFC, 0xFD], 0x8);
+            break;
+        case 0x79:
+            return getSprImg4x4([0xAE, 0xAF, 0xBE, 0xBF], 0xD);
+            break;
+        case 0x78:
+            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xD);
+            break;
+        case 0x77:
+            return getSprImg4x4([0x0E, 0x0F, 0x1E, 0x1F], 0xA);
+            break;
+        case 0x76:
+            return getSprImg4x4([0x48, 0x49, 0x58, 0x59], 0xA);
+            break;
+        case 0x75:
+            return getSprImg4x4([0x26, 0x27, 0x36, 0x37], 0xD);
+            break;
+        case 0x74:
+            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
+            break;
+        case 0x6D:
+            return getSprImg4x4([0x2E, 0x2F, 0x3E, 0x3F], 0x8);
+            break;
+        case 0x53:
+            return getSprImg4x4([0x40, 0x41, 0x50, 0x51], 0xB);
+            break;
+        case 0x3E:
+            return getSprImg4x4([0x42, 0x43, 0x52, 0x53], 0x9);
+            break;
+        case 0x21:
+            return getSprImg4x4([0xE8, 0xE9, 0xF8, 0xF9], 0xA);
+            break;
+        case 0x1C:
+            return getSprImg4x4([0xA6, 0xA7, 0xB6, 0xB7], 0x9);
+            break;
+        case 0x0F:
+            {
+                const color = 0x0A;
+                return getSprImg4x4([0xA8, 0xA9, 0xB8, 0xB9], color);
+            }
+            break;
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDF:
+            {
+                let color: number;
+
+                if (sprNum === 0xDA || sprNum === 0xDF) {
+                    color = 0xD;
+                } else if (sprNum === 0xDB) {
+                    color = 0xC
+                } else if (sprNum === 0xDD) {
+                    color = 0xA;
+                } else if (sprNum === 0xDC) {
+                    color = 0xB;
+                } else {
+                    throw new Error();
+                }
+
+                return getSprImg4x4([0x8C, 0x8D, 0x9C, 0x9D], color);
+            }
+            break;
+        case 0:
+        case 1:
+        case 3:
+            {
+                let color: number;
+
+                if (sprNum === 0x0) {
+                    color = 0xD;
+                } else if (sprNum === 0x1) {
+                    color = 0xC
+                } else if (sprNum === 0x3) {
+                    color = 0xA;
+                } else {
+                    throw new Error();
+                }
+
+                return getSprImg4x4([0xC8, 0xC9, 0xD8, 0xD9], color);
+            }
+            break;
+        case 2:
+            {
+                const color = 0x0B;
+
+                const result1 = getSpr8x8Img(0xE0, color);
+                const result2 = getSpr8x8Img(0xE1, color);
+                const result3 = getSpr8x8Img(0xF0, color);
+                const result4 = getSpr8x8Img(0xF1, color);  
+                
+                return getSprImg4x4([0xE0, 0xE1, 0xF0, 0xF1], color);
+            }
+            break;
         default: 
             {
-                const result1 = getSpr8x8Img(0x0, 0x9);
-                const result2 = getSpr8x8Img(0x1, 0x9);
-                const result3 = getSpr8x8Img(0x10, 0x9);
-                const result4 = getSpr8x8Img(0x11, 0x9);
-
-                const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
-
-                canvas.width = 16;
-                canvas.height = 16;
-
-                const ctx = canvas.getContext("2d");
-
-                ctx!.putImageData(result1, 0, 0);
-                ctx!.putImageData(result2, 8, 0);
-                ctx!.putImageData(result3, 0, 8);
-                ctx!.putImageData(result4, 8, 8);
-
-                return canvas.toDataURL('image/png');
+                return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
             }
             break;
     }
-
 }
 
 function getFg8x8Img(index: number = 0, palette: number = 0) {
@@ -5145,7 +5292,13 @@ function getSpr8x8Img(index: number = 0, palette: number = 0) {
         g = color.g
         b = color.b
 
-        ctx!.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        let alpha = 1.0;
+
+        if (bitmap[j] == 0) {
+            alpha = 0.0;
+        }
+        
+        ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
 
         ctx!.fillRect(j % 8, intdiv(j, 8), 1, 1);
     }  
@@ -6733,7 +6886,8 @@ function loadBG(bgPointer: number): Nullable<number[]> {
 
 function convertGraphics(org: number[]) {
     let bitmapTiles: number[][] = new Array(16 * 8);
-    for (let i = 0; i < 512; i++) {
+    const limit: number = 768;
+    for (let i = 0; i < limit; i++) {
         let bitmap: number[] = new Array(64);
 
         for (let c = 0; c < 8; c++) {
