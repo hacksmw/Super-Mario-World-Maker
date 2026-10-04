@@ -2995,6 +2995,7 @@ function original_animation() {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x9C);
     }
     else if (tileset === 2) {
+        // rope
         animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x144);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0x164);
@@ -3012,6 +3013,25 @@ function original_animation() {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0xC0);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x14C);
+    }
+    if (fgbgGFX === 0x06) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x158);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x70, 0x10C);
+    }
+    else if (fgbgGFX === 0x09) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x48, 0xC0);
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x14C);
+    }
+    else if (fgbgGFX === 0x00) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x9C);
+    }
+    else if (fgbgGFX === 0xC || fgbgGFX === 0xD) {
+        animate_4_8x8s_line(fg1bmp, anibmp, 0x4C, 0x9C);
     }
 }
 function animate_4_8x8s_line(dest, src, destStart, srcStart) {
@@ -4050,19 +4070,35 @@ function gradual_slope_2_image(objNum, settings, tileset = 0, firstBlock = 0x131
     }
     return canvas.toDataURL('image/png');
 }
-function getSprImg4x4(tiles, color) {
+function getSprImg4x4(tiles, color, flipx = false) {
     const canvas = document.createElement("canvas");
     canvas.width = 16;
     canvas.height = 16;
     const ctx = canvas.getContext("2d");
-    const result1 = getSpr8x8Img(tiles[0], color);
-    const result2 = getSpr8x8Img(tiles[1], color);
-    const result3 = getSpr8x8Img(tiles[2], color);
-    const result4 = getSpr8x8Img(tiles[3], color);
-    ctx.putImageData(result1, 0, 0);
-    ctx.putImageData(result2, 8, 0);
-    ctx.putImageData(result3, 0, 8);
-    ctx.putImageData(result4, 8, 8);
+    const result = [];
+    for (let i = 0; i < 4; i++) {
+        if (tiles[i] !== null) {
+            if (flipx) {
+                result[i] = getSpr8x8Img(tiles[i], color, true);
+            }
+            else {
+                result[i] = getSpr8x8Img(tiles[i], color);
+            }
+        }
+        else {
+            result[i] = null;
+        }
+    }
+    for (let i = 0; i < 4; i++) {
+        if (result[i] !== null) {
+            if (flipx) {
+                ctx.putImageData(result[i], (1 - (i % 2)) * 8, intdiv(i, 2) * 8);
+            }
+            else {
+                ctx.putImageData(result[i], (i % 2) * 8, intdiv(i, 2) * 8);
+            }
+        }
+    }
     return canvas.toDataURL('image/png');
 }
 function getSprImg(sprNum = 0, extra = 0) {
@@ -4071,6 +4107,70 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xD1:
+            return getSprImg4x4([0x167, 0x168, 0x177, 0x178], 0xA);
+            break;
+        case 0xD5:
+            return getSprImg4x4([0xA6, 0xA7, 0xB6, 0xB7], 0x9);
+            break;
+        case 0xD6:
+            return getSprImg4x4([0x1A4, 0x1A5, 0x1B4, 0x1B5], 0x9);
+            break;
+        case 0xD7:
+            return getSprImg4x4([0x1A6, 0x1A7, 0x1B6, 0x1B7], 0x9);
+            break;
+        case 0xD8:
+            return getSprImg4x4([0x133, 0x134, null, null], 0xC);
+            break;
+        case 0xE5:
+            return getSprImg4x4([0x1AE, 0x1AF, 0x1BE, 0x1BF], 0x9, true);
+            break;
+        case 0xE4:
+            return getSprImg4x4([0x1AE, 0x1AF, 0x1BE, 0x1BF], 0xB);
+            break;
+        case 0xE1:
+            return getSprImg4x4([0x1A8, 0x1A9, 0x1B8, 0x1B9], 0x9);
+            break;
+        case 0xE6:
+            return getSprImg4x4([0x1E2, 0x1E3, 0x1F2, 0x1F3], 0xC);
+            break;
+        case 0xCB:
+            return getSprImg4x4([0x1ED, 0x1EE, 0x1FD, 0x1FE], 0xE);
+            break;
+        case 0xC9:
+            return getSprImg4x4([0xA6, 0xA7, 0xB6, 0xB7], 0x9);
+            break;
+        case 0x45:
+            {
+                const up = getSpr8x8Img(0xEA, 0xA);
+                const dn = getSpr8x8Img(0xEA, 0xA, false, true);
+                canvas.width = 16;
+                canvas.height = 16;
+                const ctx = canvas.getContext("2d");
+                ctx.putImageData(up, 8, 0);
+                ctx.putImageData(dn, 8, 8);
+                return canvas.toDataURL("image/png");
+            }
+            break;
+        case 0x2F:
+            {
+                const upleft = getSpr8x8Img(0x28, 0xD);
+                const upright = getSpr8x8Img(0x28, 0xD, true);
+                const dnleft = getSpr8x8Img(0x28, 0xD, false, true);
+                const dnright = getSpr8x8Img(0x28, 0xD, true, true);
+                canvas.width = 16;
+                canvas.height = 16;
+                const ctx = canvas.getContext("2d");
+                ctx.putImageData(upleft, 0, 0);
+                ctx.putImageData(upright, 8, 0);
+                ctx.putImageData(dnleft, 0, 8);
+                ctx.putImageData(dnright, 8, 8);
+                return canvas.toDataURL("image/png");
+            }
+            break;
+        case 0x0E:
+            return getSprImg4x4([null, 0xEB, null, 0xFB], 0x8);
+            break;
         case 0xC8:
             return getSprImg4x4([0x2A, 0x2B, 0x3A, 0x3B], 0xC);
             break;
@@ -4081,7 +4181,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             return getSprImg4x4([0x86, 0x87, 0x96, 0x97], 0xB);
             break;
         case 0xB9:
-            return getSprImg4x4([0xC0, 0xC1, 0xD0, 0xD1], 0xB);
+            return getSprImg4x4([0xC0, 0xC1, 0xD0, 0xD1], 0xB, true);
             break;
         case 0xB1:
             return getSprImg4x4([0x2E, 0x2F, 0x3E, 0x3F], 0x8);
@@ -4089,7 +4189,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
             break;
         case 0x80:
-            return getSprImg4x4([0xEC, 0xED, 0xFC, 0xFD], 0x8);
+            return getSprImg4x4([0xEC, 0xED, 0xFC, 0xFD], 0x8, true);
             break;
         case 0x79:
             return getSprImg4x4([0xAE, 0xAF, 0xBE, 0xBF], 0xD);
@@ -4237,7 +4337,7 @@ function getFg8x8Img(index = 0, palette = 0) {
     }
     return ctx.getImageData(0, 0, 8, 8);
 }
-function getSpr8x8Img(index = 0, palette = 0) {
+function getSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
     index = index % 0x200;
     const canvas = document.createElement("canvas");
     canvas.width = 8;
@@ -4268,8 +4368,9 @@ function getSpr8x8Img(index = 0, palette = 0) {
     const bitmap = gfx[i];
     let r, g, b;
     for (let j = 0; j < 64; j++) {
-        const color = pal[palette][bitmap[j]];
+        let color;
         let r, g, b;
+        color = pal[palette][bitmap[j]];
         r = color.r;
         g = color.g;
         b = color.b;
@@ -4278,7 +4379,18 @@ function getSpr8x8Img(index = 0, palette = 0) {
             alpha = 0.0;
         }
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        ctx.fillRect(j % 8, intdiv(j, 8), 1, 1);
+        if (flipx === true && flipy === false) {
+            ctx.fillRect(7 - (j % 8), intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === false && flipy === true) {
+            ctx.fillRect((j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === true && flipy === true) {
+            ctx.fillRect(7 - (j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else {
+            ctx.fillRect((j % 8), intdiv(j, 8), 1, 1);
+        }
     }
     return ctx.getImageData(0, 0, 8, 8);
 }
