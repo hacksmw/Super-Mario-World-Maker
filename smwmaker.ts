@@ -5099,6 +5099,38 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x14:
+            {
+                const upleft = getSpr8x8Img(0x184, 0xC);
+                const upright = getSpr8x8Img(0x184, 0xC, true);
+                const dnleft = getSpr8x8Img(0x184, 0xC, false, true);
+                const dnright = getSpr8x8Img(0x184, 0xC, true, true);
+
+                canvas.width = 16;
+                canvas.height = 16;
+
+                const ctx = canvas.getContext("2d");
+
+                ctx!.putImageData(upleft, 0, 0);
+                ctx!.putImageData(upright, 8, 0);
+                ctx!.putImageData(dnleft, 0, 8);
+                ctx!.putImageData(dnright, 8, 8);
+
+                return canvas.toDataURL("image/png");
+            }
+            break;
+        case 0x13:
+            return getSprImg4x4([0x182, 0x183, 0x192, 0x193], 0xC);
+            break;
+        case 0x12:
+            return getSprImg4x4([0x182, 0x183, 0x192, 0x193], 0xC);
+            break;
+        case 0x11:
+            return getSprImg4x4([0x182, 0x183, 0x192, 0x193], 0xE);
+            break;
+        case 0x0D:
+            return getSprImg4x4([0x1CA, 0x1CB, 0x1DA, 0x1DB], 0xB)
+            break;
         case 0xD1:
             return getSprImg4x4([0x167, 0x168, 0x177, 0x178], 0xA)
             break;
