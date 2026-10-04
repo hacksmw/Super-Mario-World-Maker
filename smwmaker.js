@@ -144,6 +144,7 @@ let fgbgGFXindex;
 let customPalette;
 let useNewSpriteSystem;
 let anibmp, ani2bmp;
+let is4bpp;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -2943,10 +2944,16 @@ function loadGraphics() {
     anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
     ani2gfx = decompress_lz2(fileData.slice(snes2pc(gfx32Pointer)));
     /* Convert Graphics */
-    fg1bmp = convertGraphics(fg1gfx);
-    fg2bmp = convertGraphics(fg2gfx);
-    fg3bmp = convertGraphics(fg3gfx);
-    bgbmp = convertGraphics(bggfx);
+    if (read1(0x0480D0) === 96) {
+        is4bpp = true;
+    }
+    else {
+        is4bpp = false;
+    }
+    fg1bmp = convertGraphics(fg1gfx, is4bpp);
+    fg2bmp = convertGraphics(fg2gfx, is4bpp);
+    fg3bmp = convertGraphics(fg3gfx, is4bpp);
+    bgbmp = convertGraphics(bggfx, is4bpp);
     bg2bmp = new Array(0x80);
     bg3bmp = new Array(0x80);
     for (let i = 0; i < 0x80; i++) {
@@ -2957,12 +2964,12 @@ function loadGraphics() {
             bg3bmp[i][j] = 0;
         }
     }
-    anibmp = convertGraphics(anigfx);
-    ani2bmp = convertGraphics(ani2gfx);
-    sp1bmp = convertGraphics(sp1gfx);
-    sp2bmp = convertGraphics(sp2gfx);
-    sp3bmp = convertGraphics(sp3gfx);
-    sp4bmp = convertGraphics(sp4gfx);
+    anibmp = convertGraphics(anigfx, is4bpp);
+    ani2bmp = convertGraphics(ani2gfx, is4bpp);
+    sp1bmp = convertGraphics(sp1gfx, is4bpp);
+    sp2bmp = convertGraphics(sp2gfx, is4bpp);
+    sp3bmp = convertGraphics(sp3gfx, is4bpp);
+    sp4bmp = convertGraphics(sp4gfx, is4bpp);
     original_animation();
 }
 function original_animation() {
