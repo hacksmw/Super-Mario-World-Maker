@@ -524,6 +524,7 @@ function getFreeSpace(dataSize) {
     return 0;
 }
 function stage_onmousemove(e) {
+    e.stopPropagation();
     if (!isPress)
         return;
     let data;
@@ -549,11 +550,11 @@ function stage_onmousemove(e) {
     if (editMode == "layer1" || editMode == "layer2") {
         data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111, data[index]) & 0b11111;
+            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16), data[index]) & 0b11111;
             data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]) & 0b1111;
         }
         else {
-            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111, data[index]) & 0b1111;
+            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16), data[index]) & 0b1111;
             data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]) & 0b11111;
         }
     }
@@ -568,10 +569,11 @@ function stage_onmousemove(e) {
             sprites[index].yPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b11111;
         }
     }
-    target.style.left = (prevObjLeft + deltaX) + "px";
-    target.style.top = (prevObjTop + deltaY) + "px";
+    target.style.left = ((prevObjLeft + deltaX)) + "px";
+    target.style.top = ((prevObjTop + deltaY)) + "px";
 }
 function obj_onmousedown(e) {
+    e.stopPropagation();
     if (!this.classList.contains(editMode)) {
         return;
     }
@@ -586,7 +588,6 @@ function obj_onmousedown(e) {
     //this.style.border = "1px solid red";
     this.style.filter = 'invert(100%)';
     this.focus();
-    e.stopPropagation();
     isPress = true;
     prevObjLeft = this.offsetLeft;
     prevObjTop = this.offsetTop;
@@ -594,9 +595,8 @@ function obj_onmousedown(e) {
     prevPosY = e.clientY;
     target = this;
 }
-function obj_onmouseup(e) {
-}
-function stage_onmousedown() {
+function stage_onmousedown(e) {
+    e.stopPropagation();
     let objects = document.querySelectorAll(".object, .sprite");
     for (let i = 0; i < objects.length; i++) {
         let obj = objects[i];
@@ -605,7 +605,12 @@ function stage_onmousedown() {
     }
     isPress = false;
 }
-function stage_onmouseup() {
+function obj_onmouseup(e) {
+    e.stopPropagation();
+    isPress = false;
+}
+function stage_onmouseup(e) {
+    e.stopPropagation();
     isPress = false;
 }
 function stage_onkeydown(e) {
