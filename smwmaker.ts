@@ -2894,8 +2894,7 @@ function load(lvlNum: number): boolean {
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
     
-    /*
-    if (lmModified && lunarMagicVer >= 3.0) {
+    if (lmModified && lunarMagicVer === 3.0) {
         // TB0MMMMM 
         const pointer = read3(read3(0x05D9A2)+70) + lvlNum;
         const extHeader = read1(pointer);
@@ -2911,7 +2910,6 @@ function load(lvlNum: number): boolean {
             throw new Error("extended header is not valid.");
         }
     }
-    */
     
 
     if (fgbgGFX > 15) {

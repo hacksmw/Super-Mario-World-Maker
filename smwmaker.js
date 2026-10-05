@@ -2452,24 +2452,19 @@ function load(lvlNum) {
     horizontalLevelMode = 0;
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
-    /*
-    if (lmModified && lunarMagicVer >= 3.0) {
-        // TB0MMMMM
-        const pointer = read3(read3(0x05D9A2)+70) + lvlNum;
+    if (lmModified && lunarMagicVer === 3.0) {
+        // TB0MMMMM 
+        const pointer = read3(read3(0x05D9A2) + 70) + lvlNum;
         const extHeader = read1(pointer);
-
-        let zero: number;
-
+        let zero;
         horizontalLevelMode = extHeader & 0b11111;
         showBottomRowOfTheLevel = (extHeader >>> 6) & 0b1;
         levelUsesEitherLayer2OrLayer3 = (extHeader >>> 7) & 0b1;
         zero = (extHeader >>> 5) & 0b1;
-
         if (zero !== 0) {
             throw new Error("extended header is not valid.");
         }
     }
-    */
     if (fgbgGFX > 15) {
         fgbgGFX = 0;
     }
