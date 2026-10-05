@@ -145,6 +145,8 @@ let customPalette;
 let useNewSpriteSystem;
 let anibmp, ani2bmp;
 let is4bpp;
+let bg2, bg3;
+let superGFXBypass = false;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -2903,12 +2905,29 @@ function getPalette(bgPalNum, fgPalNum, spPalNum) {
     return pal;
 }
 function getCompressedGraphicsAddr(index) {
-    return snes2pc(((fileData[snes2pc(0x00b9f6 + index)]) << 16) |
-        ((fileData[snes2pc(0x00b9c4 + index)]) << 8) | fileData[snes2pc(0x00b992 + index)]);
+    let addr = 0;
+    if (index <= 0x31) {
+        addr = snes2pc(((fileData[snes2pc(0x00b9f6 + index)]) << 16) |
+            ((fileData[snes2pc(0x00b9c4 + index)]) << 8) | fileData[snes2pc(0x00b992 + index)]);
+    }
+    else if (0x60 <= index && index <= 0x63) {
+        addr = snes2pc(read3(0x03BCC0 + ((index - 0x60) * 3)));
+    }
+    else if (0x80 <= index && index <= 0xFF) {
+        addr = snes2pc(read3(0x0FF600 + ((index - 0x80) * 3)));
+    }
+    else if (0x100 <= index && index <= 0xFFF) {
+        addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100) * 3)));
+    }
+    else {
+        throw new Error();
+    }
+    return addr;
 }
 function loadGraphics() {
     let fg1gfx, fg2gfx, bggfx, fg3gfx;
     let sp1gfx, sp2gfx, sp3gfx, sp4gfx;
+    let bg2gfx, bg3gfx;
     let anigfx, ani2gfx;
     // get tileset
     tileset = tilesetList[fgbgGFX];
@@ -2917,16 +2936,39 @@ function loadGraphics() {
     fg2 = fileData[snes2pc((0xA92B) + (4 * fgbgGFX) + 1)];
     bg = fileData[snes2pc((0xA92B) + (4 * fgbgGFX) + 2)];
     fg3 = fileData[snes2pc((0xA92B) + (4 * fgbgGFX) + 3)];
+    bg2 = 0x7f;
+    bg3 = 0x7f;
     sp1 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 0))];
     sp2 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 1))];
     sp3 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 2))];
     sp4 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 3))];
+    if (isLMModified) {
+        const pointer = read3(0x0FF7FF) + (32 * (levelNum));
+        superGFXBypass = !!(read2(pointer) >>> 15);
+        if (superGFXBypass) {
+            fg1 = read2(pointer + (2 * 7));
+            fg2 = read2(pointer + (2 * 6));
+            bg = read2(pointer + (2 * 5));
+            fg3 = read2(pointer + (2 * 4));
+            bg2 = read2(pointer + (2 * 3));
+            bg3 = read2(pointer + (2 * 2));
+        }
+    }
+    else {
+        superGFXBypass = false;
+    }
     /* Get Compressed Graphics and Decompress */
     // FG/BG graphics;
     fg1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg1)));
     fg2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg2)));
     bggfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg)));
     fg3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg3)));
+    if (bg2 !== 0x7f) {
+        bg2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg2)));
+    }
+    if (bg3 !== 0x7f) {
+        bg3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg3)));
+    }
     // Sprite Graphics
     sp1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp1)));
     sp2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp2)));
@@ -2954,15 +2996,29 @@ function loadGraphics() {
     fg2bmp = convertGraphics(fg2gfx, is4bpp);
     fg3bmp = convertGraphics(fg3gfx, is4bpp);
     bgbmp = convertGraphics(bggfx, is4bpp);
-    bg2bmp = new Array(0x80);
-    bg3bmp = new Array(0x80);
-    for (let i = 0; i < 0x80; i++) {
-        bg2bmp[i] = new Array(64);
-        bg3bmp[i] = new Array(64);
-        for (let j = 0; j < 64; j++) {
-            bg2bmp[i][j] = 0;
-            bg3bmp[i][j] = 0;
+    if (bg2 === 0x7f) {
+        bg2bmp = new Array(0x80);
+        for (let i = 0; i < 0x80; i++) {
+            bg2bmp[i] = new Array(64);
+            for (let j = 0; j < 64; j++) {
+                bg2bmp[i][j] = 0;
+            }
         }
+    }
+    else {
+        bg2bmp = convertGraphics(bg2gfx, is4bpp);
+    }
+    if (bg3 === 0x7f) {
+        bg3bmp = new Array(0x80);
+        for (let i = 0; i < 0x80; i++) {
+            bg3bmp[i] = new Array(64);
+            for (let j = 0; j < 64; j++) {
+                bg3bmp[i][j] = 0;
+            }
+        }
+    }
+    else {
+        bg3bmp = convertGraphics(bg3gfx, is4bpp);
     }
     anibmp = convertGraphics(anigfx, is4bpp);
     ani2bmp = convertGraphics(ani2gfx, is4bpp);
@@ -6508,8 +6564,9 @@ function fileOpen() {
                 result = load(levelNum);
             }
             catch (e) {
-                alert(e.message);
-                return false;
+                throw e;
+                //alert(e.message);
+                //return false;
             }
             if (!result) {
                 return false;
