@@ -107,7 +107,7 @@ let fg1bmp, fg2bmp, bgbmp, fg3bmp;
 let bg2bmp, bg3bmp;
 let sp1bmp, sp2bmp, sp3bmp, sp4bmp;
 let fileData;
-let fileName = "";
+let fileName;
 let levelNum;
 let layer1DataPointer;
 let layer2DataPointer;
@@ -120,8 +120,8 @@ let isLMModified;
 let bgPage;
 let bgPalNum, fgPalNum, spPalNum;
 let pal;
-let editMode = "layer1";
-let isVertical = false;
+let editMode;
+let isVertical;
 let timer;
 let music;
 let itemMemory;
@@ -144,7 +144,7 @@ let backAreaColorNum;
 let bgPointer;
 let isLayer2;
 let secondExits;
-let isBGEdited = false;
+let isBGEdited;
 let lmVer;
 let romType;
 let bypassedMusic;
@@ -160,7 +160,7 @@ let useNewSpriteSystem;
 let anibmp, ani2bmp;
 let is4bpp;
 let bg2, bg3;
-let superGFXBypass = false;
+let superGFXBypass;
 let offset;
 let slippery;
 let water;
@@ -174,9 +174,31 @@ let bgRelativeToFG;
 let bgfgIsRelativeToPlayer;
 let enterLeft;
 let bgHeight;
-let horizontalLevelMode = 0;
-let showBottomRowOfTheLevel = 0;
-let levelUsesEitherLayer2OrLayer3 = 0;
+let separateMidway;
+let midOffset;
+let midSlippery;
+let midWater;
+let midMethod2;
+let midSmartSpawnFlag;
+let midSpriteSpawnRange;
+let midAutoSetScrNumber;
+let midUseSeparatelayer2ScrollRate;
+let midLayer2VerticalScrollSetting;
+let midBgRelativeToFG;
+let midBgfgIsRelativeToPlayer;
+let midEnterLeft;
+let midBgHeight;
+let midMidScrNum;
+let midwayX;
+let midwayY;
+let midAction;
+let midwayFG;
+let midwayBG;
+let midwayRedirect;
+let midwayRedirectLevelNum;
+let horizontalLevelMode;
+let showBottomRowOfTheLevel;
+let levelUsesEitherLayer2OrLayer3;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -218,10 +240,10 @@ let sel2ndEnter;
 let btn2ndOK;
 let btn2ndCancel;
 let btnSave;
-let isPress = false;
-let prevPosX = 0, prevPosY = 0;
-let target = null;
 let prevObjLeft, prevObjTop;
+let isPress;
+let prevPosX, prevPosY;
+let target;
 function make_layer_data(layerData, layerDataBinary) {
     let currentScreen = 0;
     for (let i = 0; i < layerData.length; i++) {
@@ -2464,6 +2486,77 @@ function load(lvlNum) {
         if (zero !== 0) {
             throw new Error("extended header is not valid.");
         }
+    }
+    if (lmModified) {
+        const pointer = read3(read3(0x05D9E4) + 0x0A);
+        const addr1 = pointer + (512 * 0) + lvlNum;
+        const addr2 = pointer + (512 * 1) + lvlNum;
+        const addr3 = pointer + (512 * 2) + lvlNum;
+        const addr4 = pointer + (512 * 3) + lvlNum;
+        let hdr1 = read1(addr1);
+        let hdr2 = read1(addr2);
+        let hdr3 = read1(addr3);
+        let hdr4 = read1(addr4);
+        if (lunarMagicVer < 3.0) {
+            hdr4 = 0;
+        }
+        midSlippery = hdr1 >>> 7;
+        midWater = (hdr1 >>> 6) & 0b1;
+        if (lunarMagicVer >= 3.0) {
+            separateMidway = (hdr1 >>> 5) & 0b1;
+        }
+        else {
+            separateMidway = (hdr1 >>> 5) & 0b1;
+        }
+        midScrNum = midMidScrNum = (((hdr1 >>> 4) & 0b1) << 4) | (midScrNum & 0b1111);
+        midwayY = (hdr2 >>> 4);
+        midwayX = (hdr2 & 0b1111);
+        if (lunarMagicVer >= 3.0) {
+            midwayY = ((hdr4 & 0b111111) << 4) | midwayY;
+            midwayX = (((hdr1 >>> 3) & 0b1) << 4) | midwayX;
+        }
+        else {
+            midwayY = (((hdr1 >>> 3) & 0b1) << 4) | midwayY;
+        }
+        midAction = hdr1 & 0b111;
+        midBgfgIsRelativeToPlayer = 0;
+        if (lunarMagicVer >= 3.0) {
+            midBgfgIsRelativeToPlayer = hdr3 >>> 7;
+        }
+        midwayFG = (hdr3 >>> 2) & 0b11;
+        midwayBG = (hdr3 >>> 0) & 0b11;
+        midOffset = hdr3 & 0b1111;
+        if (lunarMagicVer >= 3.0) {
+            midOffset |= ((hdr4 >>> 6) & 0b1) << 4;
+        }
+        midEnterLeft = 0;
+        if (lunarMagicVer >= 3.0) {
+            midEnterLeft = (hdr3 >>> 6) & 1;
+        }
+        midwayRedirect = 0;
+        if (lunarMagicVer >= 3.0) {
+            midwayRedirect = (hdr3 >>> 5) & 0b1;
+        }
+        midwayRedirectLevelNum = 0;
+        if (midwayRedirect) {
+            midwayRedirectLevelNum = ((hdr3 & 0b1) << 8) | hdr2;
+        }
+    }
+    else {
+        midSlippery = 0;
+        midWater = 0;
+        separateMidway = 0;
+        midScrNum = 0;
+        midwayY = 0;
+        midwayX = 0;
+        midAction = 0;
+        midBgfgIsRelativeToPlayer = 0;
+        midwayFG = 0;
+        midwayBG = 0;
+        midOffset = 0;
+        midEnterLeft = 0;
+        midwayRedirect = 0;
+        midwayRedirectLevelNum = 0;
     }
     if (fgbgGFX > 15) {
         fgbgGFX = 0;

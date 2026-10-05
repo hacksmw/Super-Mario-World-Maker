@@ -120,7 +120,7 @@ let fg1bmp: number[][], fg2bmp: number[][], bgbmp: number[][], fg3bmp: number[][
 let bg2bmp: number[][], bg3bmp: number[][];
 let sp1bmp: number[][], sp2bmp: number[][], sp3bmp: number[][], sp4bmp: number[][];
 let fileData: Uint8Array;
-let fileName: string = "";
+let fileName: string;
 let levelNum: number;
 let layer1DataPointer: number;
 let layer2DataPointer: number;
@@ -133,8 +133,8 @@ let isLMModified: boolean;
 let bgPage: number;
 let bgPalNum: number, fgPalNum: number, spPalNum: number;
 let pal: RGB[][];
-let editMode: string = "layer1";
-let isVertical: boolean = false;
+let editMode: string;
+let isVertical: boolean;
 let timer: number;
 let music: number;
 let itemMemory: number;
@@ -157,7 +157,7 @@ let backAreaColorNum: number;
 let bgPointer: number;
 let isLayer2: boolean;
 let secondExits: SecondExit[];
-let isBGEdited: boolean = false;
+let isBGEdited: boolean;
 let lmVer: number;
 let romType: string;
 let bypassedMusic: number;
@@ -173,7 +173,7 @@ let useNewSpriteSystem: number;
 let anibmp: number[][], ani2bmp: number[][];
 let is4bpp: boolean;
 let bg2: number, bg3: number;
-let superGFXBypass: boolean = false;
+let superGFXBypass: boolean;
 
 let offset: number;
 let slippery: number;
@@ -189,9 +189,34 @@ let bgfgIsRelativeToPlayer: number;
 let enterLeft: number;
 let bgHeight: number;
 
-let horizontalLevelMode: number = 0;
-let showBottomRowOfTheLevel: number = 0;
-let levelUsesEitherLayer2OrLayer3: number = 0;
+let separateMidway: number;
+
+let midOffset: number;
+let midSlippery: number;
+let midWater: number;
+let midMethod2: number;
+let midSmartSpawnFlag: number;
+let midSpriteSpawnRange: number;
+let midAutoSetScrNumber: number;
+let midUseSeparatelayer2ScrollRate: number;
+let midLayer2VerticalScrollSetting: number;
+let midBgRelativeToFG: number;
+let midBgfgIsRelativeToPlayer: number;
+let midEnterLeft: number;
+let midBgHeight: number;
+let midMidScrNum: number;
+
+let midwayX: number;
+let midwayY: number;
+let midAction: number;
+let midwayFG: number;
+let midwayBG: number;
+let midwayRedirect: number;
+let midwayRedirectLevelNum: number;
+
+let horizontalLevelMode: number;
+let showBottomRowOfTheLevel: number;
+let levelUsesEitherLayer2OrLayer3: number;
 
 let btnOpen: HTMLButtonElement
 let btnPalette: HTMLButtonElement
@@ -235,10 +260,10 @@ let btn2ndOK: HTMLButtonElement;
 let btn2ndCancel: HTMLButtonElement;
 let btnSave: HTMLButtonElement;
 
-let isPress: boolean = false;
-let prevPosX = 0, prevPosY = 0;
-let target: Nullable<HTMLDivElement> = null;
 let prevObjLeft: number, prevObjTop: number;
+let isPress: boolean;
+let prevPosX: number, prevPosY: number;
+let target: Nullable<HTMLDivElement>;
 
 function make_layer_data(layerData: Obj[], layerDataBinary: number[]) {
     let currentScreen: number = 0;
@@ -2909,6 +2934,96 @@ function load(lvlNum: number): boolean {
         if (zero !== 0) {
             throw new Error("extended header is not valid.");
         }
+    }
+
+    if (lmModified) {
+        const pointer = read3(read3(0x05D9E4)+0x0A);
+        
+        const addr1 = pointer + (512 * 0) + lvlNum;
+        const addr2 = pointer + (512 * 1) + lvlNum;
+        const addr3 = pointer + (512 * 2) + lvlNum;
+        const addr4 = pointer + (512 * 3) + lvlNum;
+
+        let hdr1 = read1(addr1);
+        let hdr2 = read1(addr2);
+        let hdr3 = read1(addr3);
+        let hdr4 = read1(addr4);
+
+        if (lunarMagicVer < 3.0) {
+            hdr4 = 0;
+        }
+
+        midSlippery = hdr1 >>> 7;
+        midWater = (hdr1 >>> 6) & 0b1;
+        
+        if (lunarMagicVer >= 3.0) {
+            separateMidway = (hdr1 >>> 5) & 0b1;
+        } else {
+            separateMidway = (hdr1 >>> 5) & 0b1;
+        }
+
+        midScrNum = midMidScrNum = (((hdr1 >>> 4) & 0b1) << 4) | (midScrNum & 0b1111);
+        
+        midwayY = (hdr2 >>> 4);
+        midwayX = (hdr2 & 0b1111);
+
+        if (lunarMagicVer >= 3.0) {
+            midwayY = ((hdr4 & 0b111111) << 4) | midwayY;
+            midwayX = (((hdr1 >>> 3) & 0b1) << 4) | midwayX;
+        } else {
+            midwayY = (((hdr1 >>> 3) & 0b1) << 4) | midwayY;
+        }                        
+        
+        midAction = hdr1 & 0b111;
+
+        midBgfgIsRelativeToPlayer = 0;
+
+        if (lunarMagicVer >= 3.0) {
+            midBgfgIsRelativeToPlayer = hdr3 >>> 7;
+        }
+
+        midwayFG = (hdr3 >>> 2) & 0b11;
+        midwayBG = (hdr3 >>> 0) & 0b11;
+
+        midOffset = hdr3 & 0b1111;
+
+        if (lunarMagicVer >= 3.0) {
+            midOffset |= ((hdr4 >>> 6) & 0b1) << 4;
+        }
+
+        midEnterLeft = 0;
+
+        if (lunarMagicVer >= 3.0) {
+            midEnterLeft = (hdr3 >>> 6) & 1;
+        }
+
+        midwayRedirect = 0;
+
+        if (lunarMagicVer >= 3.0) {
+            midwayRedirect = (hdr3 >>> 5) & 0b1;
+        }
+
+        midwayRedirectLevelNum = 0;
+
+        if (midwayRedirect) {
+            midwayRedirectLevelNum = ((hdr3 & 0b1) << 8) | hdr2;
+        }
+        
+    } else {
+        midSlippery = 0;
+        midWater = 0;
+        separateMidway = 0;
+        midScrNum = 0;
+        midwayY = 0;
+        midwayX = 0;
+        midAction = 0;
+        midBgfgIsRelativeToPlayer = 0;
+        midwayFG = 0;
+        midwayBG = 0;
+        midOffset = 0;
+        midEnterLeft = 0;
+        midwayRedirect = 0;
+        midwayRedirectLevelNum = 0;
     }
     
 
