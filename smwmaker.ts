@@ -3281,7 +3281,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
         pointer += 3;
     }
 
-    if ((!isLMModified) && exits[exits.length - 1].isSecond) {
+    if ((!isLMModified) && exits.length && exits[exits.length - 1].isSecond) {
         for (let i = 0; i < exits.length; i++) {
             exits[i].isSecond = 1;
         }
@@ -3801,7 +3801,6 @@ function getSecondaryExits(): SecondExit[] {
         table3: number = 0x05FC00, 
         table4: number = 0x05FE00
     ;
-
 
     if (lmVer >= 2.5) {
         table1 = read3(0x0DE191);

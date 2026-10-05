@@ -2768,7 +2768,7 @@ function loadObjects(lvlNum, layerDataPointer) {
         }
         pointer += 3;
     }
-    if ((!isLMModified) && exits[exits.length - 1].isSecond) {
+    if ((!isLMModified) && exits.length && exits[exits.length - 1].isSecond) {
         for (let i = 0; i < exits.length; i++) {
             exits[i].isSecond = 1;
         }
