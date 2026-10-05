@@ -2897,13 +2897,22 @@ function load(lvlNum: number): boolean {
     /*
     if (lmModified && lunarMagicVer >= 3.0) {
         // TB0MMMMM 
-        const pointer = read3(read3(0x05D9A2)+70);
+        const pointer = read3(read3(0x05D9A2)+70) + lvlNum;
         const extHeader = read1(pointer);
 
-        console.log("extHeader");
-        console.log(extHeader.toString(2));
+        let zero: number;
+
+        horizontalLevelMode = extHeader & 0b11111;
+        showBottomRowOfTheLevel = (extHeader >>> 6) & 0b1;
+        levelUsesEitherLayer2OrLayer3 = (extHeader >>> 7) & 0b1;
+        zero = (extHeader >>> 5) & 0b1;
+
+        if (zero !== 0) {
+            throw new Error("extended header is not valid.");
+        }
     }
     */
+    
 
     if (fgbgGFX > 15) {
         fgbgGFX = 0;
@@ -2951,6 +2960,7 @@ function load(lvlNum: number): boolean {
         } else {
             isLayer2 = false;
         }
+        isLayer2 = (layer2List[levelMode] == 1);
     } else {
         isLayer2 = (layer2List[levelMode] == 1);
     }
@@ -8905,6 +8915,7 @@ function decompress_lz2(data: Uint8Array): number[] {
 function hex(val: number, length = 2): string {
     let result: string;
     let j: number;
+    if (val === undefined) debugger;
     result = val.toString(16).toUpperCase();
     j = length - result.length;
     for (let i = 0; i < j; i++) {
