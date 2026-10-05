@@ -3294,13 +3294,9 @@ function loadSprites() {
 
     sprites = [];
 
-    if (read1(0x0EF30F) === 0x42) {
-        alert("unsupported sprite extensions");
-        unload();
-    }
-
     loop:
     while (true) {
+        let extHeaderSize: number;
         if ((!useNewSpriteSystem) && read1(pointer) === 0xFF) {
             break;
         } else if (useNewSpriteSystem && read1(pointer) === 0xFF && read1(pointer+1) === 0xFE) {
@@ -3346,9 +3342,14 @@ function loadSprites() {
             screenNum: screenNum,
         });
 
-        pointer += 3;
+        if (isLMModified && read1(0x0EF30F) === 0x42) {
+            const pointer = read3(0x0EF30C);
+            extHeaderSize = read1(pointer + (extra * 0x100) + spriteID); 
+        } else {
+            extHeaderSize = 0;
+        }
 
-        
+        pointer += 3 + extHeaderSize;       
     }
 }
 

@@ -2772,11 +2772,8 @@ function loadSprites() {
     let pointer = (spriteDataPointer + 1);
     let yJump = 0;
     sprites = [];
-    if (read1(0x0EF30F) === 0x42) {
-        alert("unsupported sprite extensions");
-        unload();
-    }
     loop: while (true) {
+        let extHeaderSize;
         if ((!useNewSpriteSystem) && read1(pointer) === 0xFF) {
             break;
         }
@@ -2819,7 +2816,14 @@ function loadSprites() {
             extra: extra,
             screenNum: screenNum,
         });
-        pointer += 3;
+        if (isLMModified && read1(0x0EF30F) === 0x42) {
+            const pointer = read3(0x0EF30C);
+            extHeaderSize = read1(pointer + (extra * 0x100) + spriteID);
+        }
+        else {
+            extHeaderSize = 0;
+        }
+        pointer += 3 + extHeaderSize;
     }
 }
 function getCustomBackAreaColor() {
