@@ -3207,14 +3207,21 @@ function animate_4_8x8s_line(dest, src, destStart, srcStart) {
 }
 function getSecondaryExits() {
     const secondaryExits = new Array();
+    let table1 = 0x05F800, table2 = 0x05FA00, table3 = 0x05FC00, table4 = 0x05FE00;
+    if (lmVer >= 2.5) {
+        table1 = read3(0x0DE191);
+        table2 = read3(0x0DE198);
+        table3 = read3(0x0DE19F);
+        table4 = read3(0x05DC81);
+    }
     for (let i = 0; i < 512; i++) {
         let header1, header2, header3, header4;
         let header5 = 0, header6 = 0;
         const exit = new SecondExit();
-        header1 = read1(0x05F800 + i);
-        header2 = read1(0x05FA00 + i);
-        header3 = read1(0x05FC00 + i);
-        header4 = read1(0x05FE00 + i);
+        header1 = read1(table1 + i);
+        header2 = read1(table2 + i);
+        header3 = read1(table3 + i);
+        header4 = read1(table4 + i);
         if (isLMModified) {
             header5 = read1(read3(0x05DC86) + i);
             header6 = read1(read3(0x05DC8B) + i);
