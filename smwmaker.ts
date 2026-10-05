@@ -3290,25 +3290,49 @@ function loadSprites() {
     
     let pointer = (spriteDataPointer + 1);
 
-    sprites = [];
+    let yJump = 0;
 
-    if (useNewSpriteSystem) {
-        alert("unsupported new sprite system");
-        unload();
-    }
+    sprites = [];
 
     if (read1(0x0EF30F) === 0x42) {
         alert("unsupported sprite extensions");
         unload();
     }
 
-    while (fileData[snes2pc(pointer)] != 0xFF) {
+    loop:
+    while (true) {
+        if ((!useNewSpriteSystem) && read1(pointer) === 0xFF) {
+            break;
+        } else if (useNewSpriteSystem && read1(pointer) === 0xFF && read1(pointer+1) === 0xFE) {
+            break;
+        }
+
+        if (useNewSpriteSystem && read1(pointer) === 0xFF) {
+            const tag = read1(pointer + 1);
+            switch (tag) {
+                case 0xFE:
+                    break loop;
+                case 0xFF:
+                    pointer++;
+                    continue loop;
+                default:
+                    if (0x00 <= tag && tag <= 0x7F) {
+                        yJump = tag;
+                        pointer+=2;
+                        continue loop;
+                    } else {
+                        throw new Error('undefined command ' + tag.toString(16));
+                    }
+                    break;
+            }
+        }
+
         let xPosition: number, yPosition: number;
         let spriteID: number;
         let extra: number;
         let screenNum: number;
 
-        yPosition = (((fileData[snes2pc(pointer+0)]) & 1) << 4) | ((fileData[snes2pc(pointer+0)]) >> 4);
+        yPosition =  ((yJump << 5) | ((((fileData[snes2pc(pointer+0)]) & 1) << 4) | ((fileData[snes2pc(pointer+0)]) >> 4)));
         xPosition = (fileData[snes2pc(pointer+1)]) >>> 4;
         spriteID = (fileData[snes2pc(pointer+2)]);
         extra = (((fileData[snes2pc(pointer+0)]) >>> 2) & 0b11);
@@ -3323,6 +3347,8 @@ function loadSprites() {
         });
 
         pointer += 3;
+
+        
     }
 }
 
