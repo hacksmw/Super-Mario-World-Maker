@@ -2893,7 +2893,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
     let pointer = (layerDataPointer + 5);   
     let currentScreen = 0;
 
-    const exits = [];
+    const exits: Exit[] = [];
 
     loop:
     while (fileData[snes2pc(pointer)] != 0xFF) {
@@ -2964,8 +2964,18 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                         const secondaryExitID = (((fileData[snes2pc(pointer + 4)] >>> 4) << 9) | 
                             (((fileData[snes2pc(pointer + 4)] & 0b1) << 8) | fileData[snes2pc(pointer + 3)]));
 
-                        alert("unimplemented");
-                        unload();
+                        const lmFlag = 1;
+                        const isSecond = 1;
+
+                        const exit: Exit = new Exit();
+
+                        exit.scrNumber = scrNumber;
+                        exit.isWaterMid = waterFlag;
+                        exit.destLevel = secondaryExitID;
+                        exit.LMflag = lmFlag;
+                        exit.isSecond = isSecond;
+
+                        exits.push(exit);
                         
                         pointer += 5;
                         continue loop;
@@ -3195,6 +3205,12 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
         }
 
         pointer += 3;
+    }
+
+    if ((!isLMModified) && exits[exits.length - 1].isSecond) {
+        for (let i = 0; i < exits.length; i++) {
+            exits[i].isSecond = 1;
+        }
     }
 
     return [objList, exits];
