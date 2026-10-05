@@ -175,6 +175,24 @@ let is4bpp: boolean;
 let bg2: number, bg3: number;
 let superGFXBypass: boolean = false;
 
+let offset: number;
+let slippery: number;
+let water: number;
+let method2: number;
+let smartSpawnFlag: number;
+let spriteSpawnRange: number;
+let autoSetScrNumber: number;
+let useSeparatelayer2ScrollRate: number;
+let layer2VerticalScrollSetting: number;
+let bgRelativeToFG: number;
+let bgfgIsRelativeToPlayer: number;
+let enterLeft: number;
+let bgHeight: number;
+
+let horizontalLevelMode: number = 0;
+let showBottomRowOfTheLevel: number = 0;
+let levelUsesEitherLayer2OrLayer3: number = 0;
+
 let btnOpen: HTMLButtonElement
 let btnPalette: HTMLButtonElement
 let btn8x8: HTMLButtonElement
@@ -2781,11 +2799,23 @@ function load(lvlNum: number): boolean {
     secondaryLevelHeader[1] = fileData[snes2pc(0x05F200 + lvlNum, fileType)];
     secondaryLevelHeader[2] = fileData[snes2pc(0x05F400 + lvlNum, fileType)];
     secondaryLevelHeader[3] = fileData[snes2pc(0x05F600 + lvlNum, fileType)];
-    secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum, fileType)];
     
-    secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum, fileType)];
-    secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum, fileType)];
-    secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum, fileType)];
+    secondaryLevelHeader[4] = 0;
+    secondaryLevelHeader[5] = 0;
+    secondaryLevelHeader[6] = 0;
+    secondaryLevelHeader[7] = 0;
+
+    if (lmModified) {
+        secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum, fileType)];
+        if (lunarMagicVer >= 3.0) {
+            secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum, fileType)];
+            secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum, fileType)];
+        } 
+        if (lunarMagicVer >= 3.40) {
+            secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum, fileType)];
+        }
+        
+    }   
 
     /* Get Level Information */
 
@@ -2804,7 +2834,7 @@ function load(lvlNum: number): boolean {
     layer3Prior = ((primaryLevelHeader[2] >>> 7) & 0b1);
     verticalScrollSetting = ((primaryLevelHeader[4] >>> 4) & 0b11);
 
-    layer2ScrollSetting = (secondaryLevelHeader[0] >>> 4) & 0b1111;
+    layer2ScrollSetting = ((((primaryLevelHeader[5] >>> 6) & 0b1 ) << 4) | ((secondaryLevelHeader[0] >>> 4) & 0b1111));
     layer3Setting = (secondaryLevelHeader[1] >>> 6) & 0b11;
     verticalLevelPositioning = (secondaryLevelHeader[3] >>> 5) & 0b1;
     verticalLevelUnknown = (secondaryLevelHeader[3] >>> 6) & 0b1;
@@ -2813,10 +2843,18 @@ function load(lvlNum: number): boolean {
     enterAction = (secondaryLevelHeader[1] >>> 3) & 0b111;
     enterScrNum = (secondaryLevelHeader[3] >>> 0) & 0b11111;
     midScrNum = (secondaryLevelHeader[2] >>> 4) & 0b1111;
-    enterX = (secondaryLevelHeader[1] >>> 0) & 0b111;
-    enterY = (secondaryLevelHeader[0] >>> 0) & 0b1111;
+
+    enterX = ((((secondaryLevelHeader[4] >>> 2) & 0b11) << 3) | (secondaryLevelHeader[1] >>> 0) & 0b111);
+    enterY = (((secondaryLevelHeader[6] & 0b111111) << 4) | ((secondaryLevelHeader[0] >>> 0) & 0b1111));
+
+    if (lmModified && lunarMagicVer < 3.0) {
+        enterX = ((((secondaryLevelHeader[4] >>> 3) & 0b1) << 3) | (secondaryLevelHeader[1] >>> 0) & 0b111);
+        enterY = ((((secondaryLevelHeader[4] >>> 4) & 0b1) << 4) | ((secondaryLevelHeader[0] >>> 0) & 0b1111));
+    }
+    
     enterBG = (secondaryLevelHeader[2] >>> 0) & 0b11;
     enterFG = (secondaryLevelHeader[2] >>> 2) & 0b11;
+    offset = ((((secondaryLevelHeader[6] >>> 6) & 1) << 4) | ((secondaryLevelHeader[2] >>> 0) & 0b1111));
 
     isVertical = !!(verticalList[lvlMode]);
 
@@ -2827,14 +2865,18 @@ function load(lvlNum: number): boolean {
     fgbgGFX = primaryLevelHeader[4] & 0b1111 ;
     sprGFX = primaryLevelHeader[2] & 0b1111 ;
 
-    // security
-    if (fgbgGFX > 15) {
-        fgbgGFX = 0;
-    }
-
-    if (sprGFX > 15) {
-        sprGFX = 0;
-    }
+    slippery = (secondaryLevelHeader[4] >>> 7) & 1;
+    water = (secondaryLevelHeader[4] >>> 6) & 1;
+    method2 = (secondaryLevelHeader[4] >>> 5) & 1;
+    smartSpawnFlag = (secondaryLevelHeader[4] >>> 2) & 1;
+    spriteSpawnRange = (secondaryLevelHeader[4] >>> 0) & 1;
+    useSeparatelayer2ScrollRate = (secondaryLevelHeader[5] >>> 7) & 1;
+    autoSetScrNumber = (secondaryLevelHeader[5] >>> 5) & 1;
+    layer2VerticalScrollSetting = secondaryLevelHeader[5] & 0b11111;
+    bgRelativeToFG = secondaryLevelHeader[6] >>> 7;
+    bgfgIsRelativeToPlayer = secondaryLevelHeader[7] >>> 7;
+    enterLeft = (secondaryLevelHeader[7] >>> 6) & 1;
+    bgHeight = (secondaryLevelHeader[7] >>> 0) & 0b11111;
 
     levelNum = lvlNum;
     editMode = "layer1";
@@ -2848,6 +2890,29 @@ function load(lvlNum: number): boolean {
     sprGFXindex = -1;
     fgbgGFXindex = -1;
 
+    horizontalLevelMode = 0;
+    showBottomRowOfTheLevel = 0;
+    levelUsesEitherLayer2OrLayer3 = 0;
+
+    /*
+    if (lmModified && lunarMagicVer >= 3.0) {
+        // TB0MMMMM 
+        const pointer = read3(read3(0x05D9A2)+70);
+        const extHeader = (pointer);
+
+        console.log("extHeader");
+        console.log(extHeader.toString(2));
+    }
+    */
+
+    if (fgbgGFX > 15) {
+        fgbgGFX = 0;
+    }
+
+    if (sprGFX > 15) {
+        sprGFX = 0;
+    }
+ 
     /* Load Palette */
 
     customPalette = read3(0x0EF600 + (3 * lvlNum));
@@ -4063,7 +4128,11 @@ function read2(address: number): number {
 }
 
 function read1(address: number): number {
-    return fileData[snes2pc(address+0)];
+    const addr: number = snes2pc(address);
+    if (addr >= fileData.length) {
+        throw new Error("pointer is bigger than rom");
+    }
+    return fileData[addr+0];
 }
 
 function getMap16(start: number, end: number, tblAddr: number, blocks: (number | Tile)[]) {
@@ -8822,6 +8891,7 @@ function decompress_lz2(data: Uint8Array): number[] {
                 }
                 break;
             default:
+                debugger;
                 throw new Error('unknown command 0b' + (data[pointer] >>> 5).toString(2));
         }
     }

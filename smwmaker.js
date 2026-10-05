@@ -161,6 +161,22 @@ let anibmp, ani2bmp;
 let is4bpp;
 let bg2, bg3;
 let superGFXBypass = false;
+let offset;
+let slippery;
+let water;
+let method2;
+let smartSpawnFlag;
+let spriteSpawnRange;
+let autoSetScrNumber;
+let useSeparatelayer2ScrollRate;
+let layer2VerticalScrollSetting;
+let bgRelativeToFG;
+let bgfgIsRelativeToPlayer;
+let enterLeft;
+let bgHeight;
+let horizontalLevelMode = 0;
+let showBottomRowOfTheLevel = 0;
+let levelUsesEitherLayer2OrLayer3 = 0;
 let btnOpen;
 let btnPalette;
 let btn8x8;
@@ -2360,10 +2376,20 @@ function load(lvlNum) {
     secondaryLevelHeader[1] = fileData[snes2pc(0x05F200 + lvlNum, fileType)];
     secondaryLevelHeader[2] = fileData[snes2pc(0x05F400 + lvlNum, fileType)];
     secondaryLevelHeader[3] = fileData[snes2pc(0x05F600 + lvlNum, fileType)];
-    secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum, fileType)];
-    secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum, fileType)];
-    secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum, fileType)];
-    secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum, fileType)];
+    secondaryLevelHeader[4] = 0;
+    secondaryLevelHeader[5] = 0;
+    secondaryLevelHeader[6] = 0;
+    secondaryLevelHeader[7] = 0;
+    if (lmModified) {
+        secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum, fileType)];
+        if (lunarMagicVer >= 3.0) {
+            secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum, fileType)];
+            secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum, fileType)];
+        }
+        if (lunarMagicVer >= 3.40) {
+            secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum, fileType)];
+        }
+    }
     /* Get Level Information */
     lvlMode = ((primaryLevelHeader[1]) & 0b11111);
     if (lvlMode >= verticalList.length || lvlMode >= layer2List.length) {
@@ -2377,7 +2403,7 @@ function load(lvlNum) {
     itemMemory = ((primaryLevelHeader[4] >>> 6) & 0b11);
     layer3Prior = ((primaryLevelHeader[2] >>> 7) & 0b1);
     verticalScrollSetting = ((primaryLevelHeader[4] >>> 4) & 0b11);
-    layer2ScrollSetting = (secondaryLevelHeader[0] >>> 4) & 0b1111;
+    layer2ScrollSetting = ((((primaryLevelHeader[5] >>> 6) & 0b1) << 4) | ((secondaryLevelHeader[0] >>> 4) & 0b1111));
     layer3Setting = (secondaryLevelHeader[1] >>> 6) & 0b11;
     verticalLevelPositioning = (secondaryLevelHeader[3] >>> 5) & 0b1;
     verticalLevelUnknown = (secondaryLevelHeader[3] >>> 6) & 0b1;
@@ -2385,23 +2411,33 @@ function load(lvlNum) {
     enterAction = (secondaryLevelHeader[1] >>> 3) & 0b111;
     enterScrNum = (secondaryLevelHeader[3] >>> 0) & 0b11111;
     midScrNum = (secondaryLevelHeader[2] >>> 4) & 0b1111;
-    enterX = (secondaryLevelHeader[1] >>> 0) & 0b111;
-    enterY = (secondaryLevelHeader[0] >>> 0) & 0b1111;
+    enterX = ((((secondaryLevelHeader[4] >>> 2) & 0b11) << 3) | (secondaryLevelHeader[1] >>> 0) & 0b111);
+    enterY = (((secondaryLevelHeader[6] & 0b111111) << 4) | ((secondaryLevelHeader[0] >>> 0) & 0b1111));
+    if (lmModified && lunarMagicVer < 3.0) {
+        enterX = ((((secondaryLevelHeader[4] >>> 3) & 0b1) << 3) | (secondaryLevelHeader[1] >>> 0) & 0b111);
+        enterY = ((((secondaryLevelHeader[4] >>> 4) & 0b1) << 4) | ((secondaryLevelHeader[0] >>> 0) & 0b1111));
+    }
     enterBG = (secondaryLevelHeader[2] >>> 0) & 0b11;
     enterFG = (secondaryLevelHeader[2] >>> 2) & 0b11;
+    offset = ((((secondaryLevelHeader[6] >>> 6) & 1) << 4) | ((secondaryLevelHeader[2] >>> 0) & 0b1111));
     isVertical = !!(verticalList[lvlMode]);
     bgPalNum = ((primaryLevelHeader[0] >>> 5) & 0b111);
     fgPalNum = ((primaryLevelHeader[3]) & 0b111);
     spPalNum = ((primaryLevelHeader[3] >> 3) & 0b111);
     fgbgGFX = primaryLevelHeader[4] & 0b1111;
     sprGFX = primaryLevelHeader[2] & 0b1111;
-    // security
-    if (fgbgGFX > 15) {
-        fgbgGFX = 0;
-    }
-    if (sprGFX > 15) {
-        sprGFX = 0;
-    }
+    slippery = (secondaryLevelHeader[4] >>> 7) & 1;
+    water = (secondaryLevelHeader[4] >>> 6) & 1;
+    method2 = (secondaryLevelHeader[4] >>> 5) & 1;
+    smartSpawnFlag = (secondaryLevelHeader[4] >>> 2) & 1;
+    spriteSpawnRange = (secondaryLevelHeader[4] >>> 0) & 1;
+    useSeparatelayer2ScrollRate = (secondaryLevelHeader[5] >>> 7) & 1;
+    autoSetScrNumber = (secondaryLevelHeader[5] >>> 5) & 1;
+    layer2VerticalScrollSetting = secondaryLevelHeader[5] & 0b11111;
+    bgRelativeToFG = secondaryLevelHeader[6] >>> 7;
+    bgfgIsRelativeToPlayer = secondaryLevelHeader[7] >>> 7;
+    enterLeft = (secondaryLevelHeader[7] >>> 6) & 1;
+    bgHeight = (secondaryLevelHeader[7] >>> 0) & 0b11111;
     levelNum = lvlNum;
     editMode = "layer1";
     isBGEdited = false;
@@ -2413,6 +2449,25 @@ function load(lvlNum) {
     isTimeBypassed = false;
     sprGFXindex = -1;
     fgbgGFXindex = -1;
+    horizontalLevelMode = 0;
+    showBottomRowOfTheLevel = 0;
+    levelUsesEitherLayer2OrLayer3 = 0;
+    /*
+    if (lmModified && lunarMagicVer >= 3.0) {
+        // TB0MMMMM
+        const pointer = read3(read3(0x05D9A2)+70);
+        const extHeader = (pointer);
+
+        console.log("extHeader");
+        console.log(extHeader.toString(2));
+    }
+    */
+    if (fgbgGFX > 15) {
+        fgbgGFX = 0;
+    }
+    if (sprGFX > 15) {
+        sprGFX = 0;
+    }
     /* Load Palette */
     customPalette = read3(0x0EF600 + (3 * lvlNum));
     // get palette
@@ -3420,7 +3475,11 @@ function read2(address) {
     return ((((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
 }
 function read1(address) {
-    return fileData[snes2pc(address + 0)];
+    const addr = snes2pc(address);
+    if (addr >= fileData.length) {
+        throw new Error("pointer is bigger than rom");
+    }
+    return fileData[addr + 0];
 }
 function getMap16(start, end, tblAddr, blocks) {
     for (let i = 0; i <= end - start; i++) {
@@ -7939,6 +7998,7 @@ function decompress_lz2(data) {
                 }
                 break;
             default:
+                debugger;
                 throw new Error('unknown command 0b' + (data[pointer] >>> 5).toString(2));
         }
     }
