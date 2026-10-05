@@ -103,6 +103,11 @@ class SecondExit {
     offset: number = 0;
     slippery: number = 0;
     method2: number = 0;
+    useDiffEvent: number = 0;
+    useTeleport: number = 0;
+    owAction: number = 0;
+    location: number = 0;
+    event: number = 0;
 }
 
 let layer1Data: Obj[], layer2Data: Obj[];
@@ -3898,6 +3903,17 @@ function getSecondaryExits(): SecondExit[] {
         exit.relative = relative;
         exit.enterLeft = enterLeft;
         exit.water = water;
+
+        if (exitToOW) {
+            exit.location = header2;
+            exit.event = header3;
+            const action = header4 & 0b111;
+            exit.action = action;
+            const e = (header4 >>> 5) & 1;
+            exit.useDiffEvent = e;
+            const t = (header4 >>> 4) & 1;
+            exit.useTeleport = t;
+        }
         
         secondaryExits.push(exit);
     }
