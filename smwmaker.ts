@@ -2893,12 +2893,12 @@ function load(lvlNum: number): boolean {
     horizontalLevelMode = 0;
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
-
+    
     /*
     if (lmModified && lunarMagicVer >= 3.0) {
         // TB0MMMMM 
         const pointer = read3(read3(0x05D9A2)+70);
-        const extHeader = (pointer);
+        const extHeader = read1(pointer);
 
         console.log("extHeader");
         console.log(extHeader.toString(2));
@@ -3640,6 +3640,7 @@ function getCompressedGraphicsAddr(index: number) {
     } else if (0x100 <= index && index <= 0xFFF) {
         addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
     } else {
+        debugger;
         throw new Error();
     }
     return addr;
@@ -3670,7 +3671,9 @@ function loadGraphics() {
     if (isLMModified) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
         
-        superGFXBypass = !!(read2(pointer) >>> 15);                    
+        superGFXBypass = !!(read2(pointer) >>> 15); 
+        
+        console.log("superGFXBypass: " + superGFXBypass);
 
         if (superGFXBypass) {
             fg1 = read2(pointer + (2 * 7));
@@ -4130,6 +4133,7 @@ function read2(address: number): number {
 function read1(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
+        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return fileData[addr+0];
