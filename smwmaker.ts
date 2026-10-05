@@ -60,6 +60,8 @@ class Obj {
     tileHeight: number = 0;
     extA: number = 0;
     extB: number = 0;
+    mode: number = 0;
+    submode: number = 0;
 
     constructor(objNum: number, x: number, y: number, settings: number) {
         this.objNum = objNum;
@@ -1201,8 +1203,6 @@ function btnPalette_onclick(): void {
     selBGColor.value = bgPalNum.toString();
     selFGColor.value = fgPalNum.toString();
     selSprColor.value = spPalNum.toString();
-
-    
 }
 
 function btn16x16_onclick() {
@@ -2362,6 +2362,29 @@ function getObjImage(obj: Obj) {
         }
 
         return canvas.toDataURL('image/png');
+    } else if (obj.objNum === 0x27 || obj.objNum === 0x29) {
+        if (obj.mode === 0) {
+            console.log("executed: " + obj.tileNum.toString(16));
+            const data = getMap16TileImg(obj.tileNum);
+
+            const width = obj.tileWidth;
+            const height = obj.tileHeight;
+
+            const canvas = document.createElement("canvas");
+
+            canvas.width = width * 16;
+            canvas.height = height * 16;
+
+            const ctx = canvas.getContext("2d");
+
+            for (let i = 0; i < height; i++) {
+                for (let j = 0; j < width; j++) {
+                    ctx!.putImageData(data, j*16, i*16);
+                }
+            }
+
+            return canvas.toDataURL('image/png');
+        }
     }
 
     return getObjImg(obj.objNum, obj.settings, tileset);
@@ -2372,11 +2395,19 @@ function getObjWidth(obj: Obj) {
         return obj.tileWidth;
     }
 
+    if (obj.objNum === 0x27 || obj.objNum === 0x29) {
+        return obj.tileWidth;
+    }
+
     return getWidth(obj.objNum, obj.settings, tileset);
 }
 
 function getObjHeight(obj: Obj) {
     if (obj.objNum === 0x22 || obj.objNum === 0x23) {
+        return obj.tileHeight;
+    }
+
+    if (obj.objNum == 0x27 || obj.objNum == 0x29) {
         return obj.tileHeight;
     }
 
@@ -3157,29 +3188,30 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
 
                             width = (fileData[snes2pc(pointer + 2)] & 0b1111) + 1;
                             height = (fileData[snes2pc(pointer + 2)] >>> 4) + 1;
+
+                            
                             
                             if (mode === 0) {
                                 lengthOfHeader = 5;
+                                console.log("Single-screen, single tile");
                             } else if (mode === 1) {
                                 lengthOfHeader = 5;
+                                console.log("Multiple tiles unstretched");
                                 
-                                alert("Unimplmented");
-                                unload();
                             } else if (mode === 3) {
                                 lengthOfHeader = 6;
-                                
-                                alert("Unimplmented");
-                                unload();
+                                console.log("Single-screen, multiple tiles");
                             } else if (mode === 4) {
                                 width = (fileData[snes2pc(pointer + 2)] & 0b111_1111);
                                 height = fileData[snes2pc(pointer + 6)];
 
-                                alert("Unimplmented");
-                                unload();
+                                
                                 
                                 if (submode == 0) {
+                                    console.log("Multi-screen");
                                     lengthOfHeader = 7;
                                 } else {
+                                    console.log("Conditional direct map16");
                                     lengthOfHeader = 8;
                                 }
                             }
@@ -3191,6 +3223,9 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                             newObj.tileNum = m16Num;
                             newObj.tileWidth = width;
                             newObj.tileHeight = height;
+
+                            newObj.mode = mode;
+                            newObj.submode = submode;
                             
                             objList.push(newObj);
 
@@ -3779,24 +3814,26 @@ function load16x16() {
 
     if (isLMModified) {
         const pointers = [
-            ((read1(0x06F557) << 16) | (read2(0x06F553))),
-            ((read1(0x06F560) << 16) | (read2(0x06F55C))),
+            ((read1(0x06F557) << 16) | ((read2(0x06F553) + 0x1000) & 0xFFFF)),
+            ((read1(0x06F560) << 16) | ((read2(0x06F55C) + 0x8000) & 0xFFFF)),
             ((read1(0x06F56B) << 16) | (read2(0x06F567))) + 1,
-            ((read1(0x06F574) << 16) | (read2(0x06F570))) + 1,
+            ((read1(0x06F574) << 16) | ((read2(0x06F570) + 0x8000) & 0xFFFF)) + 1,
             ((read1(0x06F598) << 16) | (read2(0x06F594))),
-            ((read1(0x06F5A1) << 16) | (read2(0x06F59D))),
+            ((read1(0x06F5A1) << 16) | ((read2(0x06F59D) + 0x8000) & 0xFFFF)),
             ((read1(0x06F5AC) << 16) | (read2(0x06F5A8))) + 1,
-            ((read1(0x06F5B5) << 16) | (read2(0x06F5B1))) + 1,
+            ((read1(0x06F5B5) << 16) | ((read2(0x06F5B1) + 0x8000) & 0xFFFF)) + 1,
         ];
 
         const isPage2TilesetSpecific = (read1(0x06F547) !== 0? true: false);
 
         if (isPage2TilesetSpecific) {
+            console.log("Tileset Specific");
             const pointer = ((read1(0x06F58A) << 16) | (read2(0x06F586))) + 0x1000;
             const address = pointer + (fgbgGFX << 11);
             getMap16(0x200, 0x2FF, address, blocks);
             
         } else {
+            console.log("Not Tileset Specific");
             const pointer = pointers[0];
             getMap16(0x200, 0x2FF, pointer, blocks);
         }
@@ -3812,17 +3849,22 @@ function load16x16() {
             getMap16(start, end, address, blocks);
         }
 
+
+
         for (let k = 1; k < pointers.length; k++) {
             const pointer = pointers[k];
             for (let i = 0x0; i < 0x10; i++) {
                 const start = (k * 0x1000) + (i * 0x100);
                 const end = start + (0x100 - 1);
 
-                const address = pointer + (i-2) * (0x100 * 8);
+                const address = pointer + (i) * (0x100 * 8);
 
                 getMap16(start, end, address, blocks);
             }
         }
+
+
+
         
         const bgPointers = 0x0EFD50;
 
@@ -7533,6 +7575,8 @@ function getMap16TileImg(index: number, bg: boolean = false): any {
         let block = blocks[i];
 
         if (typeof block == "undefined") {
+
+            console.log("undefined")
             
             const tilePart: TilePart = new TilePart();
             
@@ -7549,6 +7593,7 @@ function getMap16TileImg(index: number, bg: boolean = false): any {
             
             
             
+        } else {
         }
 
         
@@ -7674,10 +7719,7 @@ function renderBG() {
         ctx!.putImageData(bgBitmap, 0, 0);
     }  
 
-    canvas.toBlob((blob: any) => {
-        const url = URL.createObjectURL(blob);
-        document.getElementById("stage")!.style.backgroundImage = `url(${url})`;
-    }, "image/png");
+    document.getElementById("stage")!.style.backgroundImage = 'url(' + canvas.toDataURL("image/png") + ')';
 }
 
 function getWidth(objNum: number, settings: number, tileset: number = 0): number {
