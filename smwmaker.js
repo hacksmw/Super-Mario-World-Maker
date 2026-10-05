@@ -2447,6 +2447,7 @@ function loadObjects(lvlNum, layerDataPointer) {
     const objList = new Array();
     let pointer = (layerDataPointer + 5);
     let currentScreen = 0;
+    let currentVScreen = 0;
     const exits = [];
     loop: while (fileData[snes2pc(pointer)] != 0xFF) {
         let xposition;
@@ -2503,7 +2504,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                 else {
                     if (settings === 0x02) {
                         // extended exit object
-                        const scrNumber = xposition;
+                        const scrNumber = (fileData[snes2pc(pointer + 0)]) & 0b11111;
                         const waterFlag = ((fileData[snes2pc(pointer + 4)] >>> 3) & 0b1);
                         const secondaryExitID = (((fileData[snes2pc(pointer + 4)] >>> 4) << 9) |
                             (((fileData[snes2pc(pointer + 4)] & 0b1) << 8) | fileData[snes2pc(pointer + 3)]));
@@ -2521,8 +2522,8 @@ function loadObjects(lvlNum, layerDataPointer) {
                     }
                     else if (settings === 0x03) {
                         // extended jump object
-                        alert("unimplemented");
-                        unload();
+                        const scrNumber = (fileData[snes2pc(pointer + 1)]) & 0b1111;
+                        currentScreen = scrNumber;
                         pointer += 3;
                         continue loop;
                     }
