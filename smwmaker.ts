@@ -2954,8 +2954,10 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                     // screen jump
                     let from: number = currentScreen;
                     let to: number = yposition;
+                    let toV: number = (fileData[snes2pc(pointer + 1)]) & 0b1111;
 
                     currentScreen = to;
+                    currentVScreen = toV;
 
                 } else {
                     if (settings === 0x02) {
@@ -2985,6 +2987,9 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                         // extended jump object
                         const scrNumber = (fileData[snes2pc(pointer + 1)]) & 0b1111;
                         currentScreen = scrNumber;
+
+                        const toV: number = (fileData[snes2pc(pointer + 0)]) & 0b11111;
+                        currentVScreen = toV;
 
                         pointer += 3;
                         continue loop;
