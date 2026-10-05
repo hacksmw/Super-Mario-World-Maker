@@ -2364,7 +2364,6 @@ function getObjImage(obj: Obj) {
         return canvas.toDataURL('image/png');
     } else if (obj.objNum === 0x27 || obj.objNum === 0x29) {
         if (obj.mode === 0) {
-            console.log("executed: " + obj.tileNum.toString(16));
             const data = getMap16TileImg(obj.tileNum);
 
             const width = obj.tileWidth;
@@ -2380,6 +2379,30 @@ function getObjImage(obj: Obj) {
             for (let i = 0; i < height; i++) {
                 for (let j = 0; j < width; j++) {
                     ctx!.putImageData(data, j*16, i*16);
+                }
+            }
+            
+            return canvas.toDataURL('image/png');
+        } else if (obj.mode === 1) {
+            const canvas = document.createElement("canvas");
+
+            const tilenum = obj.tileNum;
+
+            const width = obj.tileWidth;
+            const height = obj.tileHeight;
+
+            const leftTop = obj.tileNum;
+
+            canvas.width = width * 16;
+            canvas.height = height * 16;
+
+            const ctx = canvas.getContext("2d");
+
+            for (let i = 0; i < height; i++) {
+                for (let j = 0; j < width; j++) {
+                    let index = leftTop + (i * 16) + j;
+                    const img = getMap16TileImg(index);
+                    ctx!.putImageData(img, j * 16, i * 16);
                 }
             }
 
@@ -3193,11 +3216,9 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                             
                             if (mode === 0) {
                                 lengthOfHeader = 5;
-                                console.log("Single-screen, single tile");
                             } else if (mode === 1) {
                                 lengthOfHeader = 5;
                                 console.log("Multiple tiles unstretched");
-                                
                             } else if (mode === 3) {
                                 lengthOfHeader = 6;
                                 console.log("Single-screen, multiple tiles");
