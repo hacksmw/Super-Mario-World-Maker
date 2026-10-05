@@ -96,6 +96,13 @@ class SecondExit {
     scrNum: number = 0;
     action: number = 0;
     modified: boolean = false;
+    water: number = 0;
+    enterLeft: number = 0;
+    relative: number = 0;
+    exitToOW: number = 0;
+    offset: number = 0;
+    slippery: number = 0;
+    method2: number = 0;
 }
 
 let layer1Data: Obj[], layer2Data: Obj[];
@@ -3785,19 +3792,42 @@ function getSecondaryExits(): SecondExit[] {
 
     for (let i = 0; i < 512; i++) {
         let header1: number, header2: number, header3: number, header4: number;
+        let header5: number = 0, header6: number = 0;
 
         const exit = new SecondExit();
         
-        header1 = fileData[snes2pc(0x05F800 + i)];
-        header2 = fileData[snes2pc(0x05FA00 + i)];
-        header3 = fileData[snes2pc(0x05FC00 + i)];
-        header4 = fileData[snes2pc(0x05FE00 + i)];
+        header1 = read1(0x05F800 + i);
+        header2 = read1(0x05FA00 + i);
+        header3 = read1(0x05FC00 + i);
+        header4 = read1(0x05FE00 + i);
+
+        if (isLMModified) {
+            header5 = read1(read3(0x05DC86) + i);
+            header6 = read1(read3(0x05DC8B) + i);
+        } else {
+            header5 = 0;
+            header6 = 0;
+        }     
 
         let dest = (((header4 >>> 3) & 0b1) << 8) | header1;
+        
         const bg = header2 >>> 6;
         const fg = (header2 >>> 4) & 0b11;
-        const y = header2 & 0b1111;
-        const x = header3 >>> 5;
+
+        let y: number;
+        let x: number;
+
+        if (!isLMModified) {
+            y = (header2 & 0b1111);
+            x = header3 >>> 5;
+        } else if (lmVer < 3.0) {
+            y = ((((header4 >>> 5) & 0b1) << 4) | (header2 & 0b1111));
+            x = ((((header4 >>> 4) & 0b1) << 3) | ((header3 >>> 5) & 0b111));
+        } else {
+            y = (((header5 & 0b111111) << 4) | (header2 & 0b1111));
+            x = ((((header4 >>> 4) & 0b11) << 3) | ((header3 >>> 5) & 0b111));
+        }
+
         const scrNum = header3 & 0b11111;
         const action = header4 & 0b111;
         
@@ -3805,14 +3835,70 @@ function getSecondaryExits(): SecondExit[] {
             dest = (((levelNum >>> 8) & 1) << 8) | header1;
         }
 
+        let offset: number;
+
+        if (isLMModified) {
+            offset = ((header2 >>> 4) & 0b1111);
+            if (lmVer >= 3.0) {
+                offset |= ((header5 >>> 6) & 0b1) << 4 ;
+            }
+        } else {
+            offset = ((header2 >>> 4) & 0b1111);
+        }
+
+        let water: number;
+
+        if (lmVer >= 3.0) {
+            water = (header6 >>> 5) & 1;
+        } else {
+            water = 0;
+        }
+
+        let slippery: number = 0;
+
+        if (isLMModified) {
+            slippery = header4 >>> 7;
+        }
+
+        let method2 = 0;
+
+        if (isLMModified) {
+            method2 = (header4 >>> 6) & 0b1;
+        }
+
+        let exitToOW = 0;
+
+        if (isLMModified) {
+            exitToOW = header5 >>> 7;
+        }
+
+        let relative = 0;
+
+        if (isLMModified) {
+            relative = header6 >>> 7;
+        }
+
+        let enterLeft = 0;
+
+        if (enterLeft) {
+            enterLeft = (header6 >>> 6) & 0b1;
+        }
+
         exit.dest = dest;
         exit.bg = bg;
         exit.fg = fg;
+        exit.offset = offset;
         exit.x = x;
         exit.y = y;
         exit.scrNum = scrNum;
+        exit.slippery = slippery;
+        exit.method2 = method2;
         exit.action = action;
-
+        exit.exitToOW = exitToOW;
+        exit.relative = relative;
+        exit.enterLeft = enterLeft;
+        exit.water = water;
+        
         secondaryExits.push(exit);
     }
     return secondaryExits;  
