@@ -683,7 +683,6 @@ function detectRomType(rom, header = true) {
     } else {
         romData = rom;
     }
-    
 
     if (romData.length < 0x10000) {
         return "Invalid";
