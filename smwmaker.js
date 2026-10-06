@@ -8087,81 +8087,6 @@ function getRealX(x, obj, tset = -1) {
     }
     return x;
 }
-function detectRomType(rom, header = true) {
-    let pos = 0, posi;
-    let temp, temp1, temp2;
-    let ptr;
-    let romData;
-    // strip header
-    if (header) {
-        romData = new Array(rom.length - 0x200);
-        for (let i = 0; i < romData.length; i++) {
-            romData[i] = rom[i + 0x200];
-        }
-    }
-    else {
-        romData = rom;
-    }
-    if (romData.length < 0x10000) {
-        return "Invalid";
-    }
-    pos = 0;
-    posi = 0x7FDC;
-    temp = romData[posi + pos];
-    temp <<= 8;
-    temp1 = (temp) | (romData[posi + (pos + 1)]);
-    pos += 2;
-    temp = romData[posi + pos];
-    temp <<= 8;
-    temp2 = (temp) | (romData[posi + (pos + 1)]);
-    pos += 2;
-    if ((temp1 ^ temp2) === 0xffff) {
-        posi = 0x7FD5;
-        ptr = romData[posi];
-    }
-    else {
-        posi = 0xffdc;
-        pos = 0;
-        temp = romData[posi + pos];
-        temp <<= 8;
-        temp1 = (temp) | (romData[posi + (pos + 1)]);
-        pos += 2;
-        temp = romData[posi + pos];
-        temp <<= 8;
-        temp2 = (temp) | (romData[posi + (pos + 1)]);
-        pos += 2;
-        if ((temp1 ^ temp2) != 0xFFFF) {
-            return "Invalid";
-        }
-        posi = 0xFFD5;
-        ptr = romData[posi];
-    }
-    if ((ptr & 0xf) == 5) {
-        return "ExHiROM";
-    }
-    else if ((ptr & 0xf) == 3) {
-        return "HiROM";
-    }
-    else if ((ptr & 1) == 1) {
-        if (romData.length <= 0x400000) {
-            return "HiROM";
-        }
-        else {
-            return "ExHiROM";
-        }
-    }
-    else if (romData.length <= 0x400000) {
-        if ((ptr >> 4) >= 3) {
-            return "LoROM2";
-        }
-        else {
-            return "LoROM1";
-        }
-    }
-    else {
-        return "ExLoROM";
-    }
-}
 function expand(data, size, extended, format, mirror, header = true) {
     let romData;
     // strip header
@@ -8331,6 +8256,81 @@ function expand(data, size, extended, format, mirror, header = true) {
         resultData = head.concat(resultData);
     }
     return resultData;
+}
+function detectRomType(rom, header = true) {
+    let pos = 0, posi;
+    let temp, temp1, temp2;
+    let ptr;
+    let romData;
+    // strip header
+    if (header) {
+        romData = new Array(rom.length - 0x200);
+        for (let i = 0; i < romData.length; i++) {
+            romData[i] = rom[i + 0x200];
+        }
+    }
+    else {
+        romData = rom;
+    }
+    if (romData.length < 0x10000) {
+        return "Invalid";
+    }
+    pos = 0;
+    posi = 0x7FDC;
+    temp = romData[posi + pos];
+    temp <<= 8;
+    temp1 = (temp) | (romData[posi + (pos + 1)]);
+    pos += 2;
+    temp = romData[posi + pos];
+    temp <<= 8;
+    temp2 = (temp) | (romData[posi + (pos + 1)]);
+    pos += 2;
+    if ((temp1 ^ temp2) === 0xffff) {
+        posi = 0x7FD5;
+        ptr = romData[posi];
+    }
+    else {
+        posi = 0xffdc;
+        pos = 0;
+        temp = romData[posi + pos];
+        temp <<= 8;
+        temp1 = (temp) | (romData[posi + (pos + 1)]);
+        pos += 2;
+        temp = romData[posi + pos];
+        temp <<= 8;
+        temp2 = (temp) | (romData[posi + (pos + 1)]);
+        pos += 2;
+        if ((temp1 ^ temp2) != 0xFFFF) {
+            return "Invalid";
+        }
+        posi = 0xFFD5;
+        ptr = romData[posi];
+    }
+    if ((ptr & 0xf) == 5) {
+        return "ExHiROM";
+    }
+    else if ((ptr & 0xf) == 3) {
+        return "HiROM";
+    }
+    else if ((ptr & 1) == 1) {
+        if (romData.length <= 0x400000) {
+            return "HiROM";
+        }
+        else {
+            return "ExHiROM";
+        }
+    }
+    else if (romData.length <= 0x400000) {
+        if ((ptr >> 4) >= 3) {
+            return "LoROM2";
+        }
+        else {
+            return "LoROM1";
+        }
+    }
+    else {
+        return "ExLoROM";
+    }
 }
 function pc2snes4lorom1(pc, header = true) {
     if (header && pc < 0x200) {
