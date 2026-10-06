@@ -2099,8 +2099,8 @@ function getObjImage(obj) {
         else if (obj.mode === 1) {
             const canvas = document.createElement("canvas");
             const tilenum = obj.tileNum;
-            const width = obj.tileWidth;
-            const height = obj.tileHeight;
+            const width = getObjWidth(obj);
+            const height = getObjHeight(obj);
             const leftTop = obj.tileNum;
             canvas.width = width * 16;
             canvas.height = height * 16;
@@ -2134,6 +2134,28 @@ function getObjImage(obj) {
             }
             return canvas.toDataURL('image/png');
         }
+        else if (obj.mode === 3) {
+            if (obj.submode === 0) {
+                const canvas = document.createElement("canvas");
+                const tilenum = obj.tileNum;
+                const width = getObjWidth(obj);
+                const height = getObjHeight(obj);
+                const leftTop = obj.tileNum;
+                canvas.width = width * 16;
+                canvas.height = height * 16;
+                const ctx = canvas.getContext("2d");
+                const width16 = obj.width16 + 1;
+                const height16 = obj.height16 + 1;
+                for (let i = 0; i < height; i++) {
+                    for (let j = 0; j < width; j++) {
+                        let index = leftTop + ((i % height16) * 16) + (j % width16);
+                        const img = getMap16TileImg(index);
+                        ctx.putImageData(img, j * 16, i * 16);
+                    }
+                }
+                return canvas.toDataURL('image/png');
+            }
+        }
     }
     return getObjImg(obj.objNum, obj.settings, tileset);
 }
@@ -2142,6 +2164,11 @@ function getObjWidth(obj) {
         return obj.tileWidth;
     }
     if (obj.objNum === 0x27 || obj.objNum === 0x29) {
+        if (obj.mode === 3) {
+            if (obj.submode === 0) {
+                return obj.tileWidth + 1;
+            }
+        }
         return obj.tileWidth;
     }
     return getWidth(obj.objNum, obj.settings, tileset);
@@ -2151,6 +2178,11 @@ function getObjHeight(obj) {
         return obj.tileHeight;
     }
     if (obj.objNum == 0x27 || obj.objNum == 0x29) {
+        if (obj.mode === 3) {
+            if (obj.submode === 0) {
+                return obj.tileHeight + 1;
+            }
+        }
         return obj.tileHeight;
     }
     return getHeight(obj.objNum, obj.settings, tileset);
@@ -2916,6 +2948,10 @@ function loadObjects(lvlNum, layerDataPointer) {
                                 height = fileData[snes2pc(pointer + 6)];
                                 if (submode == 0) {
                                     console.log("Multi-screen");
+                                    height16 = read1(pointer + 5) >>> 4;
+                                    width16 = read1(pointer + 5) & 0b1111;
+                                    height = fileData[snes2pc(pointer + 6)];
+                                    width = fileData[snes2pc(pointer + 2)] & 0b1111111;
                                     lengthOfHeader = 7;
                                 }
                                 else {
