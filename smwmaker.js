@@ -56,6 +56,8 @@ class Obj {
     submode = 0;
     height16 = 0;
     width16 = 0;
+    conditionalDirectMap16FlagToUse = 0;
+    conditionalDirectMap16UseAddition = 0;
     constructor(objNum, x, y, settings) {
         this.objNum = objNum;
         this.x = x;
@@ -2135,7 +2137,7 @@ function getObjImage(obj) {
             return canvas.toDataURL('image/png');
         }
         else if (obj.mode === 3) {
-            if (obj.submode === 0) {
+            if (obj.submode === 0 || obj.submode === 1) {
                 const canvas = document.createElement("canvas");
                 const tilenum = obj.tileNum;
                 const width = getObjWidth(obj);
@@ -2168,6 +2170,9 @@ function getObjWidth(obj) {
             if (obj.submode === 0) {
                 return obj.tileWidth + 1;
             }
+            else if (obj.submode === 1) {
+                return obj.tileWidth + 1;
+            }
         }
         return obj.tileWidth;
     }
@@ -2180,6 +2185,9 @@ function getObjHeight(obj) {
     if (obj.objNum == 0x27 || obj.objNum == 0x29) {
         if (obj.mode === 3) {
             if (obj.submode === 0) {
+                return obj.tileHeight + 1;
+            }
+            else if (obj.submode === 1) {
                 return obj.tileHeight + 1;
             }
         }
@@ -2929,6 +2937,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                             width = (fileData[snes2pc(pointer + 2)] & 0b1111) + 1;
                             height = (fileData[snes2pc(pointer + 2)] >>> 4) + 1;
                             let height16 = 0, width16 = 0;
+                            let conditionalDirectMap16FlagToUse = 0, conditionalDirectMap16UseAddition = 0;
                             if (mode === 0) {
                                 lengthOfHeader = 5;
                                 console.log("Single-screen, single tile");
@@ -2954,9 +2963,18 @@ function loadObjects(lvlNum, layerDataPointer) {
                                     width = fileData[snes2pc(pointer + 2)] & 0b1111111;
                                     lengthOfHeader = 7;
                                 }
-                                else {
+                                else if (submode == 1) {
                                     console.log("Conditional direct map16");
+                                    height16 = read1(pointer + 5) >>> 4;
+                                    width16 = read1(pointer + 5) & 0b1111;
+                                    height = fileData[snes2pc(pointer + 6)];
+                                    width = fileData[snes2pc(pointer + 2)] & 0b1111111;
+                                    conditionalDirectMap16FlagToUse = fileData[snes2pc(pointer + 7)] & 0b1111111;
+                                    conditionalDirectMap16UseAddition = (fileData[snes2pc(pointer + 7)] >>> 7) & 0b1;
                                     lengthOfHeader = 8;
+                                }
+                                else {
+                                    throw new Error("undefined");
                                 }
                             }
                             const newObj = new Obj(objNum, x, y, settings);
@@ -2966,6 +2984,8 @@ function loadObjects(lvlNum, layerDataPointer) {
                             newObj.tileHeight = height;
                             newObj.height16 = height16;
                             newObj.width16 = width16;
+                            newObj.conditionalDirectMap16FlagToUse = conditionalDirectMap16FlagToUse;
+                            newObj.conditionalDirectMap16UseAddition = conditionalDirectMap16UseAddition;
                             newObj.mode = mode;
                             newObj.submode = submode;
                             objList.push(newObj);
