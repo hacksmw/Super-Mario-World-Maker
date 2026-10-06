@@ -8484,6 +8484,119 @@ function pc2snes(pc, type = "Auto", header = true) {
             throw new TypeError();
     }
 }
+function snes2pc4exhirom(snes) {
+    let pc = 0;
+    if ((snes >= 0xC00000 && snes <= 0xFFFFFF) || (snes >= 0x400000 && snes <= 0x7DFFFF)) {
+        pc = snes & 0x3FFFFF;
+        if (snes < 0xC00000) {
+            pc += 0x400000;
+        }
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
+function snes2pc4exlorom(snes) {
+    let pc = 0;
+    if ((snes >= 0x808000 && snes <= 0xFFFFFF) || (snes >= 0x008000 && snes <= 0x7dffff)) {
+        pc = (snes & 0x7FFF | ((snes & 0x7F0000) >> 1));
+        if (snes < 0x800000) {
+            pc += 0x400000;
+        }
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
+function snes2pc4hirom(snes) {
+    let pc = 0;
+    if ((snes >= 0xC00000 && snes <= 0xFFFFFF)) {
+        pc = (snes & 0x3FFFFF);
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
+function snes2pc4lorom1(snes) {
+    let pc = 0;
+    if (snes >= 0x8000 && snes <= 0x6FFFFF) {
+        pc = (snes & 0x7FFF | ((snes & 0x7F0000) >> 1));
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
+function snes2pc4lorom2(snes) {
+    let pc = 0;
+    if (snes >= 0x808000 && snes <= 0xFFFFFF) {
+        pc = (snes & 0x7FFF | ((snes & 0x7F0000) >> 1));
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
+function snes2pc2(snes, type, header = true) {
+    let result;
+    let head;
+    if (header) {
+        head = 0x200;
+    }
+    else {
+        head = 0;
+    }
+    switch (type) {
+        case "LoROM1":
+            result = snes2pc4lorom1(snes);
+            break;
+        case "LoROM2":
+            result = snes2pc4lorom2(snes);
+            break;
+        case "HiROM":
+            result = snes2pc4hirom(snes);
+            break;
+        case "ExHiROM":
+            result = snes2pc4exhirom(snes);
+            break;
+        case "ExLoROM":
+            result = snes2pc4exlorom(snes);
+            break;
+        case "RAM":
+            return snes2pc4ram(snes);
+            break;
+        case "VRAM":
+            return snes2pc4vram(snes);
+            break;
+        default:
+            throw new TypeError();
+    }
+    result += head;
+    return result;
+}
+function snes2pc4ram(snes) {
+    let pc;
+    if (snes >= 0x7E0000 && snes <= 0x7FFFFF) {
+        pc = (0x1FFFF & snes) + 0xC13;
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
+function snes2pc4vram(snes) {
+    let pc;
+    if (snes >= 0 && snes < 0x8000) {
+        pc = (snes << 1) + 0x20c13;
+    }
+    else {
+        throw new TypeError();
+    }
+    return pc;
+}
 function decompress_lz2(data) {
     /* graphics decompression algorithm */
     let i;
