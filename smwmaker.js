@@ -54,6 +54,8 @@ class Obj {
     extB = 0;
     mode = 0;
     submode = 0;
+    height16 = 0;
+    width16 = 0;
     constructor(objNum, x, y, settings) {
         this.objNum = objNum;
         this.x = x;
@@ -2112,6 +2114,26 @@ function getObjImage(obj) {
             }
             return canvas.toDataURL('image/png');
         }
+        else if (obj.mode === 2) {
+            const canvas = document.createElement("canvas");
+            const tilenum = obj.tileNum;
+            const width = obj.tileWidth;
+            const height = obj.tileHeight;
+            const leftTop = obj.tileNum;
+            canvas.width = width * 16;
+            canvas.height = height * 16;
+            const ctx = canvas.getContext("2d");
+            const width16 = obj.width16 + 1;
+            const height16 = obj.height16 + 1;
+            for (let i = 0; i < height; i++) {
+                for (let j = 0; j < width; j++) {
+                    let index = leftTop + ((i % height16) * 16) + (j % width16);
+                    const img = getMap16TileImg(index);
+                    ctx.putImageData(img, j * 16, i * 16);
+                }
+            }
+            return canvas.toDataURL('image/png');
+        }
     }
     return getObjImg(obj.objNum, obj.settings, tileset);
 }
@@ -2874,18 +2896,22 @@ function loadObjects(lvlNum, layerDataPointer) {
                             let width, height;
                             width = (fileData[snes2pc(pointer + 2)] & 0b1111) + 1;
                             height = (fileData[snes2pc(pointer + 2)] >>> 4) + 1;
+                            let height16 = 0, width16 = 0;
                             if (mode === 0) {
                                 lengthOfHeader = 5;
+                                console.log("Single-screen, single tile");
                             }
                             else if (mode === 1) {
                                 lengthOfHeader = 5;
                                 console.log("Multiple tiles unstretched");
                             }
-                            else if (mode === 3) {
+                            else if (mode === 2) {
+                                height16 = read1(pointer + 5) >>> 4;
+                                width16 = read1(pointer + 5) & 0b1111;
                                 lengthOfHeader = 6;
                                 console.log("Single-screen, multiple tiles");
                             }
-                            else if (mode === 4) {
+                            else if (mode === 3) {
                                 width = (fileData[snes2pc(pointer + 2)] & 127);
                                 height = fileData[snes2pc(pointer + 6)];
                                 if (submode == 0) {
@@ -2902,6 +2928,8 @@ function loadObjects(lvlNum, layerDataPointer) {
                             newObj.tileNum = m16Num;
                             newObj.tileWidth = width;
                             newObj.tileHeight = height;
+                            newObj.height16 = height16;
+                            newObj.width16 = width16;
                             newObj.mode = mode;
                             newObj.submode = submode;
                             objList.push(newObj);
