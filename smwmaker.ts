@@ -4346,23 +4346,6 @@ function load16x16() {
     bgTiles = bgBlocks;  
 }
 
-function read3(address: number): number {
-    return ((fileData[snes2pc(address+2)] << 16) | (((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
-}
-
-function read2(address: number): number {
-    return ((((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
-}
-
-function read1(address: number): number {
-    const addr: number = snes2pc(address);
-    if (addr >= fileData.length) {
-        debugger;
-        throw new Error("pointer is bigger than rom");
-    }
-    return fileData[addr+0];
-}
-
 function getMap16(start: number, end: number, tblAddr: number, blocks: (number | Tile)[]) {
     for (let i = 0; i <= end-start; i++) {
         // YXPCCCTT
@@ -8737,406 +8720,292 @@ function getHeight(objNum: number, settings: number, tileset = 0): number {
     return result;    
 }
 
-function setPoint(top: number, left: number, r: number, g: number, b: number, ctx: CanvasRenderingContext2D, alpha: number = 1.0): void {
-    ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    ctx!.fillRect(left, top, 1, 1);    
-}
-
-function intdiv(a: number, b: number): number {
-    return Math.floor(a/b);
-}
-
-function stripHeader(romData: any) {
-    let result = Array.prototype.slice.call(romData);
-    result.splice(0, 0x200);
-    return result;
-}
-
-function compress_rle1(data: number[]): number[] {
-    let i, j;
-    let output: any = [];
-    let buffer = [];
-    let byteCount = 1;
-    let isDirect = false;
-    let directLength = 0;
-    let debugOutput = "";
-
-    for (i = 0; i < data.length; i++) {
-        byteCount = 1;
-
-        // rle
-        for (j = i; j < data.length - 1; j++) {
-            if (data[j] !== data[j + 1] ) {
-                break;
-            }
-            byteCount++;          
-        }
-
-        if (byteCount - 1 > 127) {
-            byteCount = 127;
-        }
-
-        if (byteCount - 1 === 127 && data[i] === 0xFF) {
-            byteCount--;
-        }
-
-        if (byteCount > 2) {
-            if (isDirect) {
-                isDirect = false;
-                log("(Direct-Copy Length: " + directLength + ")");
-                debugOutput = "";
-                for (j=0; j<buffer.length; j++) {
-                    debugOutput += hex(buffer[j]) + " ";
+function getX(obj: Obj, tset: number = -1): number {
+    const objNum = obj.objNum;
+    const settings = obj.settings;
+    
+    if (tset === -1) {
+        tset = tileset;
+    }
+    
+    switch (objNum) {
+        case 0:
+            {
+                if (settings === 0x46) {
+                    return obj.x - 1;
                 }
-                output.push(directLength - 1);
-                output = output.concat(buffer);
-                log(debugOutput);
+                return obj.x;
             }
             
-            log("(Byte-Fill Length: " + byteCount + ")");
-            debugOutput = "";
-            output.push(0b10000000 | ((byteCount - 1) & 0b01111111));
-            output.push(data[i]);
-            for (j = 0; j < byteCount; j++) {
-                debugOutput += hex(data[i]) + " ";
-            }
-            log(debugOutput);
+            break;
+        case 0x12:
+            {
+                const type = ((settings >>> 0) & 0b1111);
+                const height = getHeight(objNum, settings, tset);
 
-            i += byteCount - 1;
-        } else {
-            if (isDirect) {
-                if (directLength > 0b01111111) {
-                    isDirect = false;
-                    log("(Direct-Copy Length: " + (0b01111111 + 1) + ")");
-                    output.push(0b01111111); 
-                    output = output.concat(buffer);
-
-                    debugOutput = "";
-                    for (j=0; j<buffer.length; j++) {
-                        debugOutput += hex(buffer[j]) + " ";
-                    }
-                    log(debugOutput);
-                    
-                    directLength = 1;
-                    buffer = [];
-                    buffer.push(data[i]);
-                    isDirect = true;             
-                    
-                    continue;                     
+                if (type === 0) {  
+                    return (obj.x + 2) - ((height - 1) * 2);
+                } else if (type === 1) {
+                    return obj.x - (height - 2);
+                } else if (type === 2) {
+                    return (obj.x + 4) - (4*(height-1));
                 } else {
-                    directLength++;
-                    buffer.push(data[i]);
+                    return obj.x;
                 }
-
-            } else {
-                directLength = 1;
-                buffer = [];
-                buffer.push(data[i]);
-                isDirect = true;              
             }
-        }
-    }
-
-    if (isDirect) {
-        isDirect = false;
-        log("(Direct-Copy Length: " + directLength + ")");
-        debugOutput = "";
-        for (j=0; j<buffer.length; j++) {
-            debugOutput += hex(buffer[j]) + " ";
-        }
-        output.push(directLength - 1);
-        output = output.concat(buffer);
-        log(debugOutput);
-    }
-
-    output.push(0xFF);
-    output.push(0xFF);
-
-    return output;
-}
-
-function arrayCompare(a: any, b: any) {
-    let aLen = a.length;
-    let bLen = b.length;
-    if (aLen != bLen) {
-        return false;
-    }
-    for (let i = 0; i < aLen; i++) {
-        if (a[i] !== b[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function log(msg: any) {
-    console.log(msg);
-}
-
-
-function snes2pc(snes: number, type: string = "Auto", header: boolean = true): number {
-    let result: number;
-    let head: number;
-
-    if (header) {
-        head = 0x200;
-    } else {
-        head = 0;
-    }
-
-    if (type === "Auto") {
-        type = romType;
-    }
-
-
-    switch (type) {
-        case "LoROM1":
-        case "LoROM2":
-            result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000));
             break;
-        case "HiROM":
-            result = head + (snes & 0x3FFFFF);
-            break;
-        case "ExHiROM":
-            result = (snes & 0x3FFFFF) + head + ((snes > 0x800000 ? 0x400000 : 0));
-            break;
-        case "ExLoROM":
-            result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000)) + (snes < 0x800000? 0x400000 : 0);
-            break;       
         default:
-            throw new TypeError();
-    }
-    return result;
-}
+            {
+                if (tset === 0) {
+                    // plain / forest
+                    if (objNum === 0x3A) {
+                        const a = (settings >>> 0) & 0b1111;
+                        return obj.x - a;
 
-function safeParseInt(str: any) {
-    // must return 32 bit integer
-    let result = parseInt(str);
-    if (!isFinite(result)) 
-        throw new TypeError();
-    result = result | 0;
-    return result;
-}
+                    } else if (objNum === 0x39) {
+                        return obj.x + 2 - getHeight(objNum, settings, tset);
+                    } else if (objNum === 0x3B) {
+                        const a = (settings >>> 4) & 0b1111;
+                        const b = (settings >>> 0) & 0b1111;
+                        
+                        return obj.x -1 -a -b;
+                    }
 
-function decompress_rle1(data: Uint8Array): number[] {
-    let i, j;
-    let length;
-    let output = new Array();
-    let outputBuffer = "";
-    for (i = 0; i < data.length; i++) {
-        if (i+1 < data.length && data[i] === 0xFF && data[i+1] === 0xFF) {
-            break;
-        }
-        if (outputBuffer.length > 65536)
-            break;
-        switch (data[i] >> 7) {
-            case 0:
-                // direct copy
-                length = (data[i] & 0b1111111) + 1;
-                //log("(Direct-Copy Length: " + length + ")");
-                outputBuffer = "";
-                for (j=0; j<length; j++) {
-                    output.push(data[i+1+j]);
-                    outputBuffer += hex(data[i+1+j]) + " ";
-                }
-                //log(outputBuffer);
-                i += length;
-                break;
-            case 1:
-                // rle
-                length = (data[i] & 0b1111111) + 1;
-                //log("(Byte-Copy Length: " + length + ")");
-                outputBuffer = "";
-                for (j=0; j<length; j++) {
-                    output.push(data[i+1]);
-                    outputBuffer += hex(data[i+1]) + " ";
-                }
-                //log(outputBuffer);
-                i += 1;
-                break;
-            default:
-                throw new TypeError("unknown command");
-        }
-    }
-    return output;
-}
+                } else if (tset === 1) { 
+                    // castle
+                    if (objNum === 0x3D) {
+                        // escalator
+                        let height, type;
 
-function decompress_lz2(data: Uint8Array): number[] {
-    /* graphics decompression algorithm */
-    let i;
-    let len;
-    let output = new Array();
-    let pointer = 0;
-    let address = 0;
-    let debugOutput = "";
+                        type = (settings >>> 0) & 0b1111;
+                        height = ((settings >>> 4) & 0b1111) + 1;
 
-    while (true) {
-        if (data[pointer] === 0xFF) {
-            break;
-        }
+                        if (type === 0) {
+                            //console.log(tset);
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        } else if (type === 1) {
+                            //console.log(tset);
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        }
+                    }
 
-        if (output.length > 65536) {
-            throw new TypeError("Overflow");
-        }
-        
-        switch ((data[pointer] >>> 5) & 0b111) {
-            case 0b001:
-                // byte fill
-                debugOutput = "";
-                len = (data[pointer] & 0b11111) + 1;
-                for (i = 0; i < len; i++) {
-                    output.push(data[pointer + 1]);
-                    debugOutput += hex(data[pointer + 1]) + " ";  
-                }
-                //log("(Byte-Fill Length: " + len + ")");
-                //log(debugOutput);
-                pointer += 2;
-                break;
-            case 0b011:
-                // increasing fill
-                debugOutput = "";
-                len = (data[pointer] & 0b11111) + 1;
-                for (i = 0; i < len; i++) {
-                    output.push((data[pointer + 1] + i) & 0xFF);
-                    debugOutput += hex((data[pointer + 1] + i) & 0xFF) + " ";  
-                }
-                //log("(Increasing-Fill Length: " + len + ")");
-                //log(debugOutput);
-                pointer += 2;
-                break;
-            case 0b000:
-                // direct copy
-                debugOutput = "";
-                len = (data[pointer] & 0b11111) + 1;
-                for (i = 0; i < len; i++) {
-                    output.push((data[pointer + 1 + i]));
-                    debugOutput += hex((data[pointer + 1 + i])) + " ";
-                }
-                //log("(Direct-Copy Length: " + len + ")");
-                //log(debugOutput);
-                pointer += len + 1;
-                break;
-            case 0b010:
-                // word fill
-                debugOutput = "";
-                len = (data[pointer] & 0b11111) + 1;
-                for (i = 0; i < len; i++) {
-                    if (i % 2 === 0) {
-                        output.push(data[pointer + 1]);
-                        debugOutput += hex(data[pointer + 1]) + " ";
-                    } else {
-                        output.push(data[pointer + 2]);
-                        debugOutput += hex(data[pointer + 2]) + " ";
+                } else if (tset === 3) {
+                    // underground
+                    if (objNum === 0x3C) {
+                        const type = (settings >>> 4) & 0b1111;
+                        const height = ((settings >>> 0) & 0b1111) + 1;
+
+                        if (type === 0) {
+                            const width = getWidth(objNum, settings, tset);
+                            return obj.x + 1 - width;
+                        }
+                    } else if (objNum === 0x39) {
+                        const type = (settings >>> 0) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+
+                        if (type === 0) {
+                            return obj.x + 2 - width;
+                        } else if (type === 1) {
+                            return obj.x + 1 - width;
+                        }
+                    } else if (objNum === 0x37) {
+                        // canvasses
+                        return 0;
+                    }
+                } else if (tset === 2) {
+                    // athletic
+                    if (objNum === 0x37) {
+                        const type = (settings >>> 0) & 0b1111;
+                        if (type === 0) {
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        } else if (type === 1) {
+                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                        }
+                    } else if (objNum === 0x3B) {
+                        const type = (settings >>> 4) & 0b1111;
+
+                        if (type === 0) {
+                            const width = getWidth(objNum, settings, tset);
+                            return obj.x + 1 - width;
+                        }
+                        
+                        
+                    } else if (objNum === 0x3a) {
+                        const type = (settings) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+
+                        if (type === 0) {  
+                            return obj.x + 2 - width;
+                        } else if (type === 1) {
+                            return obj.x + 1 - width;
+                        } else if (type === 4) {
+                            return obj.x + 1 - width;
+                        }
+
                     }
                 }
-                //log("(Word-Fill Length: " + len + ")");
-                //log(debugOutput);
-                pointer += 3;
-                break;
-            case 0b100:
-                // repeat
-                debugOutput = "";
-                len = (data[pointer] & 0b11111) + 1;
-                address = (data[pointer+1] << 8) | (data[pointer+2]);
-                for (i = 0; i < len; i++) {
-                    output.push(output[address + i]);
-                    debugOutput += hex(output[address + i]) +  " ";
-                }
-                //log("(Repeat Length: " + len + ")");
-                //log(debugOutput);
-                pointer += 3;                
-                break;
-            case 0b111:
-                switch ((data[pointer] >>> 2) & 0b111) {
-                    case 0b001:
-                        // byte fill
-                        debugOutput = "";
-                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
-                        for (i = 0; i < len; i++) {
-                            output.push(data[pointer + 2]);  
-                            debugOutput += hex(data[pointer + 2]) + " ";  
-                        }
-                        //log("(Byte-Fill-Long Length: " + len + ")");
-                        //log(debugOutput);
-                        pointer += 3;
-                        break;
-                    case 0b011:
-                        // increasing fill
-                        debugOutput = "";
-                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
-                        for (i = 0; i < len; i++) {
-                            output.push((data[pointer + 2] + i) & 0xFF);  
-                            debugOutput += hex((data[pointer + 2] + i) & 0xFF) + " ";
-                        }
-                        //log("(Increasing-Fill-Long Length: " + len + ")");
-                        //log(debugOutput);
-                        pointer += 3;                        
-                        break;
-                    case 0b000:
-                        // direct copy
-                        debugOutput = "";
-                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
-                        for (i = 0; i < len; i++) {
-                            output.push(data[pointer + 2 + i] );  
-                            debugOutput += hex(data[pointer + 2 + i]) + " ";
-                        }
-                        //log("(Direct-Copy-Long Length: " + len + ")");
-                        //log(debugOutput);                       
-                        pointer += len + 2;
-                        break;
-                    case 0b100:
-                        // repeat
-                        debugOutput = "";
-                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
-                        address = (data[pointer+2] << 8) | (data[pointer+3]);
-                        for (i = 0; i < len; i++) {
-                            output.push(output[address + i]);
-                            debugOutput += hex(output[address + i]) + " ";
-                        }
-                        //log("(Repeat-Long Length: " + len + ")");
-                        //log(debugOutput);                         
-                        pointer += 4;                        
-                        break;
-                    case 0b010:
-                        // word fill
-                        debugOutput = "";
-                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
-                        for (i = 0; i < len; i++) {
-                            if (len % 2 === 0) {
-                                output.push(data[pointer + 2]);
-                                debugOutput += hex(data[pointer + 2]) + " ";
-                            } else {
-                                output.push(data[pointer + 3]);   
-                                debugOutput += hex(data[pointer + 3]) + " ";
-                            }
-                        }
-                        //log("(Word-Fill-Long Length: " + len + ")");
-                        //log(debugOutput);      
-                        pointer += 4;
-                        break;                        
-                    default:
-                        throw new Error('unknown long command 0b' + (data[pointer] >>> 5).toString(2))
-                }
-                break;
-            default:
-                debugger;
-                throw new Error('unknown command 0b' + (data[pointer] >>> 5).toString(2));
-        }
+                return obj.x;
+            }
+            break;
     }
-    return output;
+    return obj.x;
 }
 
-function hex(val: number, length = 2): string {
-    let result: string;
-    let j: number;
-    if (val === undefined) debugger;
-    result = val.toString(16).toUpperCase();
-    j = length - result.length;
-    for (let i = 0; i < j; i++) {
-        result = '0' + result;
+function getY(obj: Obj, tset: number = -1): number {
+    const objNum = obj.objNum;
+    
+    if (tset === -1) {
+        tset = tileset;
     }
-    return result;
+
+    if (tset === 3) {
+        if (objNum === 0x37) {
+            // canvasses
+            return 5;
+        }
+    }
+
+    return obj.y;
 }
+
+function getRealY(y: number, obj: Obj, tset: number = -1): number {
+    const objNum = obj.objNum;
+
+    if (tset === -1) {
+        tset = tileset;
+    }
+
+    if (tset === 3) {
+        if (objNum === 0x37) {
+            return 0;
+        }
+    }
+
+    return y;
+}
+
+function getRealX(x: number, obj: Obj, tset: number = -1): number {
+    const objNum = obj.objNum;
+    const settings = obj.settings;
+
+    
+    if (tset === -1) {
+        tset = tileset;
+    }
+
+    switch (objNum) {
+        case 0:
+            {
+                if (settings === 0x46) {
+                    return x + 1;
+                }
+                return x;
+            }
+            break;
+        case 0x12:
+            {
+                const type = ((settings >>> 0) & 0b1111);
+                const height = getHeight(objNum, settings, tset);
+
+                if (type === 0) {  
+                    return x - 2 + ((height - 1) * 2);
+                } else if (type === 1) {
+                    return x + (height - 2);
+                } else if (type === 2) {
+                    return x - 4 + (4*(height-1));
+                } else {
+                    return x;
+                }
+            }
+            break;
+        default:
+            {
+                if (tset === 0) {
+                    // plain
+                    if (objNum === 0x3a) {
+                        const a = (settings >>> 0) & 0b1111;
+                        return x + a;
+                    } else if (objNum === 0x39) {
+                        return x - 2 + getHeight(objNum, settings, tset);
+                    } else if (objNum === 0x3B) {
+                        const a = (settings >>> 4) & 0b1111;
+                        const b = (settings >>> 0) & 0b1111;
+                        
+                        return x +1 +a +b;
+                        
+                    }
+                } else if (tset === 3) {
+                    if (objNum === 0x3c) {
+                        const type = (settings >>> 4) & 0b1111;
+                        const height = ((settings >>> 0) & 0b1111) + 1;
+
+                        if (type === 0) {
+                            const width = getWidth(objNum, settings, tset);
+                            return x - 1 + width;
+                        }
+                    } else if (objNum === 0x39) {
+                        const type = (settings >>> 0) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+
+                        if (type === 0) {
+                            return x - 2 + width;
+                        } else if (type === 1) {
+                            return x - 1 + width;
+                        }
+                    } else if (objNum === 0x37) {
+                        return 0;
+                    }
+                } else if (tset === 1) {
+                    // castle
+                    if (objNum === 0x3D) {
+                        // escalator
+                        let type;
+
+                        type = (settings >>> 0) & 0b1111;
+
+                        if (type === 0 || type === 1) {
+                            return x -1 + getWidth(objNum, settings, tset);
+                        }
+                    }
+                } else if (tset === 2) {
+                    // athletic
+                    if (objNum === 0x37) {
+                        const type = (settings >>> 0) & 0b1111;
+                        if (type === 0) {
+                            return x-1+getWidth(objNum, settings, tset);
+                        } else if (type === 1) {
+                            return x-1+getWidth(objNum, settings, tset);
+                        }
+                    } else if (objNum === 0x3B) {
+                        const type = (settings >>> 4) & 0b1111;
+                        
+                        if (type === 0) {
+                            return (x - 1) + getWidth(objNum, settings, tset);
+                        }
+                        
+                        
+                    } else if (objNum === 0x3a) {
+                        const type = (settings) & 0b1111;
+                        const width = getWidth(objNum, settings, tset);
+
+                        if (type === 0) {  
+                            return x - 2 + width;
+                        } else if (type === 1) {
+                            return x - 1 + width;
+                        } else if (type === 4) {
+                            return x - 1 + width;
+                        }
+
+                    }
+                }
+                return x;
+            }
+            break;
+    }
+
+    return x;
+}
+
 
 function detectRomType(rom: any, header = true) {
     let pos = 0, posi;
@@ -9560,292 +9429,425 @@ function pc2snes(pc: any, type: string = "Auto", header = true) {
 
 }
 
+function decompress_lz2(data: Uint8Array): number[] {
+    /* graphics decompression algorithm */
+    let i;
+    let len;
+    let output = new Array();
+    let pointer = 0;
+    let address = 0;
+    let debugOutput = "";
+
+    while (true) {
+        if (data[pointer] === 0xFF) {
+            break;
+        }
+
+        if (output.length > 65536) {
+            throw new TypeError("Overflow");
+        }
+        
+        switch ((data[pointer] >>> 5) & 0b111) {
+            case 0b001:
+                // byte fill
+                debugOutput = "";
+                len = (data[pointer] & 0b11111) + 1;
+                for (i = 0; i < len; i++) {
+                    output.push(data[pointer + 1]);
+                    debugOutput += hex(data[pointer + 1]) + " ";  
+                }
+                //log("(Byte-Fill Length: " + len + ")");
+                //log(debugOutput);
+                pointer += 2;
+                break;
+            case 0b011:
+                // increasing fill
+                debugOutput = "";
+                len = (data[pointer] & 0b11111) + 1;
+                for (i = 0; i < len; i++) {
+                    output.push((data[pointer + 1] + i) & 0xFF);
+                    debugOutput += hex((data[pointer + 1] + i) & 0xFF) + " ";  
+                }
+                //log("(Increasing-Fill Length: " + len + ")");
+                //log(debugOutput);
+                pointer += 2;
+                break;
+            case 0b000:
+                // direct copy
+                debugOutput = "";
+                len = (data[pointer] & 0b11111) + 1;
+                for (i = 0; i < len; i++) {
+                    output.push((data[pointer + 1 + i]));
+                    debugOutput += hex((data[pointer + 1 + i])) + " ";
+                }
+                //log("(Direct-Copy Length: " + len + ")");
+                //log(debugOutput);
+                pointer += len + 1;
+                break;
+            case 0b010:
+                // word fill
+                debugOutput = "";
+                len = (data[pointer] & 0b11111) + 1;
+                for (i = 0; i < len; i++) {
+                    if (i % 2 === 0) {
+                        output.push(data[pointer + 1]);
+                        debugOutput += hex(data[pointer + 1]) + " ";
+                    } else {
+                        output.push(data[pointer + 2]);
+                        debugOutput += hex(data[pointer + 2]) + " ";
+                    }
+                }
+                //log("(Word-Fill Length: " + len + ")");
+                //log(debugOutput);
+                pointer += 3;
+                break;
+            case 0b100:
+                // repeat
+                debugOutput = "";
+                len = (data[pointer] & 0b11111) + 1;
+                address = (data[pointer+1] << 8) | (data[pointer+2]);
+                for (i = 0; i < len; i++) {
+                    output.push(output[address + i]);
+                    debugOutput += hex(output[address + i]) +  " ";
+                }
+                //log("(Repeat Length: " + len + ")");
+                //log(debugOutput);
+                pointer += 3;                
+                break;
+            case 0b111:
+                switch ((data[pointer] >>> 2) & 0b111) {
+                    case 0b001:
+                        // byte fill
+                        debugOutput = "";
+                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
+                        for (i = 0; i < len; i++) {
+                            output.push(data[pointer + 2]);  
+                            debugOutput += hex(data[pointer + 2]) + " ";  
+                        }
+                        //log("(Byte-Fill-Long Length: " + len + ")");
+                        //log(debugOutput);
+                        pointer += 3;
+                        break;
+                    case 0b011:
+                        // increasing fill
+                        debugOutput = "";
+                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
+                        for (i = 0; i < len; i++) {
+                            output.push((data[pointer + 2] + i) & 0xFF);  
+                            debugOutput += hex((data[pointer + 2] + i) & 0xFF) + " ";
+                        }
+                        //log("(Increasing-Fill-Long Length: " + len + ")");
+                        //log(debugOutput);
+                        pointer += 3;                        
+                        break;
+                    case 0b000:
+                        // direct copy
+                        debugOutput = "";
+                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
+                        for (i = 0; i < len; i++) {
+                            output.push(data[pointer + 2 + i] );  
+                            debugOutput += hex(data[pointer + 2 + i]) + " ";
+                        }
+                        //log("(Direct-Copy-Long Length: " + len + ")");
+                        //log(debugOutput);                       
+                        pointer += len + 2;
+                        break;
+                    case 0b100:
+                        // repeat
+                        debugOutput = "";
+                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
+                        address = (data[pointer+2] << 8) | (data[pointer+3]);
+                        for (i = 0; i < len; i++) {
+                            output.push(output[address + i]);
+                            debugOutput += hex(output[address + i]) + " ";
+                        }
+                        //log("(Repeat-Long Length: " + len + ")");
+                        //log(debugOutput);                         
+                        pointer += 4;                        
+                        break;
+                    case 0b010:
+                        // word fill
+                        debugOutput = "";
+                        len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
+                        for (i = 0; i < len; i++) {
+                            if (len % 2 === 0) {
+                                output.push(data[pointer + 2]);
+                                debugOutput += hex(data[pointer + 2]) + " ";
+                            } else {
+                                output.push(data[pointer + 3]);   
+                                debugOutput += hex(data[pointer + 3]) + " ";
+                            }
+                        }
+                        //log("(Word-Fill-Long Length: " + len + ")");
+                        //log(debugOutput);      
+                        pointer += 4;
+                        break;                        
+                    default:
+                        throw new Error('unknown long command 0b' + (data[pointer] >>> 5).toString(2))
+                }
+                break;
+            default:
+                debugger;
+                throw new Error('unknown command 0b' + (data[pointer] >>> 5).toString(2));
+        }
+    }
+    return output;
+}
+
 function unload() {
     location.reload();
 }
 
-function getX(obj: Obj, tset: number = -1): number {
-    const objNum = obj.objNum;
-    const settings = obj.settings;
-    
-    if (tset === -1) {
-        tset = tileset;
+function hex(val: number, length = 2): string {
+    let result: string;
+    let j: number;
+    if (val === undefined) debugger;
+    result = val.toString(16).toUpperCase();
+    j = length - result.length;
+    for (let i = 0; i < j; i++) {
+        result = '0' + result;
     }
-    
-    switch (objNum) {
-        case 0:
-            {
-                if (settings === 0x46) {
-                    return obj.x - 1;
+    return result;
+}
+
+
+function setPoint(top: number, left: number, r: number, g: number, b: number, ctx: CanvasRenderingContext2D, alpha: number = 1.0): void {
+    ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    ctx!.fillRect(left, top, 1, 1);    
+}
+
+function intdiv(a: number, b: number): number {
+    return Math.floor(a/b);
+}
+
+function stripHeader(romData: any) {
+    let result = Array.prototype.slice.call(romData);
+    result.splice(0, 0x200);
+    return result;
+}
+
+function compress_rle1(data: number[]): number[] {
+    let i, j;
+    let output: any = [];
+    let buffer = [];
+    let byteCount = 1;
+    let isDirect = false;
+    let directLength = 0;
+    let debugOutput = "";
+
+    for (i = 0; i < data.length; i++) {
+        byteCount = 1;
+
+        // rle
+        for (j = i; j < data.length - 1; j++) {
+            if (data[j] !== data[j + 1] ) {
+                break;
+            }
+            byteCount++;          
+        }
+
+        if (byteCount - 1 > 127) {
+            byteCount = 127;
+        }
+
+        if (byteCount - 1 === 127 && data[i] === 0xFF) {
+            byteCount--;
+        }
+
+        if (byteCount > 2) {
+            if (isDirect) {
+                isDirect = false;
+                log("(Direct-Copy Length: " + directLength + ")");
+                debugOutput = "";
+                for (j=0; j<buffer.length; j++) {
+                    debugOutput += hex(buffer[j]) + " ";
                 }
-                return obj.x;
+                output.push(directLength - 1);
+                output = output.concat(buffer);
+                log(debugOutput);
             }
             
-            break;
-        case 0x12:
-            {
-                const type = ((settings >>> 0) & 0b1111);
-                const height = getHeight(objNum, settings, tset);
+            log("(Byte-Fill Length: " + byteCount + ")");
+            debugOutput = "";
+            output.push(0b10000000 | ((byteCount - 1) & 0b01111111));
+            output.push(data[i]);
+            for (j = 0; j < byteCount; j++) {
+                debugOutput += hex(data[i]) + " ";
+            }
+            log(debugOutput);
 
-                if (type === 0) {  
-                    return (obj.x + 2) - ((height - 1) * 2);
-                } else if (type === 1) {
-                    return obj.x - (height - 2);
-                } else if (type === 2) {
-                    return (obj.x + 4) - (4*(height-1));
+            i += byteCount - 1;
+        } else {
+            if (isDirect) {
+                if (directLength > 0b01111111) {
+                    isDirect = false;
+                    log("(Direct-Copy Length: " + (0b01111111 + 1) + ")");
+                    output.push(0b01111111); 
+                    output = output.concat(buffer);
+
+                    debugOutput = "";
+                    for (j=0; j<buffer.length; j++) {
+                        debugOutput += hex(buffer[j]) + " ";
+                    }
+                    log(debugOutput);
+                    
+                    directLength = 1;
+                    buffer = [];
+                    buffer.push(data[i]);
+                    isDirect = true;             
+                    
+                    continue;                     
                 } else {
-                    return obj.x;
+                    directLength++;
+                    buffer.push(data[i]);
                 }
+
+            } else {
+                directLength = 1;
+                buffer = [];
+                buffer.push(data[i]);
+                isDirect = true;              
             }
-            break;
-        default:
-            {
-                if (tset === 0) {
-                    // plain / forest
-                    if (objNum === 0x3A) {
-                        const a = (settings >>> 0) & 0b1111;
-                        return obj.x - a;
-
-                    } else if (objNum === 0x39) {
-                        return obj.x + 2 - getHeight(objNum, settings, tset);
-                    } else if (objNum === 0x3B) {
-                        const a = (settings >>> 4) & 0b1111;
-                        const b = (settings >>> 0) & 0b1111;
-                        
-                        return obj.x -1 -a -b;
-                    }
-
-                } else if (tset === 1) { 
-                    // castle
-                    if (objNum === 0x3D) {
-                        // escalator
-                        let height, type;
-
-                        type = (settings >>> 0) & 0b1111;
-                        height = ((settings >>> 4) & 0b1111) + 1;
-
-                        if (type === 0) {
-                            //console.log(tset);
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
-                        } else if (type === 1) {
-                            //console.log(tset);
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
-                        }
-                    }
-
-                } else if (tset === 3) {
-                    // underground
-                    if (objNum === 0x3C) {
-                        const type = (settings >>> 4) & 0b1111;
-                        const height = ((settings >>> 0) & 0b1111) + 1;
-
-                        if (type === 0) {
-                            const width = getWidth(objNum, settings, tset);
-                            return obj.x + 1 - width;
-                        }
-                    } else if (objNum === 0x39) {
-                        const type = (settings >>> 0) & 0b1111;
-                        const width = getWidth(objNum, settings, tset);
-
-                        if (type === 0) {
-                            return obj.x + 2 - width;
-                        } else if (type === 1) {
-                            return obj.x + 1 - width;
-                        }
-                    } else if (objNum === 0x37) {
-                        // canvasses
-                        return 0;
-                    }
-                } else if (tset === 2) {
-                    // athletic
-                    if (objNum === 0x37) {
-                        const type = (settings >>> 0) & 0b1111;
-                        if (type === 0) {
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
-                        } else if (type === 1) {
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
-                        }
-                    } else if (objNum === 0x3B) {
-                        const type = (settings >>> 4) & 0b1111;
-
-                        if (type === 0) {
-                            const width = getWidth(objNum, settings, tset);
-                            return obj.x + 1 - width;
-                        }
-                        
-                        
-                    } else if (objNum === 0x3a) {
-                        const type = (settings) & 0b1111;
-                        const width = getWidth(objNum, settings, tset);
-
-                        if (type === 0) {  
-                            return obj.x + 2 - width;
-                        } else if (type === 1) {
-                            return obj.x + 1 - width;
-                        } else if (type === 4) {
-                            return obj.x + 1 - width;
-                        }
-
-                    }
-                }
-                return obj.x;
-            }
-            break;
-    }
-    return obj.x;
-}
-
-function getY(obj: Obj, tset: number = -1): number {
-    const objNum = obj.objNum;
-    
-    if (tset === -1) {
-        tset = tileset;
-    }
-
-    if (tset === 3) {
-        if (objNum === 0x37) {
-            // canvasses
-            return 5;
         }
     }
 
-    return obj.y;
-}
-
-function getRealY(y: number, obj: Obj, tset: number = -1): number {
-    const objNum = obj.objNum;
-
-    if (tset === -1) {
-        tset = tileset;
+    if (isDirect) {
+        isDirect = false;
+        log("(Direct-Copy Length: " + directLength + ")");
+        debugOutput = "";
+        for (j=0; j<buffer.length; j++) {
+            debugOutput += hex(buffer[j]) + " ";
+        }
+        output.push(directLength - 1);
+        output = output.concat(buffer);
+        log(debugOutput);
     }
 
-    if (tset === 3) {
-        if (objNum === 0x37) {
-            return 0;
+    output.push(0xFF);
+    output.push(0xFF);
+
+    return output;
+}
+
+function arrayCompare(a: any, b: any) {
+    let aLen = a.length;
+    let bLen = b.length;
+    if (aLen != bLen) {
+        return false;
+    }
+    for (let i = 0; i < aLen; i++) {
+        if (a[i] !== b[i]) {
+            return false;
         }
     }
-
-    return y;
+    return true;
 }
 
-function getRealX(x: number, obj: Obj, tset: number = -1): number {
-    const objNum = obj.objNum;
-    const settings = obj.settings;
+function log(msg: any) {
+    console.log(msg);
+}
 
-    
-    if (tset === -1) {
-        tset = tileset;
+
+function snes2pc(snes: number, type: string = "Auto", header: boolean = true): number {
+    let result: number;
+    let head: number;
+
+    if (header) {
+        head = 0x200;
+    } else {
+        head = 0;
     }
 
-    switch (objNum) {
-        case 0:
-            {
-                if (settings === 0x46) {
-                    return x + 1;
-                }
-                return x;
-            }
-            break;
-        case 0x12:
-            {
-                const type = ((settings >>> 0) & 0b1111);
-                const height = getHeight(objNum, settings, tset);
+    if (type === "Auto") {
+        type = romType;
+    }
 
-                if (type === 0) {  
-                    return x - 2 + ((height - 1) * 2);
-                } else if (type === 1) {
-                    return x + (height - 2);
-                } else if (type === 2) {
-                    return x - 4 + (4*(height-1));
-                } else {
-                    return x;
-                }
-            }
+
+    switch (type) {
+        case "LoROM1":
+        case "LoROM2":
+            result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000));
             break;
+        case "HiROM":
+            result = head + (snes & 0x3FFFFF);
+            break;
+        case "ExHiROM":
+            result = (snes & 0x3FFFFF) + head + ((snes > 0x800000 ? 0x400000 : 0));
+            break;
+        case "ExLoROM":
+            result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000)) + (snes < 0x800000? 0x400000 : 0);
+            break;       
         default:
-            {
-                if (tset === 0) {
-                    // plain
-                    if (objNum === 0x3a) {
-                        const a = (settings >>> 0) & 0b1111;
-                        return x + a;
-                    } else if (objNum === 0x39) {
-                        return x - 2 + getHeight(objNum, settings, tset);
-                    } else if (objNum === 0x3B) {
-                        const a = (settings >>> 4) & 0b1111;
-                        const b = (settings >>> 0) & 0b1111;
-                        
-                        return x +1 +a +b;
-                        
-                    }
-                } else if (tset === 3) {
-                    if (objNum === 0x3c) {
-                        const type = (settings >>> 4) & 0b1111;
-                        const height = ((settings >>> 0) & 0b1111) + 1;
-
-                        if (type === 0) {
-                            const width = getWidth(objNum, settings, tset);
-                            return x - 1 + width;
-                        }
-                    } else if (objNum === 0x39) {
-                        const type = (settings >>> 0) & 0b1111;
-                        const width = getWidth(objNum, settings, tset);
-
-                        if (type === 0) {
-                            return x - 2 + width;
-                        } else if (type === 1) {
-                            return x - 1 + width;
-                        }
-                    } else if (objNum === 0x37) {
-                        return 0;
-                    }
-                } else if (tset === 1) {
-                    // castle
-                    if (objNum === 0x3D) {
-                        // escalator
-                        let type;
-
-                        type = (settings >>> 0) & 0b1111;
-
-                        if (type === 0 || type === 1) {
-                            return x -1 + getWidth(objNum, settings, tset);
-                        }
-                    }
-                } else if (tset === 2) {
-                    // athletic
-                    if (objNum === 0x37) {
-                        const type = (settings >>> 0) & 0b1111;
-                        if (type === 0) {
-                            return x-1+getWidth(objNum, settings, tset);
-                        } else if (type === 1) {
-                            return x-1+getWidth(objNum, settings, tset);
-                        }
-                    } else if (objNum === 0x3B) {
-                        const type = (settings >>> 4) & 0b1111;
-                        
-                        if (type === 0) {
-                            return (x - 1) + getWidth(objNum, settings, tset);
-                        }
-                        
-                        
-                    } else if (objNum === 0x3a) {
-                        const type = (settings) & 0b1111;
-                        const width = getWidth(objNum, settings, tset);
-
-                        if (type === 0) {  
-                            return x - 2 + width;
-                        } else if (type === 1) {
-                            return x - 1 + width;
-                        } else if (type === 4) {
-                            return x - 1 + width;
-                        }
-
-                    }
-                }
-                return x;
-            }
-            break;
+            throw new TypeError();
     }
+    return result;
+}
 
-    return x;
+function safeParseInt(str: any) {
+    // must return 32 bit integer
+    let result = parseInt(str);
+    if (!isFinite(result)) 
+        throw new TypeError();
+    result = result | 0;
+    return result;
+}
+
+function decompress_rle1(data: Uint8Array): number[] {
+    let i, j;
+    let length;
+    let output = new Array();
+    let outputBuffer = "";
+    for (i = 0; i < data.length; i++) {
+        if (i+1 < data.length && data[i] === 0xFF && data[i+1] === 0xFF) {
+            break;
+        }
+        if (outputBuffer.length > 65536)
+            break;
+        switch (data[i] >> 7) {
+            case 0:
+                // direct copy
+                length = (data[i] & 0b1111111) + 1;
+                //log("(Direct-Copy Length: " + length + ")");
+                outputBuffer = "";
+                for (j=0; j<length; j++) {
+                    output.push(data[i+1+j]);
+                    outputBuffer += hex(data[i+1+j]) + " ";
+                }
+                //log(outputBuffer);
+                i += length;
+                break;
+            case 1:
+                // rle
+                length = (data[i] & 0b1111111) + 1;
+                //log("(Byte-Copy Length: " + length + ")");
+                outputBuffer = "";
+                for (j=0; j<length; j++) {
+                    output.push(data[i+1]);
+                    outputBuffer += hex(data[i+1]) + " ";
+                }
+                //log(outputBuffer);
+                i += 1;
+                break;
+            default:
+                throw new TypeError("unknown command");
+        }
+    }
+    return output;
+}
+
+function read3(address: number): number {
+    return ((fileData[snes2pc(address+2)] << 16) | (((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
+}
+
+function read2(address: number): number {
+    return ((((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
+}
+
+function read1(address: number): number {
+    const addr: number = snes2pc(address);
+    if (addr >= fileData.length) {
+        debugger;
+        throw new Error("pointer is bigger than rom");
+    }
+    return fileData[addr+0];
 }
