@@ -1,0 +1,833 @@
+<!doctype html>
+<html>
+<head>
+<title>Lunar Address</title>
+<meta charset="utf-8">
+<script>
+"use strict";
+
+let header = true;
+let formatResult = true;
+let pcOnLeftSide = false;
+let type = "LoROM1";
+let lock = false;
+let isPCInputed = true;
+
+function frmMain_onsubmit() {
+    return false;
+}
+
+function window_onload(e) {
+    document.getElementById("frmMain").onsubmit = frmMain_onsubmit;
+
+    document.getElementById("lorom1").onchange = function () {
+        type = "LoROM1";
+        refresh();
+    }
+
+    document.getElementById("lorom2").onchange = function () {
+        type = "LoROM2";
+        refresh();
+    }
+
+    document.getElementById("hirom").onchange = function () {
+        type = "HiROM";
+        refresh();
+    }
+
+    document.getElementById("exlorom").onchange = function () {
+        type = "ExLoROM";
+        refresh();
+    }
+
+    document.getElementById("exhirom").onchange = function () {
+        type = "ExHiROM";
+        refresh();
+    }
+
+    document.getElementById("ram").onchange = function () {
+        type = "RAM";
+        refresh();
+    }
+
+    document.getElementById("vram").onchange = function () {
+        type = "VRAM";
+        refresh();
+    }
+
+    document.getElementById("chkHeader").onchange = function () {
+        if (this.checked) {
+            header = true;
+            refresh();
+        } else {
+            header = false;
+            refresh();
+        }
+    }
+
+    document.getElementById("chkFormat").onchange = function () {
+        if (this.checked) {
+            formatResult = true;
+            refresh();
+            
+        } else {
+            formatResult = false;
+            refresh();
+        }
+    }
+
+    document.getElementById("chkPCLeft").onchange = function () {
+        const txtPC = document.getElementById("txtPC");
+        const txtSnes = document.getElementById("txtSnes");
+        const txtLeft = document.getElementById("txtLeft");
+        const txtCenter = document.getElementById("txtCenter");
+        const txtRight = document.getElementById("txtRight");
+        const lblLeft = document.getElementById("lblLeft");
+        const lblRight = document.getElementById("lblRight");
+        const lblPC = document.getElementById("lblPC");
+        const lblSnes = document.getElementById("lblSnes");
+        
+        if (this.checked) {
+            txtLeft.removeChild(txtSnes);
+            txtRight.removeChild(txtPC);
+            txtLeft.appendChild(txtPC);
+            txtRight.appendChild(txtSnes);
+
+            lblLeft.removeChild(lblSnes);
+            lblRight.removeChild(lblPC);
+            lblLeft.appendChild(lblPC);
+            lblRight.appendChild(lblSnes);
+
+            if (!isPCInputed) {
+                txtCenter.innerText = "<";
+            } else {
+                txtCenter.innerText = ">";
+            }
+            
+            pcOnLeftSide = true;
+        } else {
+            txtLeft.removeChild(txtPC);
+            txtRight.removeChild(txtSnes);
+            txtLeft.appendChild(txtSnes);
+            txtRight.appendChild(txtPC);
+
+            lblLeft.removeChild(lblPC);
+            lblRight.removeChild(lblSnes);
+            lblLeft.appendChild(lblSnes);
+            lblRight.appendChild(lblPC);
+
+            if (!isPCInputed) {
+                txtCenter.innerText = ">";
+            } else {
+                txtCenter.innerText = "<";
+            }
+
+            pcOnLeftSide = false;
+        }       
+    }
+
+    document.getElementById("btnAutoDetect").onclick = function (ev) {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".smc, .sfc"
+        input.onchange = function (ev) {
+            const fileInput = ev.target;
+            const files = fileInput.files;
+            if (files.length != 1) {
+                return;
+            }
+            const file = files[0];
+            const fileName = file.name;
+
+            const fr = new FileReader();
+            fr.onload = function () {
+                let type;
+                let fn = fileName.toString();
+                let ext = fn.substring(fn.length - 4);
+                let head;
+                const data = new Uint8Array(fr.result);
+
+                if (ext === ".smc") {
+                    head = true;
+                } else if (ext === ".sfc") {
+                    head = false;
+                } else {
+                    head = true;
+                }
+                
+                type = detectRomType(data, head);
+                
+                switch (type) {
+                    case "LoROM1":
+                        type = "LoROM1";
+                        document.getElementById("lorom1").checked = true;
+                        break;
+                    case "LoROM2":
+                        type = "LoROM2";
+                        document.getElementById("lorom2").checked = true;
+                        break;
+                    case "HiROM":
+                        type = "HiROM";
+                        document.getElementById("hirom").checked = true;
+                        break;
+                    case "ExLoROM":
+                        type = "ExLoROM";
+                        document.getElementById("exlorom").checked = true;
+                        break;
+                    case "ExHiROM":
+                        type = "ExHiROM";
+                        document.getElementById("exhirom").checked = true;
+                        break;
+
+                    default:
+                        alert("Cannot determine ROM memory map type");
+                        return;
+                        break;
+                }
+                
+                header = head;
+                document.getElementById("chkHeader").checked = head;
+                
+                
+
+            };
+
+            fr.readAsArrayBuffer(file);
+        };
+
+        input.click();
+    };
+
+    document.getElementById("txtPC").oninput = function () {
+        let input = this.value;
+        let value, result;
+        let t;
+
+        input = input.replace(":", "");
+        input = input.replace("$", "");
+        
+        try {
+            value = parseInt("0x0" + input);
+            result = pc2snes(value, type, header);   
+            result = format(result, formatResult);
+            input = format(value, true);
+        } catch (err) {
+            if (!(err instanceof TypeError)) throw err;
+            document.getElementById("lblPC").innerHTML = "PC Invalid<br>$00:0000";
+            document.getElementById("txtSnes").value = format(0, formatResult); 
+            document.getElementById("lblSnes").innerHTML = "SNES N/A<br>$00:0000"; 
+
+            isPCInputed = true;
+            changeArrow();
+
+            return;
+        }
+
+        t = type;
+        
+        if (t == "LoROM1" || t == "LoROM2") {
+            t = "LoROM";
+        }
+
+        document.getElementById("lblPC").innerHTML = "PC File Address<br>" + input;
+        document.getElementById("txtSnes").value = result; 
+        document.getElementById("lblSnes").innerHTML = "SNES " + t + "<br>" + result;
+        
+        isPCInputed = true;
+
+        changeArrow();
+    };
+
+    document.getElementById("txtSnes").oninput = function (e) {
+        let input = this.value;
+        let value, result;
+        let t;
+
+        input = input.replace(":", "");
+        input = input.replace("$", "");
+        
+        try {
+            value = parseInt("0x0" + input);
+            result = snes2pc2(value, type, header);   
+            result = format(result, formatResult);
+            input = format(value, true);
+        } catch (err) {
+            if (!(err instanceof TypeError)) throw err;
+            document.getElementById("lblPC").innerHTML = "PC Invalid<br>$00:0000";
+            document.getElementById("txtPC").value = format(0, formatResult); 
+            document.getElementById("lblSnes").innerHTML = "SNES N/A<br>$00:0000"; 
+
+            isPCInputed = false;
+            changeArrow();
+
+            return;
+        }
+        t = type;
+        
+        if (t == "LoROM1" || t == "LoROM2") {
+            t = "LoROM";
+        }
+
+        document.getElementById("lblPC").innerHTML = "PC File Address<br>" + result;
+        document.getElementById("txtPC").value = result; 
+        document.getElementById("lblSnes").innerHTML = "SNES " + t + "<br>" + input;
+
+        isPCInputed = false;
+        changeArrow();
+    };
+
+    isPCInputed = true;
+    document.getElementById("chkPCLeft").click();
+}
+
+function changeArrow() {
+    if (pcOnLeftSide) {
+        if (isPCInputed) {
+            document.getElementById("txtCenter").innerText = ">";
+        } else {
+            document.getElementById("txtCenter").innerText = "<";
+        }
+    } else {
+        if (isPCInputed) {
+            document.getElementById("txtCenter").innerText = "<";
+        } else {
+            document.getElementById("txtCenter").innerText = ">";
+        }
+    }
+}
+
+function refresh() {
+    if (isPCInputed) {
+        document.getElementById("txtPC").oninput();
+    } else {
+        document.getElementById("txtSnes").oninput();
+    }
+}
+
+function format(val, formatResult = true) {
+    let str;
+    let dollar = "$", colon = ":";
+    if (!formatResult) {
+        dollar = "";
+        colon = "";
+    }
+    str = val.toString(16).toUpperCase();
+    switch (str.length) {
+        case 1:
+            str = dollar + "00" + colon + "000" + str;
+            break;
+        case 2:
+        str = dollar + "00" + colon + "00" + str;
+            break;
+        case 3:
+        str = dollar + "00" + colon + "0" + str;
+            break;
+        case 4:
+        str = dollar + "00" + colon + str;
+            break;
+        case 5: 
+            // "ABCDE"
+            str = dollar + "0" + str.substring(0, 1) + colon + str.substring(1);
+            break;
+        case 6:
+            // "ABCDEF"
+            str = dollar + str.substring(0, 2) + colon + str.substring(2);
+            break;
+        default:
+            throw new TypeError();
+            break;
+    }
+    return str;
+}
+
+function pc2snes4lorom1(pc, header = true) {
+    if (header && pc < 0x200) {
+        throw new TypeError();
+    }
+    let snes;
+    if (header) pc -= 0x200;
+    if (pc >= 0x400000) {
+        throw new TypeError();
+    } else {
+        snes = pc << 1;
+        snes = snes & 0x7f0000;
+        snes = snes | ((pc | 0x8000) & 0xffff);
+        if (pc > 0x380000) {
+            snes += 0x800000;
+        }
+    }
+    return snes;
+}
+
+function pc2snes4lorom2(pc, header = true ) {
+    if (header && pc < 0x200) {
+        throw new TypeError();
+    }
+    let snes;
+    if (header) pc -= 0x200;
+    if (pc >= 0x400000) {
+        throw new TypeError();
+    } else {
+        snes = pc << 1;
+        snes = snes & 0x7f0000;
+        snes = snes | ((pc | 0x8000) & 0xffff);
+        snes += 0x800000;;
+    }
+    return snes;
+}
+
+function pc2snes4hirom(pc, header = true ) {
+    if (header && pc < 0x200) {
+        throw new TypeError("pc address is too small");
+    }
+    let snes;
+    if (header) pc -= 0x200;
+    if (pc >= 0x400000) {
+        throw new TypeError("pc address is too big");
+    } else {
+        snes = pc | 0xC00000;
+    }
+    return snes;
+}
+
+function pc2snes4exlorom(pc, header = true) {
+    if (header && pc < 0x200) {
+        
+        throw new TypeError();
+    }
+    let snes;
+    if (header) pc -= 0x200;
+    if (pc >= 0x7F0000) {
+        throw new TypeError();
+    } else {
+        snes = pc << 1;
+        snes = snes & 0x7F0000;
+        snes = snes | ((pc | 0x8000) & 0xFFFF)
+        if (snes < 0x400000) {
+            snes += 0x800000;
+        }
+    }
+    return snes;
+}
+
+function pc2snes4exhirom(pc, header = true) {
+    if (header && pc < 0x200) {
+        throw new TypeError();
+    }
+    let snes;
+    if (header) pc -= 0x200;
+
+    if (pc >= 0x7E0000) {
+        throw new TypeError();
+    } else {
+        snes = pc;
+        if (pc < 0x400000) {
+            snes = snes | 0xc00000;
+        }
+        if (pc >= 0x7e0000) {
+            snes -= 0x400000;
+        }
+    }
+    return snes;
+}
+
+function pc2snes4ram(pc, header = true) {
+    if (header && pc < 0x200) {
+        throw new TypeError();
+    }
+
+    let snes;
+
+    if (pc < 0xc13 || pc >= 0x20c13) {
+        throw new TypeError();
+    } else {
+        snes = pc - 0xC13 + 0x7E0000;
+    }
+    return snes;
+}
+
+function pc2snes4vram(pc, header = true) {
+    if (header && pc < 0x200) {
+        throw new TypeError();
+    }
+
+    let snes;
+
+    if (pc >= 0x20c13 && pc < 0x30c13) {
+        throw new TypeError();
+    } else {
+        snes = pc - 0x20C13;
+        snes = snes >> 1;
+    }
+    return snes;
+}
+
+
+function pc2snes(pc, type, header = true) {
+    switch (type) {
+        case "LoROM1":
+            return pc2snes4lorom1(pc, header);
+            break;
+        case "LoROM2":
+            return pc2snes4lorom2(pc, header);
+            break;
+        case "HiROM":
+            return pc2snes4hirom(pc, header);
+            break;
+        case "ExLoROM": 
+            return pc2snes4exlorom(pc, header);
+            break;
+        case "ExHiROM":
+            return pc2snes4exhirom(pc, header);
+            break;
+        case "RAM":
+            return pc2snes4ram(pc, header);
+            break;
+        case "VRAM":
+            return pc2snes4vram(pc, header);
+            break;
+        default:
+            throw new TypeError();
+    }
+
+}
+
+function snes2pc4exhirom(snes) {
+    let pc = 0;
+
+    if ((snes >= 0xC00000 && snes <= 0xFFFFFF) || (snes >= 0x400000 && snes <= 0x7DFFFF))
+    {
+        pc = snes & 0x3FFFFF;
+
+        if (snes < 0xC00000)
+        {
+            pc += 0x400000;
+        }
+    }
+    else
+    {
+        throw new TypeError();
+    }
+
+    return pc;
+}
+
+function snes2pc4exlorom(snes) {
+    let pc = 0;
+
+    if ((snes >= 0x808000 && snes <= 0xFFFFFF) || (snes >= 0x008000 && snes <= 0x7dffff))
+    {
+        pc = (snes & 0x7FFF | ((snes & 0x7F0000) >> 1));
+
+        if (snes < 0x800000)
+        {
+            pc += 0x400000;
+        }
+    }
+    else
+    {
+        throw new TypeError();
+    }
+
+    return pc;
+}
+
+function snes2pc4hirom(snes) {
+    let pc = 0;
+
+    if ((snes >= 0xC00000 && snes <= 0xFFFFFF))
+    {
+        pc = (snes & 0x3FFFFF);
+    }
+    else
+    {
+        throw new TypeError();
+    }
+
+    return pc;
+}
+
+function snes2pc4lorom1(snes) {
+    let pc = 0;
+
+    if (snes >= 0x8000 && snes <= 0x6FFFFF)
+    {
+        pc = (snes & 0x7FFF | ((snes & 0x7F0000) >> 1));
+    }
+    else
+    {
+        throw new TypeError();
+    }
+
+    return pc;
+}
+
+function snes2pc4lorom2(snes) {
+    let pc = 0;
+
+    if (snes >= 0x808000 && snes <= 0xFFFFFF)
+    {
+        pc = (snes & 0x7FFF | ((snes & 0x7F0000) >> 1));
+    }
+    else
+    {
+        throw new TypeError();
+    }
+
+    return pc;
+}
+
+function snes2pc2(snes, type, header = true) {
+    let result;
+    let head;
+    if (header) {
+        head = 0x200;
+    } else {
+        head = 0;
+    }
+    switch (type) {
+        case "LoROM1":
+            result = snes2pc4lorom1(snes);
+            break;
+        case "LoROM2":
+            result = snes2pc4lorom2(snes);
+            break;
+        case "HiROM":
+            result = snes2pc4hirom(snes);
+            break;
+        case "ExHiROM":
+            result = snes2pc4exhirom(snes);
+            break;
+        case "ExLoROM":
+            result = snes2pc4exlorom(snes);
+            break;
+        case "RAM":
+            return snes2pc4ram(snes);
+            break;
+        case "VRAM":
+            return snes2pc4vram(snes, header);
+            break;
+        default:
+            throw new TypeError();
+    }
+    result += head;
+    return result;
+}
+
+function snes2pc(snes, type, header = true) {
+    let result;
+    let head;
+    if (header) {
+        head = 0x200;
+    } else {
+        head = 0;
+    }
+    switch (type) {
+        case "LoROM1":
+        case "LoROM2":
+            result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000));
+            break;
+        case "HiROM":
+            result = head + (snes & 0x3FFFFF);
+            break;
+        case "ExHiROM":
+            result = (snes & 0x3FFFFF) + head + ((snes > 0x800000 ? 0x400000 : 0));
+            break;
+        case "ExLoROM":
+            result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000)) + (snes < 0x800000? 0x400000 : 0);
+            break;
+        case "RAM":
+            return snes2pc4ram(snes);
+            break;
+        case "VRAM":
+            return snes2pc4vram(snes, header);
+            break;
+        default:
+            throw new TypeError();
+    }
+    return result;
+}
+
+function snes2pc4ram(snes) {
+    let pc;
+    if (snes >= 0x7E0000 && snes <= 0x7FFFFF) {
+        pc = (0x1FFFF & snes) + 0xC13;
+    } else {
+        throw new TypeError();
+    }
+    return pc;
+}
+
+function snes2pc4vram(snes) {
+    let pc;
+    if (snes >= 0 && snes < 0x8000) {
+        pc = (snes << 1) + 0x20c13;
+    } else {
+        throw new TypeError();
+    }
+    return pc;
+}
+
+function detectRomType(rom, header = true) {
+    let pos = 0, posi;
+    let temp, temp1, temp2;
+    let ptr;
+    let romData;
+
+    // strip header
+    if (header) {
+        romData = new Array(rom.length - 0x200);
+        for (let i = 0; i < romData.length; i++) {
+            romData[i] = rom[i + 0x200];
+        }
+    } else {
+        romData = rom;
+    }
+    
+
+    if (romData.length < 0x10000) {
+        return "Invalid";
+    }
+    
+    pos = 0;
+    posi = 0x7FDC;
+
+    temp = romData[posi + pos];
+    temp <<= 8
+    temp1 = (temp) | (romData[posi + (pos+1)]);
+
+    pos += 2;
+
+    temp = romData[posi + pos];
+    temp <<= 8
+    temp2 = (temp) | (romData[posi + (pos+1)]);
+
+    pos += 2;
+
+    if ((temp1 ^ temp2) === 0xffff) {
+        posi = 0x7FD5;
+        ptr = romData[posi];
+    } else {
+        posi = 0xffdc;
+
+        pos = 0;
+
+        temp = romData[posi + pos];
+        temp <<= 8;
+        temp1 = (temp) | (romData[posi + (pos+1)]);
+        
+        pos += 2;
+
+        temp = romData[posi + pos];
+        temp <<= 8;
+        temp2 = (temp) | (romData[posi + (pos+1)]);
+
+        pos += 2;
+
+        if ((temp1 ^ temp2) != 0xFFFF) {
+            return "Invalid";
+        }
+
+        posi = 0xFFD5;
+        ptr = romData[posi];
+    
+    }
+
+    if ((ptr & 0xf) == 5) {
+        return "ExHiROM";
+    } else if ((ptr & 0xf) == 3) {
+        return "HiROM";
+    } else if ((ptr & 1) == 1) {
+        if (romData.length <= 0x400000) {
+            return "HiROM";
+        } else {
+            return "ExHiROM";
+        }
+    } else if (romData.length <= 0x400000) {
+        if ((ptr >> 4) >= 3) {
+            return "LoROM2"
+        } else {
+            return "LoROM1";
+        }
+    } else {
+        return "ExLoROM";
+    }
+    
+}
+
+window.onload = window_onload;
+</script>
+</head>
+<body>
+<form id="frmMain">
+<fieldset>
+<legend>SNES ROM Type</legend>
+<table border="0">
+<tr>
+<td><input type="radio" id="lorom1" value="0" name="type" checked></td>
+<td><label for="lorom1">LoROM - PC<br>00:8000 - 6F:FFFF</label></td>
+</tr>
+<tr>
+<td><input type="radio" id="lorom2" value="1" name="type"></td>
+<td><label for="lorom2">LoROM - PC<br>80:8000 - FF:FFFF</label></td>
+</tr>
+<tr>
+<td><input type="radio" id="hirom" value="2" name="type"></td>
+<td><label for="hirom">HiROM - PC<br>C0:0000 - FF:FFFF</label></td>
+</tr>
+<tr>
+<td><input type="radio" id="exlorom" value="3" name="type"></td>
+<td><label for="exlorom">ExLoROM - PC<br>80:8000 - FF:FFFF<br>00:8000 - 7D:FFFF</label></td>
+</tr>
+<tr>
+<td><input type="radio" id="exhirom" value="4" name="type"></td>
+<td><label for="exhirom">ExHiROM - PC<br>C0:8000 - FF:FFFF<br>40:0000 - 7D:FFFF</label></td>
+</tr>
+<tr>
+<td><input type="radio" id="ram" value="5" name="type"></td>
+<td><label for="ram">RAM - ZSNES Savestate<br>7E:0000 - 7F:FFFF</label></td>
+</tr>
+<tr>
+<td><input type="radio" id="vram" value="6" name="type"></td>
+<td><label for="vram">VRAM - ZSNES Savestate<br>0000 - 7FFF</label></td>
+</tr>
+</table>
+</fieldset>
+<br>
+<fieldset>
+<table border="0">
+<tr>
+<td id="txtLeft"><input type="text" id="txtSnes" value="$00:8000"></td>
+<td id="txtCenter">&gt;</td>
+<td id="txtRight"><input type="text" id="txtPC" value="$00:0200"></td>
+</tr>
+<tr>
+<td id="lblLeft"><label id="lblSnes" for="txtSnes">SNES LoROM<br>$00:8000</label></td>
+<td id="lblCenter">&nbsp;</td>
+<td id="lblRight"><label id="lblPC" for="txtPC">PC File Address<br>$00:0200</label></td>
+</tr>
+</table>
+</fieldset>
+<br>
+<fieldset>
+<table>
+<tr>
+<td colspan="2"><input type="button" id="btnAutoDetect" value="Auto-Detect Type..."></td>
+</tr>
+<tr>
+<td><input type="checkbox" id="chkHeader" checked></td>
+<td><label for="chkHeader">Include $200 Copier Header</label></td>
+</tr>
+<tr>
+<td><input type="checkbox" id="chkFormat" checked></td>
+<td><label for="chkFormat">Format Results</label></td>
+</tr>
+<tr>
+<td><input type="checkbox" id="chkPCLeft"></td>
+<td><label for="chkPCLeft">PC on Left Side</label></td>
+</tr>
+</table>
+</fieldset>
+</form>
+</body>
+</html>
