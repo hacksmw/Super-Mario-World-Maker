@@ -1,0 +1,747 @@
+<!doctype html>
+<html>
+<head>
+<title>Lunar Expand</title>
+<meta charset="utf-8">
+<script>
+"use strict";
+
+let size;
+let extended;
+let mirror;
+let format;
+let fileName = "";
+
+let frmMain;
+
+function btnApply_onclick() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".smc";
+    fileInput.onchange = function (ev) {
+        const files = fileInput.files;
+        if (files.length != 1) {
+            return;
+        }
+        const file = files[0];
+        fileName = file.name;
+        const fr = new FileReader();
+        fr.onload = fr_onload;
+        fr.readAsArrayBuffer(file);
+    }
+    fileInput.click();
+}
+
+function fr_onload(event) {
+    const fr = event.target;
+    const data = new Uint8Array(fr.result);
+    const ext = fileName.substring(fileName.length - 4);
+
+    let header = true;
+    let romData;
+
+    if (ext === ".smc") {
+        header = true;
+    } else if (ext === ".sfc") {
+        header = false;
+    } else {
+        header = true;
+    }
+    
+    // strip header
+    if (header) {
+        romData = new Array(data.length - 0x200);
+        for (let i = 0; i < romData.length; i++) {
+            romData[i] = data[i + 0x200];
+        }
+    } else {
+        romData = Array.prototype.slice.call(data);
+    }
+
+    const type = detectRomType(romData, false);
+
+    switch (type) {
+        case "LoROM1":
+        case "LoROM2":
+        case "HiROM":
+        case "ExLoROM":
+        case "ExHiROM":
+            break;
+        default:
+            alert("Cannot determine ROM memory map type");
+            return;
+            break;
+    }
+
+    let romSize = romData.length;
+
+    if (size <= romSize) {
+        alert("The ROM is already this size or higher.");
+        return;
+    }
+
+    // zero fill extend
+    let resultData = [];
+
+    for (let i = 0; i < romData.length; i++) {
+        resultData[i] = romData[i];
+    }
+
+    for (let i = romData.length; i < size; i++) {
+        resultData[i] = 0;
+    }
+
+    let addr;
+
+
+
+
+
+    // adjust rom type header
+    switch(type) {
+        case "LoROM1":
+        case "LoROM2": 
+        case "ExLoROM": 
+            addr = 0x7FD5;
+            break;
+        case "HiROM": 
+        case "ExHiROM": 
+            addr = 0xFFD5;
+            break;
+    }
+    
+    let newByte = romData[addr] & 0xF0;
+    let currentMapType = romData[addr] & 0xF;
+
+    switch (currentMapType) {
+        case 0x1: // hirom
+            if (extended) {
+                newByte = newByte | 0x5;
+            } else {
+                newByte = newByte | 0x1;
+            }
+            break;
+        default:
+            newByte = newByte | currentMapType;
+            break;
+    }
+
+    resultData[addr] = newByte;
+
+    // adjust rom size header
+    switch(type) {
+        case "LoROM1":
+        case "LoROM2": 
+        case "ExLoROM": 
+            addr = 0x7FD7;
+            break;
+        case "HiROM": 
+        case "ExHiROM": 
+            addr = 0xFFD7;
+            break;
+    }
+
+    if (resultData.length > 0x400000) {
+        resultData[addr] = 0xD;
+    } else if (resultData.length > 0x200000) {
+        resultData[addr] = 0xC;
+    } else if (resultData.length > 0x100000) {
+        resultData[addr] = 0xB;
+    } else if (resultData.length > 0x80000) {
+        resultData[addr] = 0xA;
+    } else if (resultData.length > 0x40000) {
+        resultData[addr] = 0x9;
+    } else if (resultData.length > 0x20000) {
+        resultData[addr] = 0x8;
+    } else if (resultData.length > 0x10000) {
+        resultData[addr] = 0x7;
+    } else {
+        alert("Invalid size");
+        return;
+    }
+
+
+
+
+    // exhirom or exlorom
+    if (extended) {
+        if (mirror == false) {
+            switch (type) {
+                case "ExHiROM": 
+                    // does nothing
+                    break;
+                case "ExLoROM": 
+                    // does nothing
+                    break;
+                case "LoROM1":
+                    if (format == "ExLoROM") {
+                        resultData = resultData.copyWithin(0x400000, 0x0, 0x400000)
+                        for (let i = 0x8000; i <= 0x400000 - 1; i++) {
+                            resultData[i] = 0;
+                        }          
+                    } else {
+                        // LoROM1 to ExHiROM
+                        if (romSize > 1048576) {
+                            alert("Can't convert LoROM to ExHiROM");
+                            return;
+                        }
+                        alert("Can't convert LoROM to ExHiROM");
+                        return;
+                    }
+
+                    break;
+                case "LoROM2":
+                    resultData = resultData.copyWithin(0x400000, 0x0, 0x8000);
+                    break;
+                case "HiROM":
+                    resultData = resultData.copyWithin(0x408000, 0x8000, 0x10000);
+                    break;
+                default:
+                    throw new TypeError();
+                    break;
+            }
+        } else {
+            // mirror
+            if (type == "HiROM" || type == "ExHiROM") {
+                let pc = 0x408000;
+                while (pc < resultData.length) {
+                    let firstHalfLocation = pc - 0x400000;
+                    resultData = resultData.copyWithin(pc, firstHalfLocation, firstHalfLocation + 0x8000);
+                    pc += 0x10000
+                }
+            } else if (type == "LoROM1" || type == "LoROM2" || type == "ExLoROM") {
+                resultData = resultData.copyWithin(0x400000, 0x0, 0x400000);
+            } else {
+                alert("Invalid ROM type");
+                return;
+            }
+            
+        }
+    }
+
+
+    // recover smc header
+    if (header) {
+        let head = new Array(0x200);
+        for (let i = 0; i < head.length; i++) {
+            head[i] = 0;
+        }
+        head[0] = 0x40;
+        resultData = head.concat(resultData);
+    }
+
+
+
+    let blob = new Blob([new Uint8Array(resultData)], {type: "application/octet-stream"});
+    let url = URL.createObjectURL(blob);
+    const down = document.createElement("a");
+    down.href = url;
+    down.download = fileName;
+    down.click();    
+}
+
+function expand(data, size, extended, format, mirror, header = true) {
+    let romData;
+
+    // strip header
+    if (header) {
+        romData = new Array(data.length - 0x200);
+        for (let i = 0; i < romData.length; i++) {
+            romData[i] = data[i + 0x200];
+        }
+    } else {
+        romData = Array.prototype.slice.call(data);
+    }
+
+    const type = detectRomType(romData, false);
+
+    switch (type) {
+        case "LoROM1":
+        case "LoROM2":
+        case "HiROM":
+        case "ExLoROM":
+        case "ExHiROM":
+            break;
+        default:
+            throw new TypeError();
+    }
+
+    let romSize = romData.length;
+
+    if (size <= romSize) {
+        throw new TypeError();
+    }
+
+    // zero fill extend
+    let resultData = new Array();
+
+    for (let i = 0; i < romData.length; i++) {
+        resultData[i] = romData[i];
+    }
+
+    for (let i = romData.length; i < size; i++) {
+        resultData[i] = 0;
+    }
+
+    let addr;
+
+    // adjust rom type header
+    switch(type) {
+        case "LoROM1":
+        case "LoROM2": 
+        case "ExLoROM": 
+            addr = 0x7FD5;
+            break;
+        case "HiROM": 
+        case "ExHiROM": 
+            addr = 0xFFD5;
+            break;
+        default:
+            throw new TypeError();
+    }
+    
+    let newByte = romData[addr] & 0xF0;
+    let currentMapType = romData[addr] & 0xF;
+
+    switch (currentMapType) {
+        case 0x1: // hirom
+            if (extended) {
+                newByte = newByte | 0x5;
+            } else {
+                newByte = newByte | 0x1;
+            }
+            break;
+        default:
+            newByte = newByte | currentMapType;
+            break;
+    }
+
+    resultData[addr] = newByte;
+
+    // adjust rom size header
+    switch(type) {
+        case "LoROM1":
+        case "LoROM2": 
+        case "ExLoROM": 
+            addr = 0x7FD7;
+            break;
+        case "HiROM": 
+        case "ExHiROM": 
+            addr = 0xFFD7;
+            break;
+    }
+
+    if (resultData.length > 0x400000) {
+        resultData[addr] = 0xD;
+    } else if (resultData.length > 0x200000) {
+        resultData[addr] = 0xC;
+    } else if (resultData.length > 0x100000) {
+        resultData[addr] = 0xB;
+    } else if (resultData.length > 0x80000) {
+        resultData[addr] = 0xA;
+    } else if (resultData.length > 0x40000) {
+        resultData[addr] = 0x9;
+    } else if (resultData.length > 0x20000) {
+        resultData[addr] = 0x8;
+    } else if (resultData.length > 0x10000) {
+        resultData[addr] = 0x7;
+    } else {
+        throw new TypeError();
+    }
+
+
+    // exhirom or exlorom
+    if (extended) {
+        if (mirror == false) {
+            switch (type) {
+                case "ExHiROM": 
+                    // does nothing
+                    break;
+                case "ExLoROM": 
+                    // does nothing
+                    break;
+                case "LoROM1":
+                    if (format == "ExLoROM") {
+                        resultData = resultData.copyWithin(0x400000, 0x0, 0x400000)
+                        for (let i = 0x8000; i <= 0x400000 - 1; i++) {
+                            resultData[i] = 0;
+                        }          
+                    } else {
+                        // LoROM1 to ExHiROM
+                        if (romSize > 1048576) {
+                            throw new TypeError();
+                            return;
+                        }
+                        throw new TypeError();
+                        return;
+                    }
+
+                    break;
+                case "LoROM2":
+                    resultData = resultData.copyWithin(0x400000, 0x0, 0x8000);
+                    break;
+                case "HiROM":
+                    resultData = resultData.copyWithin(0x408000, 0x8000, 0x10000);
+                    break;
+                default:
+                    throw new TypeError();
+                    break;
+            }
+        } else {
+            // mirror
+            if (type == "HiROM" || type == "ExHiROM") {
+                let pc = 0x408000;
+                while (pc < resultData.length) {
+                    let firstHalfLocation = pc - 0x400000;
+                    resultData = resultData.copyWithin(pc, firstHalfLocation, firstHalfLocation + 0x8000);
+                    pc += 0x10000
+                }
+            } else if (type == "LoROM1" || type == "LoROM2" || type == "ExLoROM") {
+                resultData = resultData.copyWithin(0x400000, 0x0, 0x400000);
+            } else {
+                throw new TypeError();
+                return;
+            }
+            
+        }
+    }
+
+
+    // recover smc header
+    if (header) {
+        let head = new Array(0x200);
+        for (let i = 0; i < head.length; i++) {
+            head[i] = 0;
+        }
+        head[0] = 0x40;
+        resultData = head.concat(resultData);
+    }
+
+    return resultData;
+}
+
+
+function window_onload() {
+    frmMain = document.getElementById("frmMain");
+    
+    frmMain.onsubmit = function () {
+        return false;
+    };
+    
+    frmMain.btnApply.onclick = btnApply_onclick;
+
+    frmMain.type1.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 131072;
+        ;
+    };
+
+    frmMain.type2.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 262144;
+    };
+
+    frmMain.type3.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 524288;
+    };
+
+    frmMain.type4.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 1048576;
+    };
+
+    frmMain.type5.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 1572864;
+    };
+
+    frmMain.type6.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 2097152;
+    };
+
+    frmMain.type7.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 2621440;
+    };
+
+    frmMain.type8.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 3145728;
+    };
+
+    frmMain.type9.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 3670016;
+    };
+
+    frmMain.type10.onchange = function () {
+        extended = false;
+        mirror = false;
+        size = 4194304;
+
+    };
+
+    frmMain.type11.onchange = function () {
+        extended = true;
+        mirror = false;
+        size = 6291456;
+        format = "ExHiROM";
+
+    };
+
+    frmMain.type12.onchange = function () {
+        extended = true;
+        mirror = true;
+        size = 6291456;
+        format = "ExHiROM";
+        ;
+    };
+
+    frmMain.type13.onchange = function () {
+        extended = true;
+        mirror = false;
+        size = 6291456;
+        format = "ExLoROM";
+        ;
+    };
+
+    frmMain.type14.onchange = function () {
+        extended = true;
+        mirror = false;
+        size = 6291456;
+        format = "ExLoROM";
+        ;
+    };
+
+    frmMain.type15.onchange = function () {
+        extended = true;
+        mirror = true;
+        size = 6291456;
+        format = "ExLoROM";
+        ;
+    };
+
+    frmMain.type16.onchange = function () {
+        extended = true;
+        mirror = false;
+        size = 8388608;
+        format = "ExHiROM";
+        ;
+    };
+
+    frmMain.type17.onchange = function () {
+        extended = true;
+        mirror = true;
+        size = 8388608;
+        format = "ExHiROM";
+        ;
+    };
+
+    frmMain.type18.onchange = function () {
+        extended = true;
+        mirror = false;
+        size = 8388608;
+        format = "ExLoROM";
+        ;
+    };
+
+    frmMain.type19.onchange = function () {
+        extended = true;
+        mirror = false;
+        size = 8388608;
+        format = "ExLoROM";
+        ;
+    };
+
+    frmMain.type20.onchange = function () {
+        extended = true;
+        mirror = true;
+        size = 8388608;
+        format = "ExLoROM";
+        ;
+    };
+
+    frmMain.type1.onchange();
+}
+
+function detectRomType(rom, header = true) {
+    let pos = 0, posi;
+    let temp, temp1, temp2;
+    let ptr;
+    let romData;
+
+    // strip header
+    if (header) {
+        romData = new Array(rom.length - 0x200);
+        for (let i = 0; i < romData.length; i++) {
+            romData[i] = rom[i + 0x200];
+        }
+    } else {
+        romData = rom;
+    }
+
+    if (romData.length < 0x10000) {
+        return "Invalid";
+    }
+    
+    pos = 0;
+    posi = 0x7FDC;
+
+    temp = romData[posi + pos];
+    temp <<= 8
+    temp1 = (temp) | (romData[posi + (pos+1)]);
+
+    pos += 2;
+
+    temp = romData[posi + pos];
+    temp <<= 8
+    temp2 = (temp) | (romData[posi + (pos+1)]);
+
+    pos += 2;
+
+    if ((temp1 ^ temp2) === 0xffff) {
+        posi = 0x7FD5;
+        ptr = romData[posi];
+    } else {
+        posi = 0xffdc;
+
+        pos = 0;
+
+        temp = romData[posi + pos];
+        temp <<= 8;
+        temp1 = (temp) | (romData[posi + (pos+1)]);
+        
+        pos += 2;
+
+        temp = romData[posi + pos];
+        temp <<= 8;
+        temp2 = (temp) | (romData[posi + (pos+1)]);
+
+        pos += 2;
+
+        if ((temp1 ^ temp2) != 0xFFFF) {
+            return "Invalid";
+        }
+
+        posi = 0xFFD5;
+        ptr = romData[posi];
+    
+    }
+
+    if ((ptr & 0xf) == 5) {
+        return "ExHiROM";
+    } else if ((ptr & 0xf) == 3) {
+        return "HiROM";
+    } else if ((ptr & 1) == 1) {
+        if (romData.length <= 0x400000) {
+            return "HiROM";
+        } else {
+            return "ExHiROM";
+        }
+    } else if (romData.length <= 0x400000) {
+        if ((ptr >> 4) >= 3) {
+            return "LoROM2"
+        } else {
+            return "LoROM1";
+        }
+    } else {
+        return "ExLoROM";
+    }
+    
+}
+
+function copyWithin(arr, dest, srcStart, srcEnd) {
+    let temp;
+    let val;
+    let i;
+
+    temp = Array.prototype.slice.call(arr);
+
+
+    if (dest >= arr.length) {
+        return;
+    }
+
+
+    for (i = srcStart; i <= srcEnd; i++) {
+        if (i >= temp.length) return;
+        val = temp[i];
+        if (dest >= arr.length) return;
+        arr[dest] = val;
+        dest++;
+    }
+
+}
+
+window.onload = window_onload;
+</script>
+</head>
+<body>
+<form id="frmMain">
+<fieldset>
+<legend>SNES ROM Size</legend>
+<table border="0">
+<tr>
+<td><input id="type1" name="type" type="radio" value="1" checked><label for="type1">1 Mbit (128 KB)</label></td>
+<td><input id="type11" name="type" type="radio" value="11"><label for="type11">48 Mbit ExHiROM (6 MB)</label></td>
+</tr>
+<tr>
+<td><input id="type2" name="type" type="radio" value="2"><label for="type2">2 Mbit (256 KB)</label></td>
+<td><input id="type12" name="type" type="radio" value="12"><label for="type12">48c Mbit ExHiROM (6 MB)<sup>3</sup></label></td>
+</tr>
+<tr>
+<td><input id="type3" name="type" type="radio" value="3"><label for="type3">4 Mbit (0.5 MB)</label></td>
+<td><input id="type13" name="type" type="radio" value="13"><label for="type13">48 Mbit ExLoROM (6 MB)<sup>1</sup></label></td>
+</tr>
+<tr>
+<td><input id="type4" name="type" type="radio" value="4"><label for="type4">8 Mbit (1 MB)</label></td>
+<td><input id="type14" name="type" type="radio" value="14"><label for="type14">48 Mbit ExLoROM (6 MB)<sup>2</sup></label></td>
+</tr>
+<tr>
+<td><input id="type5" name="type" type="radio" value="5"><label for="type5">12 Mbit (1.5 MB)</label></td>
+<td><input id="type15" name="type" type="radio" value="15"><label for="type15">48c Mbit ExLoROM (6 MB)<sup>3</sup></label></td>
+</tr>
+<tr>
+<td><input id="type6" name="type" type="radio" value="6"><label for="type6">16 Mbit (2 MB)</label></td>
+<td><input id="type16" name="type" type="radio" value="16"><label for="type16">64 Mbit ExHiROM (8 MB)</label></td>
+</tr>
+<tr>
+<td><input id="type7" name="type" type="radio" value="7"><label for="type7">20 Mbit (2.5 MB)</label></td>
+<td><input id="type17" name="type" type="radio" value="17"><label for="type17">64c Mbit ExHiROM (8 MB)<sup>3</sup></label></td>
+</tr>
+<tr>
+<td><input id="type8" name="type" type="radio" value="8"><label for="type8">24 Mbit (3 MB)</label></td>
+<td><input id="type18" name="type" type="radio" value="18"><label for="type18">64 Mbit ExLoROM (8 MB)<sup>1</sup></label></td>
+</tr>
+<tr>
+<td><input id="type9" name="type" type="radio" value="9"><label for="type9">28 Mbit (3.5 MB)</label></td>
+<td><input id="type19" name="type" type="radio" value="19"><label for="type19">64 Mbit ExLoROM (8 MB)<sup>2</sup></label></td>
+</tr>
+<tr>
+<td><input id="type10" name="type" type="radio" value="10"><label for="type10">32 Mbit (4 MB)</label></td>
+<td><input id="type20" name="type" type="radio" value="29"><label for="type20">64c Mbit ExLoROM (8 MB)<sup>3</sup></label></td>
+</tr>
+</table>
+</fieldset>
+<br>
+<button id="btnApply">Apply To ROM...</button><br>
+<br>
+<hr>
+<sup>1</sup> For LoROMs that use the 00:8000-6F:FFFF map. ROM is typically already &lt;= 28 Mbit.<br>
+<sup>2</sup> For LoROMs that use the 80:8000-FF:FFFF map. ROM is typically already &gt; 28 Mbit.<br>
+<sup>3</sup> Higher compatibility. but can use up to all of the new space. Do not use this unless
+the ROM doesn't load or has problems with the other options. Final size may vary.
+</form>
+</body>
+</html>
