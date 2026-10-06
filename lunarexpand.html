@@ -68,20 +68,17 @@ function fr_onload(event) {
         case "ExHiROM":
             break;
         default:
-            alert("Cannot determine ROM memory map type");
-            return;
-            break;
+            throw new TypeError();
     }
 
     let romSize = romData.length;
 
     if (size <= romSize) {
-        alert("The ROM is already this size or higher.");
-        return;
+        throw new TypeError();
     }
 
     // zero fill extend
-    let resultData = [];
+    let resultData = new Array();
 
     for (let i = 0; i < romData.length; i++) {
         resultData[i] = romData[i];
@@ -93,12 +90,8 @@ function fr_onload(event) {
 
     let addr;
 
-
-
-
-
     // adjust rom type header
-    switch(type) {
+    switch (type) {
         case "LoROM1":
         case "LoROM2": 
         case "ExLoROM": 
@@ -108,6 +101,8 @@ function fr_onload(event) {
         case "ExHiROM": 
             addr = 0xFFD5;
             break;
+        default:
+            throw new TypeError();
     }
     
     let newByte = romData[addr] & 0xF0;
@@ -156,11 +151,8 @@ function fr_onload(event) {
     } else if (resultData.length > 0x10000) {
         resultData[addr] = 0x7;
     } else {
-        alert("Invalid size");
-        return;
+        throw new TypeError();
     }
-
-
 
 
     // exhirom or exlorom
@@ -182,10 +174,10 @@ function fr_onload(event) {
                     } else {
                         // LoROM1 to ExHiROM
                         if (romSize > 1048576) {
-                            alert("Can't convert LoROM to ExHiROM");
+                            throw new TypeError();
                             return;
                         }
-                        alert("Can't convert LoROM to ExHiROM");
+                        throw new TypeError();
                         return;
                     }
 
@@ -212,7 +204,7 @@ function fr_onload(event) {
             } else if (type == "LoROM1" || type == "LoROM2" || type == "ExLoROM") {
                 resultData = resultData.copyWithin(0x400000, 0x0, 0x400000);
             } else {
-                alert("Invalid ROM type");
+                throw new TypeError();
                 return;
             }
             
@@ -286,7 +278,7 @@ function expand(data, size, extended, format, mirror, header = true) {
     let addr;
 
     // adjust rom type header
-    switch(type) {
+    switch (type) {
         case "LoROM1":
         case "LoROM2": 
         case "ExLoROM": 
