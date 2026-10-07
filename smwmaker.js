@@ -8989,3 +8989,80 @@ function read1(address) {
     }
     return fileData[addr + 0];
 }
+function applyIpsPatch(target, ips) {
+    const result = Array.prototype.slice.call(target);
+    let header = "";
+    let eof = "";
+    let loc = 0;
+    let len = 0;
+    for (let i = 0; i < 5; i++) {
+        header += String.fromCharCode(ips[i]);
+    }
+    if (header !== "PATCH") {
+        throw new Error(header);
+    }
+    for (let i = 5; i < ips.length; i++) {
+        if (i + 2 < ips.length) {
+            eof = String.fromCharCode(ips[i + 0], ips[i + 1], ips[i + 2]);
+            if (eof === "EOF") {
+                console.log("EOF");
+                return result;
+            }
+        }
+        else {
+            throw new Error();
+        }
+        if (i + 2 < ips.length) {
+            loc = (ips[i + 0] << 16) | (ips[i + 1] << 8) | (ips[i + 2] << 0);
+            if (i + 4 < ips.length) {
+                len = (ips[i + 3] << 8) | (ips[i + 4] << 0);
+            }
+            else {
+                throw new Error();
+            }
+            if (len === 0) {
+                // RLE
+                if (i + 7 < ips.length) {
+                    const len2 = (ips[i + 5] << 8) | (ips[i + 6] << 0);
+                    const value = ips[i + 7];
+                    console.log("RLE: Count=" + len2.toString(16) + ", Value=" + value.toString(16));
+                    for (let j = 0; j < len2; j++) {
+                        if (loc + j >= result.length) {
+                            for (let k = result.length; k <= loc + j; k++) {
+                                result[k] = 0;
+                            }
+                        }
+                        result[loc + j] = value;
+                    }
+                    i += 7;
+                    continue;
+                }
+                else {
+                    throw new Error();
+                }
+            }
+            else {
+                // direct copy
+                let log = "Direct copy: Location=" + loc.toString(16) + ", Length=" + len.toString(16);
+                log += ", Range=[";
+                log += (i).toString(16) + ", " + (i + 4 + len).toString(16) + "]";
+                console.log(log);
+                for (let j = 0; j < len; j++) {
+                    let value = ips[i + 5 + j];
+                    if (loc + j >= result.length) {
+                        for (let k = result.length; k <= loc + j; k++) {
+                            result[k] = 0;
+                        }
+                    }
+                    result[loc + j] = value;
+                }
+                i += 4 + len;
+                continue;
+            }
+        }
+        else {
+            throw new Error();
+        }
+    }
+    throw new Error();
+}
