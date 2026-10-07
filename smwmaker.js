@@ -9066,3 +9066,161 @@ function applyIpsPatch(target, ips) {
     }
     throw new Error();
 }
+function write8(val, buf) {
+    let buflen = buf.length;
+    buf[buflen++] = val & 0xFF;
+    return buflen;
+}
+function write16(val, buf) {
+    write8((val) >> 8, buf);
+    write8((val), buf);
+}
+function write24(val, buf) {
+    write8((val) >> 16, buf);
+    write8((val) >> 8, buf);
+    write8((val), buf);
+}
+function ips_create(source, target) {
+    "use strict";
+    const sourcelen = source.length;
+    const targetlen = target.length;
+    if (targetlen > 16777216) {
+        throw new Error();
+    }
+    if (targetlen >= 16777216 && sourcelen > targetlen) {
+        throw new Error();
+    }
+    let offset = 0;
+    let outbuflen = 4096;
+    let out = new Array();
+    let outlen = 0;
+    write8('P'.charCodeAt(0), out);
+    write8('A'.charCodeAt(0), out);
+    write8('T'.charCodeAt(0), out);
+    write8('C'.charCodeAt(0), out);
+    write8('H'.charCodeAt(0), out);
+    let lastknownchange = 0;
+    while (offset < targetlen) {
+        while (offset < sourcelen && (offset < sourcelen ? source[offset] : 0) === target[offset]) {
+            offset++;
+        }
+        let thislen = 0;
+        let consecutiveunchanged = 0;
+        thislen = lastknownchange - offset;
+        if (thislen < 0) {
+            thislen = 0;
+        }
+        while (true) {
+            let thisbyte = offset + thislen + consecutiveunchanged;
+            if (thisbyte < sourcelen && (thisbyte < sourcelen ? source[thisbyte] : 0) === target[thisbyte]) {
+                consecutiveunchanged++;
+            }
+            else {
+                thislen += consecutiveunchanged + 1;
+                consecutiveunchanged = 0;
+            }
+            if (consecutiveunchanged >= 6 || thislen >= 65536) {
+                break;
+            }
+        }
+        //avoid premature EOF
+        if (offset == 0x454F46) {
+            offset--;
+            thislen++;
+        }
+        lastknownchange = offset + thislen;
+        if (thislen > 65535)
+            thislen = 65535;
+        if (offset + thislen > targetlen)
+            thislen = targetlen - offset;
+        if (offset == targetlen)
+            continue;
+        //check if RLE here is worthwhile
+        let byteshere;
+        for (byteshere = 0; byteshere < thislen && target[offset] == target[offset + byteshere]; byteshere++) { }
+        if (byteshere == thislen) {
+            let thisbyte = target[offset];
+            let i = 0;
+            while (true) {
+                let pos = offset + byteshere + i - 1;
+                if (pos >= targetlen || target[pos] != thisbyte || byteshere + i > 65535)
+                    break;
+                if (pos >= sourcelen || (pos < sourcelen ? source[pos] : 0) != thisbyte) {
+                    byteshere += i;
+                    thislen += i;
+                    i = 0;
+                }
+                i++;
+            }
+        }
+        if ((byteshere > 8 - 5 && byteshere == thislen) || byteshere > 8) {
+            write24(offset, out);
+            write16(0, out);
+            write16(byteshere, out);
+            write8(target[offset], out);
+            offset += byteshere;
+        }
+        else {
+            //check if we'd gain anything from ending the block early and switching to RLE
+            let byteshere = 0;
+            let stopat = 0;
+            while (stopat + byteshere < thislen) {
+                if (target[offset + stopat] == target[offset + stopat + byteshere]) {
+                    byteshere++;
+                }
+                else {
+                    stopat += byteshere;
+                    byteshere = 0;
+                }
+                if (byteshere > 8 + 5 || //rle-worthy despite two ips headers
+                    (byteshere > 8 && stopat + byteshere == thislen) || //rle-worthy at end of data
+                    (byteshere > 8 && !memcmp(target.slice(offset + stopat + byteshere), //rle-worthy before another rle-worthy
+                    target.slice(offset + stopat + byteshere + 1), 9 - 1))) {
+                    if (stopat)
+                        thislen = stopat;
+                    break; //we don't scan the entire block if we know we'll want to RLE, that'd gain nothing.
+                }
+            }
+            //don't write unchanged bytes at the end of a block if we want to RLE the next couple of bytes
+            if (offset + thislen != targetlen) {
+                while (offset + thislen - 1 < sourcelen &&
+                    target[offset + thislen - 1] == (offset + thislen - 1 < sourcelen ? source[offset + thislen - 1] : 0)) {
+                    thislen--;
+                }
+            }
+            if (thislen > 3 && !memcmp(target.slice(offset), target.slice(offset + 1), thislen - 1)) //still worth it?
+             {
+                write24(offset, out);
+                write16(0, out);
+                write16(thislen, out);
+                write8(target[offset], out);
+            }
+            else {
+                write24(offset, out);
+                write16(thislen, out);
+                let i;
+                for (i = 0; i < thislen; i++)
+                    write8(target[offset + i], out);
+            }
+            offset += thislen;
+        }
+    }
+    write8('E'.charCodeAt(0), out);
+    write8('O'.charCodeAt(0), out);
+    write8('F'.charCodeAt(0), out);
+    if (sourcelen > targetlen)
+        write24(targetlen, out);
+    if (out.length === 8) {
+        return out;
+    }
+    return out;
+}
+function memcmp(arr1, arr2, n) {
+    const limit = Math.min(n, arr1.length, arr2.length);
+    for (let i = 0; i < limit; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return arr1[i] < arr2[i] ? -1 : 1;
+        }
+    }
+    return 0;
+}

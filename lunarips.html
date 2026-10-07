@@ -1,0 +1,785 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Lunar Address</title>
+        <meta charset="utf-8" />
+        <script>
+            "use strict";
+			
+			function write8(val, buf) {
+				let buflen = buf.length;
+				buf[buflen++] = val & 0xFF;
+				return buflen;
+			}
+
+			function write16(val, buf) { 
+				write8((val) >> 8, buf); 
+				write8((val), buf); 
+			}
+
+			function write24(val, buf) { 
+				write8((val) >> 16, buf); 
+				write8((val) >> 8, buf); 
+				write8((val), buf);
+			}
+
+			function ips_create(source, target) {
+				"use strict";
+				
+				const sourcelen = source.length;
+				const targetlen = target.length;
+				
+				if (targetlen > 16777216) {
+					throw new Error();
+				}
+				
+				if (targetlen >= 16777216 && sourcelen > targetlen) {
+					throw new Error();
+				}
+				
+				let offset = 0;
+				let outbuflen = 4096;
+				let out = new Array();
+				let outlen = 0;
+				
+				write8('P'.charCodeAt(0), out);
+				write8('A'.charCodeAt(0), out);
+				write8('T'.charCodeAt(0), out);
+				write8('C'.charCodeAt(0), out);
+				write8('H'.charCodeAt(0), out);
+				
+				let lastknownchange = 0;
+				
+				while (offset < targetlen) {
+					while (offset < sourcelen && (offset < sourcelen ? source[offset] : 0) === target[offset]) {
+						offset++;
+					}
+					
+					let thislen = 0;
+					
+					let consecutiveunchanged = 0;
+					
+					thislen = lastknownchange - offset;
+					
+					if (thislen < 0) {
+						thislen = 0;
+					}
+					
+					while (true) {
+						let thisbyte = offset + thislen + consecutiveunchanged;
+						if (thisbyte < sourcelen && (thisbyte < sourcelen ? source[thisbyte] : 0) === target[thisbyte]) {
+							consecutiveunchanged++;
+						} else {
+							thislen += consecutiveunchanged + 1;
+							consecutiveunchanged = 0;
+						}
+						if (consecutiveunchanged >= 6 || thislen >= 65536) {
+							break;
+						}
+					}
+					
+					//avoid premature EOF
+					if (offset == 0x454F46) {
+						offset--;
+						thislen++;
+					}
+					
+					lastknownchange = offset + thislen;
+					
+					if (thislen > 65535) thislen = 65535;
+					if (offset + thislen > targetlen) thislen = targetlen - offset;
+					if (offset == targetlen) continue;
+					
+					//check if RLE here is worthwhile
+					let byteshere;
+					for (byteshere=0; byteshere<thislen && target[offset] == target[offset+byteshere]; byteshere++) {}
+					if (byteshere == thislen) {
+						let thisbyte = target[offset];
+						let i = 0;
+						while (true) {
+							let pos = offset + byteshere + i - 1;
+							if (pos >= targetlen || target[pos] != thisbyte || byteshere + i > 65535)
+								break;
+							if (pos >= sourcelen || (pos < sourcelen ? source[pos] : 0) != thisbyte) {
+								byteshere += i;
+								thislen += i;
+								i = 0;
+							}
+							i++;
+						}
+					}
+					if ((byteshere > 8-5 && byteshere == thislen) || byteshere > 8) {
+						write24(offset, out);
+						write16(0, out);
+						write16(byteshere, out);
+						write8(target[offset], out);
+						offset += byteshere;
+					} else {
+						//check if we'd gain anything from ending the block early and switching to RLE
+						let byteshere = 0;
+						let stopat = 0;
+						while (stopat + byteshere < thislen) {
+							if (target[offset + stopat] == target[offset + stopat + byteshere]) {
+								byteshere++;
+							} else {
+								stopat += byteshere;
+								byteshere = 0;
+							}
+							
+							if (byteshere > 8+5 || //rle-worthy despite two ips headers
+							   (byteshere > 8 && stopat + byteshere == thislen) || //rle-worthy at end of data
+							   (byteshere > 8 && !memcmp(target.slice(offset +stopat + byteshere), //rle-worthy before another rle-worthy
+														 target.slice(offset +stopat + byteshere + 1),
+														 9-1))) {
+								if (stopat) thislen = stopat;
+								break; //we don't scan the entire block if we know we'll want to RLE, that'd gain nothing.
+							}
+						}
+						//don't write unchanged bytes at the end of a block if we want to RLE the next couple of bytes
+						if (offset + thislen != targetlen) {
+							while (offset + thislen - 1 < sourcelen &&
+								   target[offset + thislen - 1] == (offset + thislen - 1 < sourcelen ? source[offset + thislen - 1] : 0)) {
+								thislen--;
+							}
+						}
+						
+						if (thislen > 3 && !memcmp(target.slice(offset), target.slice(offset + 1), thislen - 1)) //still worth it?
+						{
+							write24(offset, out);
+							write16(0, out);
+							write16(thislen, out);
+							write8(target[offset], out);
+						}
+						else
+						{
+							write24(offset, out);
+							write16(thislen, out);
+							let i;
+							for (i=0; i<thislen; i++)
+								write8(target[offset + i], out);
+						}
+						offset += thislen;
+					}
+				}
+				write8('E'.charCodeAt(0), out);
+				write8('O'.charCodeAt(0), out);
+				write8('F'.charCodeAt(0), out);
+				if (sourcelen > targetlen) write24(targetlen, out);
+				if (out.length === 8) {
+					return out;
+				}
+				return out;
+			}
+
+			function memcmp(arr1, arr2, n) {
+				const limit = Math.min(n, arr1.length, arr2.length);
+				for (let i = 0; i < limit; i++) {
+					if (arr1[i] !== arr2[i]) {
+						return arr1[i] < arr2[i] ? -1 : 1;
+					}
+				}
+				return 0;
+			}
+
+			
+            /*
+            function createIPS(original, modified) {
+                const output = [];
+
+                // "PATCH"
+                output.push(
+                    0x50, 0x41, 0x54, 0x43, 0x48
+                );
+
+                let i = 0;
+
+                while (i < modified.length) {
+                    // 같은 부분은 건너뛴다.
+                    if (
+                        i < original.length &&
+                        original[i] === modified[i]
+                    ) {
+                        i++;
+                        continue;
+                    }
+
+                    const offset = i;
+
+                    // 변경된 구간 찾기
+                    while (i < modified.length) {
+                        if (
+                            i < original.length &&
+                            original[i] === modified[i]
+                        ) {
+                            break;
+                        }
+
+                        i++;
+
+                        // IPS offset은 24비트
+                        if (i > 0x1000000) {
+                            throw new Error("IPS offset limit exceeded");
+                        }
+
+                        // 일반 레코드 하나의 최대 크기
+                        if (i - offset >= 0xffff) {
+                            break;
+                        }
+                    }
+
+                    const length = i - offset;
+
+                    // 변경 구간에서 RLE가 가능한지 검사
+                    const value = modified[offset];
+
+                    let rle = true;
+
+                    for (let j = offset + 1; j < i; j++) {
+                        if (modified[j] !== value) {
+                            rle = false;
+                            break;
+                        }
+                    }
+
+                    if (rle && length >= 3) {
+                        // RLE record
+                        write24(output, offset);
+
+                        // 일반 데이터 길이 = 0
+                        write16(output, 0);
+
+                        // RLE 반복 횟수
+                        write16(output, length);
+
+                        // 반복할 값
+                        output.push(value);
+                    } else {
+                        // 일반 record
+                        write24(output, offset);
+
+                        write16(output, length);
+
+                        for (let j = offset; j < i; j++) {
+                            output.push(modified[j]);
+                        }
+                    }
+                }
+
+                // EOF
+                output.push(
+                    0x45, 0x4f, 0x46
+                );
+
+                return new Uint8Array(output);
+            }
+
+
+            // 16-bit big endian
+            function write16(output, value) {
+                output.push(
+                    (value >>> 8) & 0xff,
+                    value & 0xff
+                );
+            }
+
+
+            // 24-bit big endian
+            function write24(output, value) {
+                output.push(
+                    (value >>> 16) & 0xff,
+                    (value >>> 8) & 0xff,
+                    value & 0xff
+                );
+            }
+            */
+
+            function applyIpsPatch(target, ips) {
+                const result = Array.prototype.slice.call(target);
+
+                let header = "";
+                let eof = "";
+                let loc = 0;
+                let len = 0;
+
+                for (let i = 0; i < 5; i++) {
+                    header += String.fromCharCode(ips[i]);    
+                }
+
+                if (header !== "PATCH") {
+                    throw new Error(header);
+                }
+
+                for (let i = 5; i < ips.length; i++) {
+                    if (i + 2 < ips.length) {
+                        eof = String.fromCharCode(ips[i+0], ips[i+1], ips[i+2]);
+                        if (eof === "EOF") {
+                            console.log("EOF");
+                            return result;
+                        }
+                    } else {
+                        throw new Error();
+                    }
+
+                    if (i + 2 < ips.length) {
+                        loc = (ips[i+0] << 16) | (ips[i+1] << 8) | (ips[i+2] << 0);
+                        if (i + 4 < ips.length) {
+                            len = (ips[i+3] << 8) | (ips[i+4] << 0);
+                        } else {
+                            throw new Error();
+                        }
+                        if (len === 0) {
+                            // RLE
+                            if (i + 7 < ips.length) {
+                                const len2 = (ips[i+5] << 8) | (ips[i+6] << 0);
+                                const value = ips[i+7];
+                                console.log("RLE: Count=" + len2.toString(16) + ", Value=" + value.toString(16));
+                                for (let j = 0; j < len2; j++) {
+                                    if (loc + j >= result.length) {
+                                        for (let k = result.length; k <= loc + j ; k++) {
+                                            result[k] = 0;                                            
+                                        }
+                                    }
+                                    result[loc + j] = value;
+                                }
+                                i+=7;
+                                continue;
+                            } else {
+                                throw new Error();
+                            }
+                        } else {
+                            // direct copy
+                            let log = "Direct copy: Location=" + loc.toString(16) + ", Length=" + len.toString(16);
+ 
+                            log += ", Range=[";
+
+                            log += (i).toString(16) + ", " + (i + 4 + len).toString(16) + "]";
+                            
+                            console.log(log);
+
+                            
+
+                            for (let j = 0; j < len; j++) {
+                                let value = ips[i + 5 + j];
+                                
+                                if (loc + j >= result.length) {
+                                    for (let k = result.length; k <= loc + j; k++) {
+                                        result[k] = 0;
+                                    }
+                                }
+                
+                                result[loc + j] = value;
+                            }
+
+                            i += 4 + len;
+                            continue;
+                        }
+                    } else {
+                        throw new Error();
+                    }
+                }
+                throw new Error();
+            }
+
+            /*
+            function createIpsPatch(org, mod) {
+                const limit = 8+5;
+                const result = [];
+
+                const header = [
+                    "P".charCodeAt(0), 
+                    "A".charCodeAt(0), 
+                    "T".charCodeAt(0), 
+                    "C".charCodeAt(0), 
+                    "H".charCodeAt(0)
+                ];
+
+                const eof = [
+                    "E".charCodeAt(0),
+                    "O".charCodeAt(0),
+                    "F".charCodeAt(0),
+                ];
+
+                const orgLen = org.length;
+                const modLen = mod.length;
+                const maxLen = Math.max(orgLen, modLen);
+
+                if (maxLen > 0xFFFFFF) {
+                    throw new Error("File size is too big.");
+                }
+
+                const chunks = [];
+
+                chunks.push(...header);
+
+                let i = 0;
+
+                while (i < maxLen) {
+                    const orgByte = i < orgLen ? org[i] : 0;
+                    const modByte = i < modLen ? mod[i] : 0;
+                    
+                    if (orgByte !== modByte) {
+                        const offset = i;
+                        let diffData = [];
+
+                        let counter = 0;
+                        let found = false;
+
+                        while (i < maxLen && diffData.length < 0xFFFF) {
+                            const ob = i < orgLen ? org[i] : 0;
+                            const mb = i < modLen ? mod[i] : 0;
+
+                            if (ob === mb) {
+                                if (i + 1 < maxLen && i + 2 < maxLen && i + 3 < maxLen && i + 4 < maxLen) {
+                                    const ob1 = i + 1 < orgLen ? org[i+1] : 0;
+                                    const mb1 = i + 1 < orgLen ? mod[i+1] : 0;
+                                    const ob2 = i + 2 < orgLen ? org[i+2] : 0;
+                                    const mb2 = i + 2 < orgLen ? mod[i+2] : 0;
+                                    const ob3 = i + 3 < orgLen ? org[i+3] : 0;
+                                    const mb3 = i + 3 < orgLen ? mod[i+3] : 0;
+                                    const ob4 = i + 4 < orgLen ? org[i+4] : 0;
+                                    const mb4 = i + 4 < orgLen ? mod[i+4] : 0;
+
+                                    if (ob1 === mb1 && ob2 === mb2 && ob3 === mb3 && ob4 === mb4) {
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (found === false && modByte === mb) {
+                                counter++
+                            } else {
+                                if (counter >= limit) {
+                                    break;
+                                }
+                                found = true;
+                            }                   
+
+                            diffData.push(mb);
+                            i++;
+                        }                 
+
+                        const offsetBuf = [];
+
+                        offsetBuf.push(
+                            ((offset >>> 16) & 0xFF), 
+                            ((offset >>> 8) & 0xFF), 
+                            ((offset >>> 0) & 0xFF)
+                        );
+
+                        const sizeBuf = [];
+
+                        let len = diffData.length;
+
+                        if (counter >= limit) {
+                            len = 0;
+                        }
+
+                        sizeBuf.push(
+                            (len >> 8) & 0xFF,
+                            (len >> 0) & 0xFF,
+                        );
+
+                        const dataBuf = [];
+
+                        if (counter >= limit) {
+                            diffData = [(counter >>> 8) & 0xFF, (counter >>> 0) & 0xFF, modByte];
+                        }
+
+                        dataBuf.push(...diffData);
+                        
+                        chunks.push(...offsetBuf, ...sizeBuf, ...dataBuf);
+                    } else {
+                        i++;
+                    }
+                    
+
+                }
+
+                chunks.push(...eof);
+
+                return chunks;
+            }
+            */
+            
+            
+			/*
+            function ips_create(source, target) {
+                const result = [];
+
+                result.push(
+                    'P'.charCodeAt(0),
+                    'A'.charCodeAt(0),
+                    'T'.charCodeAt(0),
+                    'C'.charCodeAt(0),
+                    'H'.charCodeAt(0)
+                );
+
+                let lastknownchange = 0;
+                let offset = 0;
+                let sourcelen = source.length;
+                let targetlen = target.length;
+
+                while (offset < targetlen) {
+                    while (offset < sourcelen && (offset < sourcelen ? source[offset] : 0) === target[offset]) {
+                        offset++;
+                    }
+                    //check how much we need to edit until it starts getting similar
+                    let thislen = 0;
+                    let consecutiveunchanged = 0;
+                    thislen = lastknownchange - offset;
+                    if (thislen < 0) thislen = 0;
+                    while (true) {
+                        let thisbyte = offset + thislen + consecutiveunchanged;
+                        if (thisbyte < sourcelen && (thisbyte < sourcelen ? source[thisbyte] : 0) == target[thisbyte]) {
+				            consecutiveunchanged++;
+                        } else {
+                            thislen += consecutiveunchanged + 1;
+				            consecutiveunchanged = 0;
+                        }
+                        if (consecutiveunchanged >= 6 || thislen >= 65536) {
+                            break;
+                        }
+                    }
+
+                    //avoid premature EOF
+		            if (offset == 0x454F46) {
+			            offset--;
+			            thislen++;
+		            }
+
+                    lastknownchange = offset + thislen;
+                    if (thislen > 65535) thislen = 65535;
+		            if (offset + thislen > targetlen) thislen = targetlen - offset;
+		            if (offset == targetlen) continue;
+
+                    //check if RLE here is worthwhile
+                    let byteshere;
+                    for (byteshere=0; byteshere<thislen && target[offset] == target[offset+byteshere]; byteshere++) {}
+
+                    if (byteshere == thislen) {
+                        let thisbyte = target[offset];
+                        let i = 0;
+                        while (true) {
+                            let pos = offset + byteshere + i - 1;
+                            if (pos >= targetlen || target[pos] != thisbyte || byteshere + i > 65535) {
+                                break;
+                            }
+                            if (pos >= sourcelen || (pos < sourcelen ? source[pos] : 0) != thisbyte) {
+					            byteshere += i;
+					            thislen += i;
+					            i = 0;
+				            }
+				            i++;
+                        }
+                    }
+
+                    if ((byteshere > 8-5 && byteshere == thislen) || byteshere > 8) {
+                        write24(offset, result);
+                        write16(0, result);
+                        write16(byteshere, result);
+                        write8(target[offset], result);
+                        offset += byteshere;
+                    } else {
+                        //check if we'd gain anything from ending the block early and switching to RLE
+                        let byteshere = 0;
+                        let stopat = 0;
+                        while (stopat + byteshere < thislen) {
+                            if (target[offset + stopat] == target[offset + stopat + byteshere]) {
+					            byteshere++;
+				            } else {
+                                stopat += byteshere;
+					            byteshere = 0;
+                            }
+                            if (byteshere > 8+5 || //rle-worthy despite two ips headers
+				                (byteshere > 8 && stopat + byteshere == thislen) || //rle-worthy at end of data
+				                (byteshere > 8 && !memcmp(&target[offset +stopat + byteshere], //rle-worthy before another rle-worthy
+				                             &target[offset +stopat + byteshere + 1],
+				                             9-1)))
+				{
+					if (stopat) thislen = stopat;
+					break; //we don't scan the entire block if we know we'll want to RLE, that'd gain nothing.
+				}
+
+                        }
+                    }
+                }
+                
+                
+                
+
+
+
+
+
+                result.push(
+                    'E'.charCodeAt(0),
+                    'O'.charCodeAt(0),
+                    'F'.charCodeAt(0),
+                );
+                return result;
+            }
+
+            function write8(val, buf) {
+                let buflen = buf.length;
+                buf[buflen++] = val & 0xFF;
+            }
+
+            function write16(val, buf) { 
+                write8((val) >> 8, buf); 
+                write8((val), buf); 
+            }
+
+            function write24(val, buf) { 
+                write8((val) >> 16, buf); 
+                write8((val) >> 8, buf); 
+                write8((val), buf);
+            }
+			*/
+
+            function btnApply_onclick() {
+                const fileOrgFile = document.getElementById("fileOrgFile");
+                const fileModFile = document.getElementById("fileModFile");
+
+                if (fileOrgFile.files.length === 0 || fileModFile.files.length === 0) {
+                    alert("Select the files.");
+                    return false;
+                }
+
+                if (fileOrgFile.files[0].name === fileModFile.files[0].name) {
+                    alert("the files are same.");
+                    return false;
+                }
+                
+                const orgFileName = fileOrgFile.files[0].name;
+                const modFileName = fileModFile.files[0].name;
+
+                const fr = new FileReader();
+
+                fr.onload = function () {
+                    const org = new Uint8Array(this.result);
+                    const fr = new FileReader();
+                    fr.onload = function () {
+                        const mod = new Uint8Array(this.result);
+                        try {
+                            const result = applyIpsPatch(org, mod);
+
+                            const buffer = (new Uint8Array(result)).buffer;
+
+                            const blob = new Blob([buffer], {type: 'application/octet-stream'});
+
+                            const a = document.createElement("a");
+
+                            a.href = URL.createObjectURL(blob);
+
+                            const outFileName = modFileName.substring(0, modFileName.lastIndexOf("."));
+
+                            a.download = orgFileName;
+                            
+                            a.click();
+                        } catch (e) {
+                            throw e;
+                            alert(e.message);
+                            return;
+                        }
+                    }
+                    fr.readAsArrayBuffer(fileModFile.files[0]);
+                };
+
+                fr.readAsArrayBuffer(fileOrgFile.files[0]); 
+
+                return false;
+            }
+
+            function btnCreate_onclick() {
+                const fileOrgFile = document.getElementById("fileOrgFile");
+                const fileModFile = document.getElementById("fileModFile");
+
+                if (fileOrgFile.files.length === 0 || fileModFile.files.length === 0) {
+                    alert("Select the files.");
+                    return false;
+                }
+
+                if (fileOrgFile.files[0].name === fileModFile.files[0].name) {
+                    alert("the files are same.");
+                    return false;
+                }
+
+                const modFileName = fileModFile.files[0].name;
+
+                const fr = new FileReader();
+
+                fr.onload = function () {
+                    const org = new Uint8Array(this.result);
+                    const fr = new FileReader();
+                    fr.onload = function () {
+                        const mod = new Uint8Array(this.result);
+                        try {
+                            const result = ips_create(org, mod);
+
+                            const buffer = (new Uint8Array(result)).buffer;
+
+                            const blob = new Blob([buffer], {type: 'application/octet-stream'});
+
+                            const a = document.createElement("a");
+
+                            a.href = URL.createObjectURL(blob);
+
+                            const outFileName = modFileName.substring(0, modFileName.lastIndexOf("."));
+
+                            a.download = outFileName + ".ips";
+                            
+                            a.click();
+                        } catch (e) {
+                            throw e;
+                            alert(e.message);
+                            return;
+                        }
+                    }
+                    fr.readAsArrayBuffer(fileModFile.files[0]);
+                    
+                };
+
+                fr.readAsArrayBuffer(fileOrgFile.files[0]); 
+
+                return false;
+            }
+
+            function window_onload() {
+                document.getElementById("btnApply").onclick = btnApply_onclick;
+                document.getElementById("btnCreate").onclick = btnCreate_onclick;
+            }
+
+            window.onload = window_onload;
+        </script>
+    </head>
+    <body>
+        <form>
+            <table>
+                <tr>
+                    <td>
+                        Original File
+                    </td>
+                    <td>
+                       <input type="file" id="fileOrgFile">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Modified File
+                    </td>
+                    <td>
+                        <input type="file" id="fileModFile">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button id="btnApply">Apply IPS Patch</button>
+                    </td>
+                    <td>
+                        <button id="btnCreate">Create IPS Patch</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>
