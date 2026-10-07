@@ -9224,3 +9224,319 @@ function memcmp(arr1, arr2, n) {
     }
     return 0;
 }
+function compress_lz2(data) {
+    let i, j;
+    let output = [];
+    let buffer = [];
+    let directLength = 0;
+    let debugOutput = "";
+    let isDirect = false;
+    let bestOffset, bestLength;
+    let byteCount, incCount, wordCount;
+    if (data.length > 65536) {
+        throw new TypeError("Data is too big.");
+    }
+    for (i = 0; i < data.length; i++) {
+        byteCount = 1;
+        incCount = 1;
+        wordCount = 2;
+        bestOffset = 0;
+        bestLength = 0;
+        // byte fill
+        for (j = i; j < data.length - 1; j += 1) {
+            if (data[j] !== data[j + 1]) {
+                break;
+            }
+            byteCount++;
+        }
+        // increasing fill
+        for (j = i; j < data.length - 1; j++) {
+            if (((data[j] + 1) & 0xFF) === data[j + 1]) {
+                incCount++;
+            }
+            else {
+                break;
+            }
+        }
+        // word fill
+        for (j = i; j < data.length; j++) {
+            if (j + 2 < data.length && data[j] === data[j + 2]) {
+                if (j + 3 < data.length && data[j + 1] === data[j + 3]) {
+                    wordCount += 2;
+                    j += 1;
+                }
+                else {
+                    wordCount++;
+                    break;
+                }
+            }
+            else {
+                break;
+            }
+        }
+        // repeat
+        let max = Math.min(i, 0x10000);
+        for (j = 0; j < max; j++) {
+            let l = 0;
+            while (true) {
+                if (l >= 0x400 || i + l >= data.length || data[j + l] !== data[i + l]) {
+                    break;
+                }
+                l++;
+            }
+            if (l > bestLength) {
+                bestLength = l;
+                bestOffset = j;
+            }
+        }
+        if (((bestLength >= 4)) &&
+            (!(isDirect && directLength > 32 && bestLength == 4)) &&
+            (bestLength > byteCount && bestLength > wordCount && bestLength > incCount)) {
+            if (isDirect) {
+                isDirect = false;
+                if (directLength > 32) {
+                    output.push(0b11100000 | (((directLength - 1) >>> 8) & 0b11));
+                    output.push((directLength - 1) & 0xFF);
+                    log("(Direct-Copy-Long Length: " + directLength + ")");
+                }
+                else {
+                    output.push(directLength - 1);
+                    log("(Direct-Copy Length: " + directLength + ")");
+                }
+                output = output.concat(buffer);
+                log(debugOutput);
+                debugOutput = "";
+            }
+            if (bestLength > 32) {
+                if (bestLength - 1 > 0b1111111111) {
+                    output.push(0b11110011);
+                    output.push(0xFF);
+                    output.push((bestOffset >> 8) & 0xFF);
+                    output.push((bestOffset) & 0xFF);
+                    log("(Repeat-Long Length: 1024)");
+                    debugOutput = bestOffset + "";
+                    log(debugOutput);
+                    i += 0b1111111111;
+                    continue;
+                }
+                else {
+                    output.push(0b11110000 | (((bestLength - 1) >>> 8) & 0b11));
+                    output.push((bestLength - 1) & 0xFF);
+                    output.push((bestOffset >> 8) & 0xFF);
+                    output.push((bestOffset) & 0xFF);
+                    log("(Repeat-Long Length: " + bestLength + ")");
+                }
+            }
+            else {
+                output.push(0b10000000 | (bestLength - 1));
+                output.push((bestOffset >> 8) & 0xFF);
+                output.push((bestOffset) & 0xFF);
+                log("(Repeat Length: " + bestLength + ")");
+            }
+            debugOutput = bestOffset + "";
+            log(debugOutput);
+            i += bestLength - 1;
+        }
+        else if ((byteCount >= 3) &&
+            (!(isDirect && directLength > 32 && byteCount == 3))) {
+            if (isDirect) {
+                isDirect = false;
+                if (directLength > 32) {
+                    output.push(0b11100000 | (((directLength - 1) >>> 8) & 0b11));
+                    output.push((directLength - 1) & 0xFF);
+                    log("(Direct-Copy-Long Length: " + directLength + ")");
+                }
+                else {
+                    output.push(directLength - 1);
+                    log("(Direct-Copy Length: " + directLength + ")");
+                }
+                output = output.concat(buffer);
+                log(debugOutput);
+                debugOutput = "";
+            }
+            if (byteCount > 32) {
+                if (byteCount - 1 > 0b1111111111) {
+                    output.push(0b11100111);
+                    output.push(0xFF);
+                    output.push(data[i]);
+                    log("(Byte-Fill-Long Length: " + (0b1111111111 + 1) + ")");
+                    debugOutput = "";
+                    for (j = 0; j < 0b1111111111 + 1; j++) {
+                        debugOutput += data[i] + ", ";
+                    }
+                    log(debugOutput);
+                    i += 0b1111111111;
+                    continue;
+                }
+                else {
+                    output.push(0b11100100 | (((byteCount - 1) >>> 8) & 0b11));
+                    output.push((byteCount - 1) & 0xFF);
+                    output.push(data[i]);
+                }
+            }
+            else {
+                output.push(0b00100000 | (byteCount - 1));
+                output.push(data[i]);
+            }
+            log("(Byte-Fill Length: " + byteCount + ")");
+            debugOutput = "";
+            for (j = 0; j < byteCount; j++) {
+                debugOutput += data[i] + ", ";
+            }
+            log(debugOutput);
+            i += byteCount - 1;
+        }
+        else if ((incCount >= 3) &&
+            (!(isDirect && directLength > 32 && incCount == 3))) {
+            if (isDirect) {
+                isDirect = false;
+                if (directLength > 32) {
+                    output.push(0b11100000 | (((directLength - 1) >>> 8) & 0b11));
+                    output.push((directLength - 1) & 0xFF);
+                    log("(Direct-Copy-Long Length: " + directLength + ")");
+                }
+                else {
+                    output.push(directLength - 1);
+                    log("(Direct-Copy Length: " + directLength + ")");
+                }
+                output = output.concat(buffer);
+                log(debugOutput);
+                debugOutput = "";
+            }
+            if (incCount > 32) {
+                if (incCount - 1 > 0b1111111111) {
+                    output.push(0b11101111);
+                    output.push(0xFF);
+                    output.push(data[i]);
+                    log("(Increasing-Fill-Long Length: " + (0b1111111111 + 1) + ")");
+                    debugOutput = "";
+                    for (j = 0; j < 0b1111111111 + 1; j++) {
+                        debugOutput += ((data[i] + j) & 0xFF) + ", ";
+                    }
+                    log(debugOutput);
+                    i += 0b1111111111;
+                    continue;
+                }
+                output.push(0b11101100 | (((incCount - 1) >>> 8) & 0b11));
+                output.push((incCount - 1) & 0xFF);
+                output.push(data[i]);
+            }
+            else {
+                output.push(0b01100000 | (incCount - 1));
+                output.push(data[i]);
+            }
+            log("(Increasing-Fill Length: " + incCount + ")");
+            debugOutput = "";
+            for (j = 0; j < incCount; j++) {
+                debugOutput += ((data[i] + j) & 0xFF) + ", ";
+            }
+            log(debugOutput);
+            i += incCount - 1;
+        }
+        else if ((wordCount >= 4) &&
+            (!(isDirect && directLength > 32 && wordCount == 4))) {
+            if (isDirect) {
+                isDirect = false;
+                if (directLength > 32) {
+                    output.push(0b11100000 | (((directLength - 1) >>> 8) & 0b11));
+                    output.push((directLength - 1) & 0xFF);
+                    log("(Direct-Copy-Long Length: " + directLength + ")");
+                }
+                else {
+                    output.push(0b00000000 | (directLength - 1));
+                    log("(Direct-Copy Length: " + directLength + ")");
+                }
+                output = output.concat(buffer);
+                log(debugOutput);
+                debugOutput = "";
+            }
+            if (wordCount > 32) {
+                if (wordCount - 1 > 0b1111111111) {
+                    output.push(0b11101011);
+                    output.push(0xFF);
+                    output.push(data[i]);
+                    output.push(data[i + 1]);
+                    log("(Word-Fill-Long Length: " + (0b1111111111 + 1) + ")");
+                    debugOutput = "";
+                    for (j = 0; j < 0b1111111111 + 1; j++) {
+                        debugOutput += data[i] + j + ", ";
+                    }
+                    log(debugOutput);
+                    i += 0b1111111111;
+                    continue;
+                }
+                output.push(0b11101000 | (((wordCount - 1) >>> 8) & 0b11));
+                output.push((wordCount - 1) & 0xFF);
+            }
+            else {
+                output.push(0b01000000 | (wordCount - 1));
+            }
+            output.push(data[i]);
+            output.push(data[i + 1]);
+            log("(Word-Fill Length: " + wordCount + ")");
+            debugOutput = "";
+            for (j = 0; j < wordCount; j++) {
+                if (j % 2 === 0) {
+                    debugOutput += data[i] + ", ";
+                }
+                else {
+                    debugOutput += data[i + 1] + ", ";
+                }
+            }
+            log(debugOutput);
+            i += wordCount - 1;
+        }
+        else {
+            if (isDirect) {
+                if (directLength > 0b1111111111) {
+                    isDirect = false;
+                    output.push(0b11100011);
+                    output.push(0b11111111);
+                    output = output.concat(buffer);
+                    log("(Direct-Copy-Long Length: " + (0b1111111111 + 1) + ")");
+                    log(debugOutput);
+                    debugOutput = "";
+                    directLength = 1;
+                    buffer = [];
+                    buffer.push(data[i]);
+                    isDirect = true;
+                    debugOutput = data[i] + " ";
+                    continue;
+                }
+                else {
+                    directLength++;
+                    buffer.push(data[i]);
+                    debugOutput += data[i] + " ";
+                }
+            }
+            else {
+                directLength = 1;
+                buffer = [];
+                buffer.push(data[i]);
+                isDirect = true;
+                debugOutput = data[i] + " ";
+            }
+        }
+    }
+    if (isDirect) {
+        isDirect = false;
+        if (directLength > 32) {
+            output.push(0b11100000 | (((directLength - 1) >>> 8) & 0b11));
+            output.push((directLength - 1) & 0xFF);
+            log("(Direct-Copy-Long Length: " + directLength + ")");
+        }
+        else {
+            output.push(directLength - 1);
+            log("(Direct-Copy Length: " + directLength + ")");
+        }
+        output = output.concat(buffer);
+        log(debugOutput);
+        debugOutput = "";
+    }
+    output.push(0xFF);
+    const test = decompress_lz2(new Uint8Array(output));
+    if (!arrayCompare(data, test)) {
+        throw new Error();
+    }
+    return output;
+}
