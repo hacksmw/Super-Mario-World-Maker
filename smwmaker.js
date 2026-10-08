@@ -2552,6 +2552,7 @@ function load(lvlNum) {
     isTimeBypassed = false;
     sprGFXindex = -1;
     fgbgGFXindex = -1;
+    customPalette = 0;
     horizontalLevelMode = 0;
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
@@ -2659,15 +2660,17 @@ function load(lvlNum) {
         disableCustomGlobalAni = 0;
     }
     /* Load Palette */
-    customPalette = read3(0x0EF600 + (3 * lvlNum));
     // get palette
-    pal = getPalette(bgPalNum, fgPalNum, spPalNum);
+    pal = getPalette(bgPalNum, fgPalNum, spPalNum, !!disableOrgLevelPalAni);
     // Get back area color
     bgColor = getBackAreaColor(backAreaColorNum);
     // get custom palette
     if (lmModified && customPalette !== 0) {
-        pal = getCustomPalette();
-        bgColor = getCustomBackAreaColor();
+        customPalette = read3(0x0EF600 + (3 * lvlNum));
+        if (customPalette !== 0) {
+            pal = getCustomPalette();
+            bgColor = getCustomBackAreaColor();
+        }
     }
     /* Load Graphics */
     loadGraphics();
@@ -3225,7 +3228,7 @@ function getCustomPalette() {
 function readPal(addr, index = 0) {
     return fileData[snes2pc((addr + ((index * 2)) + 1))] << 8 | fileData[snes2pc(addr + (index * 2))];
 }
-function getPalette(bgPalNum, fgPalNum, spPalNum) {
+function getPalette(bgPalNum, fgPalNum, spPalNum, disableOrgLevelPalAni = false) {
     let palette;
     let addr;
     let data;
