@@ -185,6 +185,7 @@ let disableCustomGlobalAni;
 let disableCustomLevelAni;
 let levelAnis;
 let globalAnis;
+let ani2;
 let offset;
 let slippery;
 let water;
@@ -1161,7 +1162,7 @@ function btn8x8_onclick() {
     canvas.id = "cnv8x8";
     canvas.style.border = "1px solid black";
     canvas.width = dotSize * 8 * 16;
-    canvas.height = dotSize * 8 * 16 * 2 * 2;
+    canvas.height = dotSize * (8 * 16 * 3 + 8 * 16 * 2);
     let ctx = canvas.getContext("2d");
     const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
     for (let i = 0; i < bitmaps.length; i++) {
@@ -2679,6 +2680,9 @@ function load(lvlNum) {
     load16x16();
     /* Load ExAnimation */
     loadExAnimations();
+    if (isLMModified) {
+        renderExAnimation();
+    }
     /* get secondary exits */
     secondExits = getSecondaryExits();
     /* Get Layer 2 Objects */
@@ -2750,6 +2754,101 @@ function load(lvlNum) {
     render();
     return true;
 }
+function index2index(index) {
+    const rem = index % 0x80;
+    return rem;
+}
+function index2page(index) {
+    const div = intdiv(index, 0x80);
+    switch (div) {
+        case 0:
+            return fg1bmp;
+        case 1:
+            return fg2bmp;
+        case 2:
+            return bgbmp;
+        case 3:
+            return fg3bmp;
+        case 4:
+            return bg2bmp;
+        case 5:
+            return bg3bmp;
+        case 6:
+            throw new Error();
+        case 7:
+            throw new Error();
+        case 8:
+            return sp1bmp;
+        case 9:
+            return sp2bmp;
+        case 10:
+            return sp3bmp;
+        case 11:
+            return sp4bmp;
+    }
+    throw new Error();
+}
+function exAniIndex2div(index) {
+    if (0x600 <= index && index <= 0x77F) {
+        return index - 0x600;
+    }
+    else if (0x780 <= index && index <= 0x857) {
+        throw new Error();
+        const value = index - 0x780;
+        return value;
+    }
+    else if (0x900 <= index && index <= 0xBE7) {
+        throw new Error();
+        return index - 0x900;
+    }
+    else {
+        throw new Error();
+    }
+}
+function exAniIndex2gfx(index) {
+    if (0x600 <= index && index <= 0x77F) {
+        return anibmp;
+    }
+    else if (0x780 <= index && index <= 0x857) {
+        throw new Error();
+        //return index - 0x780;
+    }
+    else if (0x900 <= index && index <= 0xBE7) {
+        throw new Error();
+        //return index - 0x900;
+    }
+    else {
+        throw new Error();
+    }
+    throw new Error();
+}
+function renderExAnimation() {
+    const allAnis = [globalAnis, levelAnis];
+    for (let i = 0; i < allAnis.length; i++) {
+        let anis = allAnis[i];
+        for (let j = 0; j < anis.length; j++) {
+            const ani = anis[j];
+            const type = ani.type;
+            let tileNum;
+            let srcGfx;
+            let destIndex;
+            let destGFX;
+            switch (type) {
+                case 0:
+                    break;
+                case 1:
+                    tileNum = (exAniIndex2div(ani.frameData[0]));
+                    srcGfx = exAniIndex2gfx(ani.frameData[0]);
+                    destIndex = index2index(ani.vramDest);
+                    destGFX = index2page(ani.vramDest);
+                    destGFX[destIndex] = srcGfx[tileNum];
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
 function loadExAnimations() {
     levelAnis = [];
     globalAnis = [];
@@ -2784,6 +2883,26 @@ function convertAddr2index(index, aniType = 0) {
     }
     return index;
 }
+function convertDestAddr2index(index, aniType = 0) {
+    if (aniType < 0x13) {
+        if (0x0000 <= index && index <= 0x2FFF) {
+            const n = (index - 0x0000) / 0x10;
+            return n + 0x0;
+        }
+        else if (0x6000 <= index && index <= 0x7FFF) {
+            const n = (index - 0x6000) / 0x10;
+            return n + 0x400;
+        }
+        else if (0x4000 <= index && index <= 0x4FFF) {
+            const n = (index - 0x4000) / 0x8;
+            return n + 0x1C00;
+        }
+        else {
+            return index;
+        }
+    }
+    return index;
+}
 function loadExAnimation(pointer, anis) {
     const tbl = read3(pointer);
     const highestUsedAniSlot = read1(tbl + 0) - 1;
@@ -2810,6 +2929,7 @@ function loadExAnimation(pointer, anis) {
             const numColor = read1(pointer + 4);
             const useLevelsAlterGFX = frames >>> 7;
             const frameData = [];
+            const dest = convertDestAddr2index(vramDest, aniType);
             for (let j = 0; j < frames; j++) {
                 const data = read2(pointer + 5 + (j * 2));
                 const index = convertAddr2index(data, aniType);
@@ -2822,7 +2942,7 @@ function loadExAnimation(pointer, anis) {
             ani.frames = frames;
             ani.palDest = palDest;
             ani.numColor = numColor;
-            ani.vramDest = vramDest;
+            ani.vramDest = dest;
             ani.useLevelsAlterGFX = useLevelsAlterGFX;
             ani.frameData = frameData;
             anis.push(ani);
@@ -3398,6 +3518,7 @@ function loadGraphics() {
     fg3 = fileData[snes2pc((0xA92B) + (4 * fgbgGFX) + 3)];
     bg2 = 0x7f;
     bg3 = 0x7f;
+    ani2 = 0x7f;
     sp1 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 0))];
     sp2 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 1))];
     sp3 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 2))];
@@ -3407,12 +3528,17 @@ function loadGraphics() {
         superGFXBypass = !!(read2(pointer) >>> 15);
         console.log("superGFXBypass: " + superGFXBypass);
         if (superGFXBypass) {
-            fg1 = read2(pointer + (2 * 7));
-            fg2 = read2(pointer + (2 * 6));
-            bg = read2(pointer + (2 * 5));
-            fg3 = read2(pointer + (2 * 4));
-            bg2 = read2(pointer + (2 * 3));
-            bg3 = read2(pointer + (2 * 2));
+            fg1 = read2(pointer + (2 * 7)) & 4095;
+            fg2 = read2(pointer + (2 * 6)) & 4095;
+            bg = read2(pointer + (2 * 5)) & 4095;
+            fg3 = read2(pointer + (2 * 4)) & 4095;
+            bg2 = read2(pointer + (2 * 3)) & 4095;
+            bg3 = read2(pointer + (2 * 2)) & 4095;
+            ani2 = read2(pointer + (2 * 0)) & 4095;
+            sp1 = read2(pointer + (2 * 11)) & 4095;
+            sp2 = read2(pointer + (2 * 10)) & 4095;
+            sp3 = read2(pointer + (2 * 9)) & 4095;
+            sp4 = read2(pointer + (2 * 8)) & 4095;
         }
     }
     else {
@@ -3430,6 +3556,10 @@ function loadGraphics() {
     if (bg3 !== 0x7f) {
         bg3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg3)));
     }
+    if (ani2 !== 0x7f) {
+        console.log(ani2.toString(16));
+        ani2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(ani2)));
+    }
     // Sprite Graphics
     sp1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp1)));
     sp2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp2)));
@@ -3445,7 +3575,6 @@ function loadGraphics() {
         gfx32Pointer = (((read1(0x00B890) << 16) | read2(0x00B8D8)));
     }
     anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
-    ani2gfx = decompress_lz2(fileData.slice(snes2pc(gfx32Pointer)));
     /* Convert Graphics */
     if (read1(0x0480D0) === 96) {
         is4bpp = true;
@@ -3487,8 +3616,19 @@ function loadGraphics() {
         bg3bmp = convertGraphics(bg3gfx, is4bpp);
     }
     orgBg3bmp = structuredClone(bg3bmp);
+    if (ani2 === 0x7f) {
+        ani2bmp = new Array(0x80);
+        for (let i = 0; i < 0x80; i++) {
+            ani2bmp[i] = new Array(64);
+            for (let j = 0; j < 64; j++) {
+                ani2bmp[i][j] = 0;
+            }
+        }
+    }
+    else {
+        ani2bmp = convertGraphics(ani2gfx, is4bpp);
+    }
     anibmp = convertGraphics(anigfx, is4bpp);
-    ani2bmp = convertGraphics(ani2gfx, is4bpp);
     sp1bmp = convertGraphics(sp1gfx, is4bpp);
     sp2bmp = convertGraphics(sp2gfx, is4bpp);
     sp3bmp = convertGraphics(sp3gfx, is4bpp);
@@ -3516,12 +3656,6 @@ function original_animation() {
     animate_4_8x8s_line(fg2bmp, anibmp, 0x6A, 0xD8);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x70, 0x110);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x7C, 0x178);
-    /*
-    fg2bmp[0x0] = ani2bmp[0x2E4];
-    fg2bmp[0x1] = ani2bmp[0x2E5];
-    fg2bmp[0x10] = ani2bmp[0x2E6];
-    fg2bmp[0x11] = ani2bmp[0x2E7];
-    */
     if (tileset === 0) {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
