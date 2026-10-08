@@ -3156,7 +3156,7 @@ function load(lvlNum: number): boolean {
     if (lmModified) {
         customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
         if (customPaletteAddr !== 0) {
-            pal = getCustomPalette(customPaletteAddr);
+            pal = getCustomPalette(customPaletteAddr, !!disableOrgLevelPalAni);
             bgColor = getCustomBackAreaColor(customPaletteAddr);
         }
     }
