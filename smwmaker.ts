@@ -3154,13 +3154,12 @@ function load(lvlNum: number): boolean {
 
     // get custom palette
     if (lmModified) {
-        const customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
+        customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
         if (customPaletteAddr !== 0) {
             pal = getCustomPalette(customPaletteAddr);
             bgColor = getCustomBackAreaColor(customPaletteAddr);
         }
     }
- 
 
     /* Load Graphics */
     loadGraphics();
