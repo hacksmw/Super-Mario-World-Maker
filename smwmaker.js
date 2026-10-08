@@ -2804,7 +2804,7 @@ function exAniIndex2div(index) {
         return index - 0x900;
     }
     else {
-        throw new Error("undefined");
+        throw new Error();
     }
 }
 function exAniIndex2gfx(index) {
@@ -2821,7 +2821,7 @@ function exAniIndex2gfx(index) {
         //return index - 0x900;
     }
     else {
-        throw new Error("undefined");
+        throw new Error();
     }
 }
 function renderExAnimation() {
@@ -2831,22 +2831,30 @@ function renderExAnimation() {
         for (let j = 0; j < anis.length; j++) {
             const ani = anis[j];
             const type = ani.type;
-            let tileNum;
-            let srcGfx;
-            let destIndex;
-            let destGFX;
-            switch (type) {
-                case 0:
-                    break;
-                case 1:
-                    tileNum = (exAniIndex2div(ani.frameData[0]));
-                    srcGfx = exAniIndex2gfx(ani.frameData[0]);
-                    destIndex = index2index(ani.vramDest);
-                    destGFX = index2page(ani.vramDest);
-                    destGFX[destIndex] = srcGfx[tileNum];
-                    break;
-                default:
-                    break;
+            if (type < 0x13) {
+                let srcIndex = 0;
+                let destIndex = 0;
+                if (ani.vramDest >= 0x1C00) {
+                    continue;
+                }
+                if (ani.frameData[0] >= 0x10000) {
+                    continue;
+                }
+                srcIndex = exAniIndex2div(ani.frameData[0]);
+                destIndex = index2index(ani.vramDest);
+                switch (type) {
+                    case 0:
+                        break;
+                    case 1:
+                        let srcGfx;
+                        let destGfx;
+                        srcGfx = exAniIndex2gfx(ani.frameData[0]);
+                        destGfx = index2page(ani.vramDest);
+                        destGfx[destIndex] = srcGfx[srcIndex];
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

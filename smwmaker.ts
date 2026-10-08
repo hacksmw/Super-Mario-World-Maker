@@ -3309,7 +3309,7 @@ function exAniIndex2div(index: number) {
         throw new Error("unimplemented");
         return index - 0x900;
     } else {
-        throw new Error("undefined");
+        throw new Error();
     }
 }
 
@@ -3324,7 +3324,7 @@ function exAniIndex2gfx(index: number) {
         throw new Error("unimplemented");
         //return index - 0x900;
     } else {
-        throw new Error("undefined");
+        throw new Error();
     }
 }
 
@@ -3337,25 +3337,40 @@ function renderExAnimation() {
             const ani: ExAni = anis[j];
             const type: number = ani.type;
 
-            let tileNum: number;
-            let srcGfx: number[][];
+            if (type < 0x13) {
+                let srcIndex: number = 0;
+                let destIndex: number = 0;
 
-            let destIndex: number;
-            let destGFX: any;
+                if (ani.vramDest >= 0x1C00) {
+                    continue;
+                }
 
-            switch (type) {
-                case 0:
-                    break;
-                case 1:
-                    tileNum = (exAniIndex2div(ani.frameData[0]));
-                    srcGfx = exAniIndex2gfx(ani.frameData[0]);                   
-                    destIndex = index2index(ani.vramDest);
-                    destGFX = index2page(ani.vramDest);
-                    destGFX[destIndex] = srcGfx[tileNum];
-                    break;
-                default:
-                    break;
+                if (ani.frameData[0] >= 0x10000) {
+                    continue;
+                }
+
+                srcIndex = exAniIndex2div(ani.frameData[0]);
+                destIndex = index2index(ani.vramDest);
+                
+                switch (type) {
+                    case 0:
+                        break;
+                    case 1:
+                        let srcGfx: number[][];
+                        let destGfx: number[][];
+
+                        srcGfx = exAniIndex2gfx(ani.frameData[0]); 
+                        destGfx = index2page(ani.vramDest);
+
+                        destGfx[destIndex] = srcGfx[srcIndex];                                   
+                        
+                        break;
+                    default:
+                        break;
+                }    
             }
+
+            
         }
         
     }
