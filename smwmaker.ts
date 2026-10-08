@@ -85,6 +85,7 @@ class ExAni {
     numColor = 0;
     palDest = 0;   
     useLevelsAlterGFX = 0;
+    frameData: number[] = [];
 }
 
 class Sprite {
@@ -3296,11 +3297,17 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
             const pointer = (tbl+8+count+index);
             const aniType = read1(pointer+0);
             const trigger = read1(pointer+1);
-            const frames = read1(pointer+2);
+            const frames = read1(pointer+2) + 1;
             const vramDest = read2(pointer+3);
             const palDest = read1(pointer+3);
             const numColor = read1(pointer+4);
             const useLevelsAlterGFX = frames >>> 7;
+            const frameData: number[] = [];
+
+            for (let j = 0; j < frames; j++) {
+                const data = read2(pointer+5+(j*2));
+                frameData.push(data);
+            }
 
             const ani = new ExAni();
             
@@ -3312,6 +3319,7 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
             ani.numColor = numColor;
             ani.vramDest = vramDest;
             ani.useLevelsAlterGFX = useLevelsAlterGFX;
+            ani.frameData = frameData;
 
             anis.push(ani);                
         } else {
