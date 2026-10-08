@@ -172,7 +172,7 @@ let ones;
 let resetTheTime;
 let sprGFXindex;
 let fgbgGFXindex;
-let customPalette;
+let customPaletteAddr;
 let useNewSpriteSystem;
 let anibmp, ani2bmp;
 let is4bpp;
@@ -2552,7 +2552,7 @@ function load(lvlNum) {
     isTimeBypassed = false;
     sprGFXindex = -1;
     fgbgGFXindex = -1;
-    customPalette = 0;
+    customPaletteAddr = 0;
     horizontalLevelMode = 0;
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
@@ -2666,10 +2666,10 @@ function load(lvlNum) {
     bgColor = getBackAreaColor(backAreaColorNum);
     // get custom palette
     if (lmModified) {
-        customPalette = read3(0x0EF600 + (3 * lvlNum));
-        if (customPalette !== 0) {
-            pal = getCustomPalette();
-            bgColor = getCustomBackAreaColor();
+        const customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
+        if (customPaletteAddr !== 0) {
+            pal = getCustomPalette(customPaletteAddr);
+            bgColor = getCustomBackAreaColor(customPaletteAddr);
         }
     }
     /* Load Graphics */
@@ -3166,11 +3166,11 @@ function loadSprites() {
         pointer += 3 + extHeaderSize;
     }
 }
-function getCustomBackAreaColor() {
+function getCustomBackAreaColor(customPaletteAddr) {
     let temp;
     let r, g, b;
     let bgColor;
-    temp = fileData[snes2pc(customPalette + 1)] << 8 | fileData[snes2pc(customPalette)];
+    temp = fileData[snes2pc(customPaletteAddr + 1)] << 8 | fileData[snes2pc(customPaletteAddr)];
     // convert bgColor
     r = (temp & 0b11111) * 8;
     g = ((temp >> 5) & 0b11111) * 8;
@@ -3181,7 +3181,7 @@ function getCustomBackAreaColor() {
     bgColor.b = b;
     return bgColor;
 }
-function getCustomPalette() {
+function getCustomPalette(customPaletteAddr, disableOrgLevelPalAni = false) {
     let palette;
     let data;
     // reset palette array
@@ -3194,7 +3194,7 @@ function getCustomPalette() {
         palette[i][0] = 0;
         palette[i][1] = 32767;
     }
-    let addr = customPalette + 2;
+    let addr = customPaletteAddr + 2;
     for (let i = 0; i < palette.length; i++) {
         for (let j = 0; j < palette[i].length; j++) {
             const data = readPal(addr, (i * 16) + j);

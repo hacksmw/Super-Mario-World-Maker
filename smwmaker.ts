@@ -187,7 +187,7 @@ let ones: number;
 let resetTheTime: boolean;
 let sprGFXindex: number;
 let fgbgGFXindex: number;
-let customPalette: number;
+let customPaletteAddr: number;
 let useNewSpriteSystem: number;
 let anibmp: number[][], ani2bmp: number[][];
 let is4bpp: boolean;
@@ -3007,7 +3007,7 @@ function load(lvlNum: number): boolean {
     isTimeBypassed = false;
     sprGFXindex = -1;
     fgbgGFXindex = -1;
-    customPalette = 0;
+    customPaletteAddr = 0;
 
     horizontalLevelMode = 0;
     showBottomRowOfTheLevel = 0;
@@ -3154,10 +3154,10 @@ function load(lvlNum: number): boolean {
 
     // get custom palette
     if (lmModified) {
-        customPalette = read3(0x0EF600 + (3 * lvlNum));
-        if (customPalette !== 0) {
-            pal = getCustomPalette();
-            bgColor = getCustomBackAreaColor();
+        const customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
+        if (customPaletteAddr !== 0) {
+            pal = getCustomPalette(customPaletteAddr);
+            bgColor = getCustomBackAreaColor(customPaletteAddr);
         }
     }
  
@@ -3761,12 +3761,12 @@ function loadSprites() {
     }
 }
 
-function getCustomBackAreaColor() {
+function getCustomBackAreaColor(customPaletteAddr: number) {
     let temp: number;
     let r: number, g: number, b: number;
     let bgColor: RGB;
 
-    temp = fileData[snes2pc(customPalette + 1)] << 8 | fileData[snes2pc(customPalette)];
+    temp = fileData[snes2pc(customPaletteAddr + 1)] << 8 | fileData[snes2pc(customPaletteAddr)];
 
     // convert bgColor
     r = (temp & 0b11111) * 8;
@@ -3781,7 +3781,7 @@ function getCustomBackAreaColor() {
     return bgColor;
 }
 
-function getCustomPalette() {
+function getCustomPalette(customPaletteAddr: number, disableOrgLevelPalAni: boolean = false) {
     let palette: number[][];
     let data: number;
 
@@ -3797,7 +3797,7 @@ function getCustomPalette() {
         palette[i][1] = 0b11111_11111_11111;
     }
 
-    let addr = customPalette + 2;
+    let addr = customPaletteAddr + 2;
 
     for (let i = 0; i < palette.length; i++) {
         for (let j = 0; j < palette[i].length; j++) {
