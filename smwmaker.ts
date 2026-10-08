@@ -3272,6 +3272,24 @@ function loadExAnimations() {
     }   
 }
 
+function convertAddr2index(index: number, aniType: number = 0): number {
+    if (aniType < 0x13) {
+        if (0x7D00 <= index && index <= 0xACFF ) {
+            const n = ((index - 0x7D00)) / 0x20 ;
+            return 0x600 + n;
+        } else if (0xAD00 <= index && index <= 0xC7FF) {
+            const n = ((index - 0xAD00)) / 0x20;
+            return 0x780 + n;
+        } else if (0x2000 <= index && index <= 0x7CFF) {
+            const n = ((index - 0x2000)) / 0x20;
+            return 0x900 + n;
+        } else {
+            return index;
+        }
+    }
+    return index;        
+}
+
 function loadExAnimation(pointer: number, anis: ExAni[]) {
     const tbl = read3(pointer);
 
@@ -3306,7 +3324,9 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
 
             for (let j = 0; j < frames; j++) {
                 const data = read2(pointer+5+(j*2));
-                frameData.push(data);
+                const index = convertAddr2index(data, aniType);
+                
+                frameData.push(index);
             }
 
             const ani = new ExAni();
