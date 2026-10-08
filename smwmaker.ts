@@ -179,6 +179,10 @@ let anibmp: number[][], ani2bmp: number[][];
 let is4bpp: boolean;
 let bg2: number, bg3: number;
 let superGFXBypass: boolean;
+let disableOrgLevelPalAni: number;
+let disableOrgLevelAni: number;
+let disableCustomGlobalAni: number;
+let disableCustomLevelAni: number;
 
 let offset: number;
 let slippery: number;
@@ -3107,6 +3111,21 @@ function load(lvlNum: number): boolean {
     if (sprGFX > 15) {
         sprGFX = 0;
     }
+
+    if (isLMModified) {
+        const levelAnimationSettings = read1(0x03FE00 + levelNum);
+
+        disableOrgLevelPalAni = (levelAnimationSettings >>> 7) & 1;
+        disableOrgLevelAni = (levelAnimationSettings >>> 6) & 1;
+        disableCustomLevelAni = (levelAnimationSettings >>> 5) & 1;
+        disableCustomGlobalAni = (levelAnimationSettings >>> 4) & 1;
+
+    } else {
+        disableOrgLevelPalAni = 0;
+        disableOrgLevelAni = 0;
+        disableCustomLevelAni = 0;
+        disableCustomGlobalAni = 0;        
+    }
  
     /* Load Palette */
 
@@ -3700,10 +3719,12 @@ function getCustomPalette() {
     }
 
     // animated color palette
-    addr = (0x00b60c + (0x2 * 0));
-    data = readPal(addr);
-    palette[6][4] = data;
-
+    if (!disableOrgLevelPalAni) {
+        addr = (0x00b60c + (0x2 * 0));
+        data = readPal(addr);
+        palette[6][4] = data;
+    }
+    
     /* Convert palettes */
 
     let pal: RGB[][] = new Array(16);
@@ -3796,9 +3817,12 @@ function getPalette(bgPalNum: number, fgPalNum: number, spPalNum: number) {
     }
     
     // animated color palette
-    addr = (0x00b60c + (0x2 * 0));
-    data = readPal(addr);
-    palette[6][4] = data;
+    if (!disableOrgLevelPalAni) {
+        addr = (0x00b60c + (0x2 * 0));
+        data = readPal(addr);
+        palette[6][4] = data;
+    }
+    
     
     // mario palette
     addr = (0x00b2c8 + (0x14 * 0));
@@ -3999,7 +4023,10 @@ function loadGraphics() {
     sp3bmp = convertGraphics(sp3gfx, is4bpp);
     sp4bmp = convertGraphics(sp4gfx, is4bpp);
 
-    original_animation();
+    if (!disableOrgLevelAni) {
+        original_animation();
+    }
+    
 
 }
 

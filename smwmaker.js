@@ -165,6 +165,10 @@ let anibmp, ani2bmp;
 let is4bpp;
 let bg2, bg3;
 let superGFXBypass;
+let disableOrgLevelPalAni;
+let disableOrgLevelAni;
+let disableCustomGlobalAni;
+let disableCustomLevelAni;
 let offset;
 let slippery;
 let water;
@@ -2626,6 +2630,19 @@ function load(lvlNum) {
     if (sprGFX > 15) {
         sprGFX = 0;
     }
+    if (isLMModified) {
+        const levelAnimationSettings = read1(0x03FE00 + levelNum);
+        disableOrgLevelPalAni = (levelAnimationSettings >>> 7) & 1;
+        disableOrgLevelAni = (levelAnimationSettings >>> 6) & 1;
+        disableCustomLevelAni = (levelAnimationSettings >>> 5) & 1;
+        disableCustomGlobalAni = (levelAnimationSettings >>> 4) & 1;
+    }
+    else {
+        disableOrgLevelPalAni = 0;
+        disableOrgLevelAni = 0;
+        disableCustomLevelAni = 0;
+        disableCustomGlobalAni = 0;
+    }
     /* Load Palette */
     customPalette = read3(0x0EF600 + (3 * lvlNum));
     // get palette
@@ -3110,9 +3127,11 @@ function getCustomPalette() {
         }
     }
     // animated color palette
-    addr = (0x00b60c + (0x2 * 0));
-    data = readPal(addr);
-    palette[6][4] = data;
+    if (!disableOrgLevelPalAni) {
+        addr = (0x00b60c + (0x2 * 0));
+        data = readPal(addr);
+        palette[6][4] = data;
+    }
     /* Convert palettes */
     let pal = new Array(16);
     for (let i = 0; i < 16; i++) {
@@ -3195,9 +3214,11 @@ function getPalette(bgPalNum, fgPalNum, spPalNum) {
         }
     }
     // animated color palette
-    addr = (0x00b60c + (0x2 * 0));
-    data = readPal(addr);
-    palette[6][4] = data;
+    if (!disableOrgLevelPalAni) {
+        addr = (0x00b60c + (0x2 * 0));
+        data = readPal(addr);
+        palette[6][4] = data;
+    }
     // mario palette
     addr = (0x00b2c8 + (0x14 * 0));
     for (let i = 0; i < 0xA; i++) {
@@ -3363,7 +3384,9 @@ function loadGraphics() {
     sp2bmp = convertGraphics(sp2gfx, is4bpp);
     sp3bmp = convertGraphics(sp3gfx, is4bpp);
     sp4bmp = convertGraphics(sp4gfx, is4bpp);
-    original_animation();
+    if (!disableOrgLevelAni) {
+        original_animation();
+    }
 }
 function original_animation() {
     animate_4_8x8s_line(fg1bmp, anibmp, 0x68, 0xC8);
