@@ -76,6 +76,17 @@ class Obj {
     }
 }
 
+class ExAni {
+    used = 0;
+    type = 0;
+    trigger = 0;
+    frames = 0; 
+    vramDest = 0;
+    numColor = 0;
+    palDest = 0;   
+    useLevelsAlterGFX = 0;
+}
+
 class Sprite {
     xPosition: number = 0;
     yPosition: number = 0;
@@ -183,6 +194,8 @@ let disableOrgLevelPalAni: number;
 let disableOrgLevelAni: number;
 let disableCustomGlobalAni: number;
 let disableCustomLevelAni: number;
+let levelAnis: ExAni[];
+let globalAnis: ExAni[];
 
 let offset: number;
 let slippery: number;
@@ -3126,12 +3139,6 @@ function load(lvlNum: number): boolean {
         disableCustomLevelAni = 0;
         disableCustomGlobalAni = 0;        
     }
-
-    if (isLMModified) {
-        const pointer = (read3(read3(0x0583ae)+0xEA) + 3 * lvlNum);
-        const tbl = read3(pointer)
-        const highestUsedAniSlot = read1(tbl + 0) - 1;      
-    }
  
     /* Load Palette */
 
@@ -3155,6 +3162,9 @@ function load(lvlNum: number): boolean {
 
     /* Load Map16 */
     load16x16();
+
+    /* Load ExAnimation */
+    loadExAnimations(); 
 
     /* get secondary exits */
     secondExits = getSecondaryExits();
@@ -3237,6 +3247,73 @@ function load(lvlNum: number): boolean {
     render();  
 
     return true;
+}
+
+function loadExAnimations() {
+    levelAnis = [];
+    globalAnis = [];
+
+    if (isLMModified) {
+        const globalAnisPointer = read1(read3(0x0583AE)+0x5C)<<8+(read2(read3(0x0583AE)+0x65));
+        const lvlAnisPointer = (read3(read3(0x0583ae)+0xEA) + 3 * levelNum);
+        
+        if (read2(read3(0x0583ae)+0x5B) !== 0) {
+            loadExAnimation(globalAnisPointer, globalAnis); 
+        }
+
+        if (read1(lvlAnisPointer + 1) !== 0) {
+            loadExAnimation(lvlAnisPointer, levelAnis); 
+        }
+    }   
+}
+
+function loadExAnimation(pointer: number, anis: ExAni[]) {
+    const tbl = read3(pointer);
+
+    const highestUsedAniSlot = read1(tbl + 0) - 1; 
+    const alternateGFX = read1(tbl+1);
+    const whichCustomTriggersStartUninitialized = read2(tbl+2);
+    const InitialStatesForEachCustomTriggerWhenInitialized = read2(tbl+4);
+    const whichManualTriggersAreInitialized = read2(tbl+6);
+
+    let count: number = 0;
+
+    for (let i = 0; i < 16; i++) {
+        const bit = (whichManualTriggersAreInitialized >> i) & 1;
+        if (bit === 1) {
+            count++;
+        }
+    }   
+    
+    for (let i = 0; i <= highestUsedAniSlot; i++) {
+        const index = read2(tbl+8+count+(i*2));
+
+        if (index !== 0) {
+            const pointer = (tbl+8+count+index);
+            const aniType = read1(pointer+0);
+            const trigger = read1(pointer+1);
+            const frames = read1(pointer+2);
+            const vramDest = read2(pointer+3);
+            const palDest = read1(pointer+3);
+            const numColor = read1(pointer+4);
+            const useLevelsAlterGFX = frames >>> 7;
+
+            const Ani = new ExAni();
+            
+            Ani.used = 1;
+            Ani.type = aniType;
+            Ani.trigger = trigger;
+            Ani.frames = frames;
+            Ani.palDest = palDest;
+            Ani.numColor = numColor;
+            Ani.vramDest = vramDest;
+            Ani.useLevelsAlterGFX = useLevelsAlterGFX;
+
+            anis.push(Ani);                
+        } else {
+            anis.push(new ExAni());
+        }            
+    }
 }
 
 function loadObjects(lvlNum: number, layerDataPointer: number) {
