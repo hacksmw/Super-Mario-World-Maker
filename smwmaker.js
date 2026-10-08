@@ -2643,6 +2643,11 @@ function load(lvlNum) {
         disableCustomLevelAni = 0;
         disableCustomGlobalAni = 0;
     }
+    if (isLMModified) {
+        const pointer = (read3(read3(0x0583ae) + 0xEA) + 3 * lvlNum);
+        const tbl = read3(pointer);
+        const highestUsedAniSlot = read1(tbl + 0) - 1;
+    }
     /* Load Palette */
     customPalette = read3(0x0EF600 + (3 * lvlNum));
     // get palette
