@@ -135,6 +135,9 @@ let map16: Tile[], bgTiles: Tile[];
 let fg1bmp: number[][], fg2bmp: number[][], bgbmp: number[][], fg3bmp: number[][];
 let bg2bmp: number[][], bg3bmp: number[][];
 let sp1bmp: number[][], sp2bmp: number[][], sp3bmp: number[][], sp4bmp: number[][];
+let orgFg1bmp: number[][], orgFg2bmp: number[][], orgBgbmp: number[][], orgFg3bmp: number[][];
+let orgBg2bmp: number[][], orgBg3bmp: number[][];
+let orgSp1bmp: number[][], orgSp2bmp: number[][], orgSp3bmp: number[][], orgSp4bmp: number[][];
 let fileData: Uint8Array;
 let fileName: string;
 let levelNum: number;
@@ -3298,18 +3301,18 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
             const numColor = read1(pointer+4);
             const useLevelsAlterGFX = frames >>> 7;
 
-            const Ani = new ExAni();
+            const ani = new ExAni();
             
-            Ani.used = 1;
-            Ani.type = aniType;
-            Ani.trigger = trigger;
-            Ani.frames = frames;
-            Ani.palDest = palDest;
-            Ani.numColor = numColor;
-            Ani.vramDest = vramDest;
-            Ani.useLevelsAlterGFX = useLevelsAlterGFX;
+            ani.used = 1;
+            ani.type = aniType;
+            ani.trigger = trigger;
+            ani.frames = frames;
+            ani.palDest = palDest;
+            ani.numColor = numColor;
+            ani.vramDest = vramDest;
+            ani.useLevelsAlterGFX = useLevelsAlterGFX;
 
-            anis.push(Ani);                
+            anis.push(ani);                
         } else {
             anis.push(new ExAni());
         }            
@@ -4072,6 +4075,11 @@ function loadGraphics() {
     fg3bmp = convertGraphics(fg3gfx, is4bpp);
     bgbmp  = convertGraphics(bggfx, is4bpp);
 
+    orgFg1bmp = structuredClone(fg1bmp);
+    orgFg2bmp = structuredClone(fg2bmp);
+    orgBgbmp = structuredClone(bgbmp);
+    orgFg3bmp = structuredClone(fg3bmp);
+
     if (bg2 === 0x7f) {
         bg2bmp = new Array(0x80);    
         for (let i = 0; i < 0x80; i++) {
@@ -4084,6 +4092,8 @@ function loadGraphics() {
         bg2bmp = convertGraphics(bg2gfx!, is4bpp);
     }
 
+    orgBg2bmp = structuredClone(bg2bmp);
+
     if (bg3 === 0x7f) {
         bg3bmp = new Array(0x80);    
         for (let i = 0; i < 0x80; i++) {
@@ -4095,8 +4105,8 @@ function loadGraphics() {
     } else {
         bg3bmp = convertGraphics(bg3gfx!, is4bpp);
     }
-    
 
+    orgBg3bmp = structuredClone(bg3bmp);
 
     anibmp = convertGraphics(anigfx, is4bpp);
     ani2bmp = convertGraphics(ani2gfx, is4bpp);
@@ -4106,11 +4116,14 @@ function loadGraphics() {
     sp3bmp = convertGraphics(sp3gfx, is4bpp);
     sp4bmp = convertGraphics(sp4gfx, is4bpp);
 
+    orgSp1bmp = structuredClone(sp1bmp);
+    orgSp2bmp = structuredClone(sp2bmp);
+    orgSp3bmp = structuredClone(sp3bmp);
+    orgSp4bmp = structuredClone(sp4bmp);
+
     if (!disableOrgLevelAni) {
         original_animation();
     }
-    
-
 }
 
 function original_animation() {

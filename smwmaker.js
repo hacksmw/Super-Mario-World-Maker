@@ -120,6 +120,9 @@ let map16, bgTiles;
 let fg1bmp, fg2bmp, bgbmp, fg3bmp;
 let bg2bmp, bg3bmp;
 let sp1bmp, sp2bmp, sp3bmp, sp4bmp;
+let orgFg1bmp, orgFg2bmp, orgBgbmp, orgFg3bmp;
+let orgBg2bmp, orgBg3bmp;
+let orgSp1bmp, orgSp2bmp, orgSp3bmp, orgSp4bmp;
 let fileData;
 let fileName;
 let levelNum;
@@ -2782,16 +2785,16 @@ function loadExAnimation(pointer, anis) {
             const palDest = read1(pointer + 3);
             const numColor = read1(pointer + 4);
             const useLevelsAlterGFX = frames >>> 7;
-            const Ani = new ExAni();
-            Ani.used = 1;
-            Ani.type = aniType;
-            Ani.trigger = trigger;
-            Ani.frames = frames;
-            Ani.palDest = palDest;
-            Ani.numColor = numColor;
-            Ani.vramDest = vramDest;
-            Ani.useLevelsAlterGFX = useLevelsAlterGFX;
-            anis.push(Ani);
+            const ani = new ExAni();
+            ani.used = 1;
+            ani.type = aniType;
+            ani.trigger = trigger;
+            ani.frames = frames;
+            ani.palDest = palDest;
+            ani.numColor = numColor;
+            ani.vramDest = vramDest;
+            ani.useLevelsAlterGFX = useLevelsAlterGFX;
+            anis.push(ani);
         }
         else {
             anis.push(new ExAni());
@@ -3423,6 +3426,10 @@ function loadGraphics() {
     fg2bmp = convertGraphics(fg2gfx, is4bpp);
     fg3bmp = convertGraphics(fg3gfx, is4bpp);
     bgbmp = convertGraphics(bggfx, is4bpp);
+    orgFg1bmp = structuredClone(fg1bmp);
+    orgFg2bmp = structuredClone(fg2bmp);
+    orgBgbmp = structuredClone(bgbmp);
+    orgFg3bmp = structuredClone(fg3bmp);
     if (bg2 === 0x7f) {
         bg2bmp = new Array(0x80);
         for (let i = 0; i < 0x80; i++) {
@@ -3435,6 +3442,7 @@ function loadGraphics() {
     else {
         bg2bmp = convertGraphics(bg2gfx, is4bpp);
     }
+    orgBg2bmp = structuredClone(bg2bmp);
     if (bg3 === 0x7f) {
         bg3bmp = new Array(0x80);
         for (let i = 0; i < 0x80; i++) {
@@ -3447,12 +3455,17 @@ function loadGraphics() {
     else {
         bg3bmp = convertGraphics(bg3gfx, is4bpp);
     }
+    orgBg3bmp = structuredClone(bg3bmp);
     anibmp = convertGraphics(anigfx, is4bpp);
     ani2bmp = convertGraphics(ani2gfx, is4bpp);
     sp1bmp = convertGraphics(sp1gfx, is4bpp);
     sp2bmp = convertGraphics(sp2gfx, is4bpp);
     sp3bmp = convertGraphics(sp3gfx, is4bpp);
     sp4bmp = convertGraphics(sp4gfx, is4bpp);
+    orgSp1bmp = structuredClone(sp1bmp);
+    orgSp2bmp = structuredClone(sp2bmp);
+    orgSp3bmp = structuredClone(sp3bmp);
+    orgSp4bmp = structuredClone(sp4bmp);
     if (!disableOrgLevelAni) {
         original_animation();
     }
