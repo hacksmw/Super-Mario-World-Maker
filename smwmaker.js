@@ -2793,16 +2793,18 @@ function exAniIndex2div(index) {
         return index - 0x600;
     }
     else if (0x780 <= index && index <= 0x857) {
-        throw new Error();
+        if (index >= 0x800) {
+            throw new Error("undefined");
+        }
         const value = index - 0x780;
         return value;
     }
     else if (0x900 <= index && index <= 0xBE7) {
-        throw new Error();
+        throw new Error("unimplemented");
         return index - 0x900;
     }
     else {
-        throw new Error();
+        throw new Error("undefined");
     }
 }
 function exAniIndex2gfx(index) {
@@ -2810,17 +2812,17 @@ function exAniIndex2gfx(index) {
         return anibmp;
     }
     else if (0x780 <= index && index <= 0x857) {
-        throw new Error();
-        //return index - 0x780;
+        if (index < 0x800)
+            return ani2bmp;
+        throw new Error("undefined");
     }
     else if (0x900 <= index && index <= 0xBE7) {
-        throw new Error();
+        throw new Error("unimplemented");
         //return index - 0x900;
     }
     else {
-        throw new Error();
+        throw new Error("undefined");
     }
-    throw new Error();
 }
 function renderExAnimation() {
     const allAnis = [globalAnis, levelAnis];

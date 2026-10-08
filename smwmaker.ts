@@ -3300,14 +3300,16 @@ function exAniIndex2div(index: number) {
     if (0x600 <= index && index <= 0x77F) {
         return index - 0x600;
     } else if (0x780 <= index && index <= 0x857) {
-        throw new Error();
+        if (index >= 0x800) {
+            throw new Error("undefined");
+        }
         const value = index - 0x780;
         return value;
     } else if (0x900 <= index && index <= 0xBE7) {
-        throw new Error();
+        throw new Error("unimplemented");
         return index - 0x900;
     } else {
-        throw new Error();
+        throw new Error("undefined");
     }
 }
 
@@ -3315,15 +3317,15 @@ function exAniIndex2gfx(index: number) {
     if (0x600 <= index && index <= 0x77F) {
         return anibmp;
     } else if (0x780 <= index && index <= 0x857) {
-        throw new Error();
-        //return index - 0x780;
+        if (index < 0x800)
+            return ani2bmp;
+        throw new Error("undefined");
     } else if (0x900 <= index && index <= 0xBE7) {
-        throw new Error();
+        throw new Error("unimplemented");
         //return index - 0x900;
     } else {
-        throw new Error();
+        throw new Error("undefined");
     }
-    throw new Error();
 }
 
 function renderExAnimation() {
@@ -3346,16 +3348,10 @@ function renderExAnimation() {
                     break;
                 case 1:
                     tileNum = (exAniIndex2div(ani.frameData[0]));
-
-                    srcGfx = exAniIndex2gfx(ani.frameData[0]);
-                    
+                    srcGfx = exAniIndex2gfx(ani.frameData[0]);                   
                     destIndex = index2index(ani.vramDest);
-                    
                     destGFX = index2page(ani.vramDest);
-
                     destGFX[destIndex] = srcGfx[tileNum];
-                    
-                    
                     break;
                 default:
                     break;
