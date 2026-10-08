@@ -2665,7 +2665,7 @@ function load(lvlNum) {
     // Get back area color
     bgColor = getBackAreaColor(backAreaColorNum);
     // get custom palette
-    if (lmModified && customPalette !== 0) {
+    if (lmModified) {
         customPalette = read3(0x0EF600 + (3 * lvlNum));
         if (customPalette !== 0) {
             pal = getCustomPalette();
