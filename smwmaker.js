@@ -2380,6 +2380,7 @@ function loadROM(lvlNum = 0x105, fileData) {
     else {
         lmModified = false;
     }
+    console.log((fileData[snes2pc(0x0FF0A0, fileType)]).toString(16));
     let lunarMagicVer;
     // Get the Lunar Magic Version
     if (lmModified) {
@@ -2416,6 +2417,9 @@ function loadROM(lvlNum = 0x105, fileData) {
     romType = fileType;
     isLMModified = lmModified;
     lmVer = lunarMagicVer;
+    console.log("ROM Type: " + fileType);
+    console.log("isLMModified: " + isLMModified);
+    console.log("lmVer: " + lmVer);
     loadLevel(lvlNum);
 }
 function loadLevel(lvlNum) {
@@ -7360,6 +7364,7 @@ function fileOpen() {
                 loadROM(levelNum, fileData);
             }
             catch (e) {
+                debugger;
                 throw e;
                 //alert(e.message);
                 //unload();
@@ -9275,6 +9280,9 @@ function log(msg) {
     console.log(msg);
 }
 function snes2pc(snes, type = "Auto", header = true) {
+    return snes2pc1(snes, type, header);
+}
+function snes2pc1(snes, type = "Auto", header = true) {
     let result;
     let head;
     if (header) {
@@ -9295,7 +9303,8 @@ function snes2pc(snes, type = "Auto", header = true) {
             result = head + (snes & 0x3FFFFF);
             break;
         case "ExHiROM":
-            result = (snes & 0x3FFFFF) + head + ((snes > 0x800000 ? 0x400000 : 0));
+            //result = snes2pc4exhirom(snes);
+            result = (snes & 0x3FFFFF) + head + ((snes < 0x800000 ? 0x400000 : 0));
             break;
         case "ExLoROM":
             result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000)) + (snes < 0x800000 ? 0x400000 : 0);
