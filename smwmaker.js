@@ -2345,58 +2345,34 @@ function render() {
     btn8x8.click();
     renderBG();
 }
-function load(lvlNum) {
-    let objList;
-    let high, low, bank;
-    let primaryLevelHeader;
-    let secondaryLevelHeader;
-    let currentScreen;
-    let pointer;
-    let lmModified;
-    let lvlMode;
-    let lunarMagicVer;
-    // check file size
-    switch (fileData.length) {
-        case 524288 + 0x200:
-        case 1048576 + 0x200:
-        case 1572864 + 0x200:
-        case 2097152 + 0x200:
-        case 2621440 + 0x200:
-        case 3145728 + 0x200:
-        case 3670016 + 0x200:
-        case 4194304 + 0x200:
-        case 6291456 + 0x200:
-        case 8388608 + 0x200:
-            break;
-        default:
-            throw new Error("Wrong File Size: " + fileData.length);
-            return false;
-            break;
+function loadROM(lvlNum = 0x105, fileData) {
+    // check the rom file size
+    if (!checkRomFileSize(fileData, true)) {
+        throw new Error("Wrong file size.");
     }
+    // detect the rom type
     const fileType = detectRomType(fileData, true);
     if (fileType === "Invalid") {
-        alert("Unknown ROM Type");
-        return false;
+        throw new Error("Unknown ROM Type");
     }
-    // check game title
+    // check the game title
     let gameTitle;
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        alert("Wrong game title");
-        return false;
+        throw new Error("Wrong game title");
     }
-    // expand the rom
+    // if rom file is small then expand the rom.
     if (fileData.length < 1048576) {
         let result;
         try {
             result = expand(fileData, 1048576, false, "", false, true);
         }
         catch (e) {
-            alert("Can't expand the ROM.");
-            return false;
+            throw new Error("Can't expand the ROM.");
         }
         fileData = new Uint8Array(result);
     }
+    let lmModified;
     /* Check Lunar Magic */
     if (fileData[snes2pc(0x0FF0A0, fileType)] === 0x4C) {
         lmModified = true;
@@ -2404,13 +2380,13 @@ function load(lvlNum) {
     else {
         lmModified = false;
     }
+    let lunarMagicVer;
     // Get the Lunar Magic Version
     if (lmModified) {
         const signature = "Lunar Magic Version ";
         const str = String.fromCharCode(...(fileData.slice(snes2pc(0x0FF0A0, fileType), snes2pc(0x0FF0A0, fileType) + signature.length)));
         if (str !== signature) {
-            alert("Not valid ROM.");
-            return false;
+            throw new Error("Not valid ROM.");
         }
         let verStr = "";
         let flag = false;
@@ -2426,8 +2402,7 @@ function load(lvlNum) {
                 flag = true;
             }
             else {
-                alert("Not valid ROM.");
-                return false;
+                throw new Error("Not valid ROM.");
             }
         }
         lunarMagicVer = parseFloat(verStr);
@@ -2436,72 +2411,76 @@ function load(lvlNum) {
         lunarMagicVer = parseFloat("0");
     }
     if (lmModified) {
-        //alert("Lunar Magic Modified ROM is not supproted yet.");
-        //return false;
+        //throw new Error("Lunar Magic Modified ROM is not supproted yet.");
     }
+    romType = fileType;
+    isLMModified = lmModified;
+    lmVer = lunarMagicVer;
+    loadLevel(lvlNum);
+}
+function loadLevel(lvlNum) {
+    let high, low, bank;
+    let primaryLevelHeader;
+    let secondaryLevelHeader;
     /* Get Layer1, Layer2, Sprite Data Pointer */
-    low = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 0, fileType)];
-    high = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 1, fileType)];
-    bank = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 2, fileType)];
+    low = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 0)];
+    high = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 1)];
+    bank = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 2)];
     layer1DataPointer = (bank << 16) | (high << 8) | low;
-    if (snes2pc(layer1DataPointer, fileType) >= fileData.length) {
-        alert("Layer 1 Data Pointer is too large.");
-        return false;
+    if (snes2pc(layer1DataPointer) >= fileData.length) {
+        throw new Error("Layer 1 Data Pointer is too large.");
     }
-    low = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 0, fileType)];
-    high = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 1, fileType)];
-    bank = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 2, fileType)];
+    low = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 0)];
+    high = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 1)];
+    bank = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 2)];
     layer2DataPointer = (bank << 16) | (high << 8) | low;
-    if (snes2pc(layer2DataPointer, fileType) >= fileData.length) {
-        if ((layer2DataPointer >>> 16) != 0xFF) {
-            alert("Layer 2 Data Pointer is too large.");
-            return false;
+    if (snes2pc(layer2DataPointer) >= fileData.length) {
+        if ((layer2DataPointer >>> 16) !== 0xFF) {
+            throw new Error("Layer 2 Data Pointer is too large.");
         }
     }
-    low = fileData[snes2pc(spriteDataTable + (2 * lvlNum) + 0, fileType)];
-    high = fileData[snes2pc(spriteDataTable + (2 * lvlNum) + 1, fileType)];
-    if (!lmModified) {
+    low = fileData[snes2pc(spriteDataTable + (2 * lvlNum) + 0)];
+    high = fileData[snes2pc(spriteDataTable + (2 * lvlNum) + 1)];
+    if (!isLMModified) {
         bank = 0x07;
     }
     else {
-        bank = fileData[snes2pc(0x0EF100 + lvlNum, fileType)];
+        bank = fileData[snes2pc(0x0EF100 + lvlNum)];
     }
     spriteDataPointer = (bank << 16) | (high << 8) | low;
-    if (snes2pc(spriteDataPointer, fileType) >= fileData.length) {
-        alert("Sprite Data Pointer is too large.");
-        return false;
+    if (snes2pc(spriteDataPointer) >= fileData.length) {
+        throw new Error("Sprite Data Pointer is too large.");
     }
     /* Get Level Header */
     primaryLevelHeader = new Array(5);
-    primaryLevelHeader[0] = fileData[snes2pc(layer1DataPointer + 0, fileType)];
-    primaryLevelHeader[1] = fileData[snes2pc(layer1DataPointer + 1, fileType)];
-    primaryLevelHeader[2] = fileData[snes2pc(layer1DataPointer + 2, fileType)];
-    primaryLevelHeader[3] = fileData[snes2pc(layer1DataPointer + 3, fileType)];
-    primaryLevelHeader[4] = fileData[snes2pc(layer1DataPointer + 4, fileType)];
+    primaryLevelHeader[0] = fileData[snes2pc(layer1DataPointer + 0)];
+    primaryLevelHeader[1] = fileData[snes2pc(layer1DataPointer + 1)];
+    primaryLevelHeader[2] = fileData[snes2pc(layer1DataPointer + 2)];
+    primaryLevelHeader[3] = fileData[snes2pc(layer1DataPointer + 3)];
+    primaryLevelHeader[4] = fileData[snes2pc(layer1DataPointer + 4)];
     secondaryLevelHeader = new Array(4);
-    secondaryLevelHeader[0] = fileData[snes2pc(0x05F000 + lvlNum, fileType)];
-    secondaryLevelHeader[1] = fileData[snes2pc(0x05F200 + lvlNum, fileType)];
-    secondaryLevelHeader[2] = fileData[snes2pc(0x05F400 + lvlNum, fileType)];
-    secondaryLevelHeader[3] = fileData[snes2pc(0x05F600 + lvlNum, fileType)];
+    secondaryLevelHeader[0] = fileData[snes2pc(0x05F000 + lvlNum)];
+    secondaryLevelHeader[1] = fileData[snes2pc(0x05F200 + lvlNum)];
+    secondaryLevelHeader[2] = fileData[snes2pc(0x05F400 + lvlNum)];
+    secondaryLevelHeader[3] = fileData[snes2pc(0x05F600 + lvlNum)];
     secondaryLevelHeader[4] = 0;
     secondaryLevelHeader[5] = 0;
     secondaryLevelHeader[6] = 0;
     secondaryLevelHeader[7] = 0;
-    if (lmModified) {
-        secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum, fileType)];
-        if (lunarMagicVer >= 3.0) {
-            secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum, fileType)];
-            secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum, fileType)];
+    if (isLMModified) {
+        secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum)];
+        if (lmVer >= 3.0) {
+            secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum)];
+            secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum)];
         }
-        if (lunarMagicVer >= 3.40) {
-            secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum, fileType)];
+        if (lmVer >= 3.40) {
+            secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum)];
         }
     }
     /* Get Level Information */
-    lvlMode = ((primaryLevelHeader[1]) & 0b11111);
+    const lvlMode = ((primaryLevelHeader[1]) & 0b11111);
     if (lvlMode >= verticalList.length || lvlMode >= layer2List.length) {
-        alert("Level Mode is not valid.");
-        return false;
+        throw new Error("Level Mode is not valid.");
     }
     screenLength = ((primaryLevelHeader[0]) & 0b11111);
     backAreaColorNum = ((primaryLevelHeader[1] >>> 5) & 0b111);
@@ -2520,7 +2499,7 @@ function load(lvlNum) {
     midScrNum = (secondaryLevelHeader[2] >>> 4) & 0b1111;
     enterX = ((((secondaryLevelHeader[4] >>> 2) & 0b11) << 3) | (secondaryLevelHeader[1] >>> 0) & 0b111);
     enterY = (((secondaryLevelHeader[6] & 0b111111) << 4) | ((secondaryLevelHeader[0] >>> 0) & 0b1111));
-    if (lmModified && lunarMagicVer < 3.0) {
+    if (isLMModified && lmVer < 3.0) {
         enterX = ((((secondaryLevelHeader[4] >>> 3) & 0b1) << 3) | (secondaryLevelHeader[1] >>> 0) & 0b111);
         enterY = ((((secondaryLevelHeader[4] >>> 4) & 0b1) << 4) | ((secondaryLevelHeader[0] >>> 0) & 0b1111));
     }
@@ -2546,12 +2525,10 @@ function load(lvlNum) {
     enterLeft = (secondaryLevelHeader[7] >>> 6) & 1;
     bgHeight = (secondaryLevelHeader[7] >>> 0) & 0b11111;
     levelNum = lvlNum;
+    levelMode = lvlMode;
     editMode = "layer1";
     isBGEdited = false;
-    isLMModified = lmModified;
     levelMode = lvlMode;
-    lmVer = lunarMagicVer;
-    romType = fileType;
     bypassedMusic = -1;
     isTimeBypassed = false;
     sprGFXindex = -1;
@@ -2560,7 +2537,7 @@ function load(lvlNum) {
     horizontalLevelMode = 0;
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
-    if (lmModified && lunarMagicVer === 3.0) {
+    if (isLMModified && lmVer === 3.0) {
         // TB0MMMMM 
         const pointer = read3(read3(0x05D9A2) + 70) + lvlNum;
         const extHeader = read1(pointer);
@@ -2573,7 +2550,7 @@ function load(lvlNum) {
             throw new Error("extended header is not valid.");
         }
     }
-    if (lmModified) {
+    if (isLMModified) {
         const pointer = read3(read3(0x05D9E4) + 0x0A);
         const addr1 = pointer + (512 * 0) + lvlNum;
         const addr2 = pointer + (512 * 1) + lvlNum;
@@ -2583,12 +2560,12 @@ function load(lvlNum) {
         let hdr2 = read1(addr2);
         let hdr3 = read1(addr3);
         let hdr4 = read1(addr4);
-        if (lunarMagicVer < 3.0) {
+        if (lmVer < 3.0) {
             hdr4 = 0;
         }
         midSlippery = hdr1 >>> 7;
         midWater = (hdr1 >>> 6) & 0b1;
-        if (lunarMagicVer >= 3.0) {
+        if (lmVer >= 3.0) {
             separateMidway = (hdr1 >>> 5) & 0b1;
         }
         else {
@@ -2597,7 +2574,7 @@ function load(lvlNum) {
         midScrNum = midMidScrNum = (((hdr1 >>> 4) & 0b1) << 4) | (midScrNum & 0b1111);
         midwayY = (hdr2 >>> 4);
         midwayX = (hdr2 & 0b1111);
-        if (lunarMagicVer >= 3.0) {
+        if (lmVer >= 3.0) {
             midwayY = ((hdr4 & 0b111111) << 4) | midwayY;
             midwayX = (((hdr1 >>> 3) & 0b1) << 4) | midwayX;
         }
@@ -2606,21 +2583,21 @@ function load(lvlNum) {
         }
         midAction = hdr1 & 0b111;
         midBgfgIsRelativeToPlayer = 0;
-        if (lunarMagicVer >= 3.0) {
+        if (lmVer >= 3.0) {
             midBgfgIsRelativeToPlayer = hdr3 >>> 7;
         }
         midwayFG = (hdr3 >>> 2) & 0b11;
         midwayBG = (hdr3 >>> 0) & 0b11;
         midOffset = hdr3 & 0b1111;
-        if (lunarMagicVer >= 3.0) {
+        if (lmVer >= 3.0) {
             midOffset |= ((hdr4 >>> 6) & 0b1) << 4;
         }
         midEnterLeft = 0;
-        if (lunarMagicVer >= 3.0) {
+        if (lmVer >= 3.0) {
             midEnterLeft = (hdr3 >>> 6) & 1;
         }
         midwayRedirect = 0;
-        if (lunarMagicVer >= 3.0) {
+        if (lmVer >= 3.0) {
             midwayRedirect = (hdr3 >>> 5) & 0b1;
         }
         midwayRedirectLevelNum = 0;
@@ -2669,7 +2646,7 @@ function load(lvlNum) {
     // Get back area color
     bgColor = getBackAreaColor(backAreaColorNum);
     // get custom palette
-    if (lmModified) {
+    if (isLMModified) {
         customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
         if (customPaletteAddr !== 0) {
             pal = getCustomPalette(customPaletteAddr, !!disableOrgLevelPalAni);
@@ -2688,7 +2665,7 @@ function load(lvlNum) {
     /* get secondary exits */
     secondExits = getSecondaryExits();
     /* Get Layer 2 Objects */
-    if (lmModified) {
+    if (isLMModified) {
         const header = fileData[snes2pc(0x0EF310 + lvlNum)];
         const v = (header >>> 3) & 0b1;
         const c = (header >>> 1) & 0b1;
@@ -7338,17 +7315,13 @@ function fileOpen() {
                     return;
                 }
             }
-            let result;
             try {
-                result = load(levelNum);
+                loadROM(levelNum, fileData);
             }
             catch (e) {
                 throw e;
                 //alert(e.message);
-                //return false;
-            }
-            if (!result) {
-                return false;
+                //unload();
             }
             btnOpen.disabled = true;
             btnPalette.disabled = false;
@@ -9906,4 +9879,29 @@ function compress_lz2(data) {
         throw new Error();
     }
     return output;
+}
+function checkRomFileSize(fileData, header = true) {
+    // check the file size
+    let headerSize = 0;
+    if (header) {
+        headerSize = 0x200;
+    }
+    switch (fileData.length) {
+        case 524288 + headerSize:
+        case 1048576 + headerSize:
+        case 1572864 + headerSize:
+        case 2097152 + headerSize:
+        case 2621440 + headerSize:
+        case 3145728 + headerSize:
+        case 3670016 + headerSize:
+        case 4194304 + headerSize:
+        case 6291456 + headerSize:
+        case 8388608 + headerSize:
+            return true;
+            break;
+        default:
+            throw new Error("Wrong File Size: " + fileData.length);
+            return false;
+            break;
+    }
 }
