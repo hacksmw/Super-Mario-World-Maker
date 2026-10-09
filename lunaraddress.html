@@ -631,7 +631,7 @@ function snes2pc(snes, type, header = true) {
             result = head + (snes & 0x3FFFFF);
             break;
         case "ExHiROM":
-            result = (snes & 0x3FFFFF) + head + ((snes > 0x800000 ? 0x400000 : 0));
+            result = (snes & 0x3FFFFF) + head + ((snes < 0x800000 ? 0x400000 : 0));
             break;
         case "ExLoROM":
             result = head + ((snes & 0x7FFF) | ((snes >>> 1) & 0x3F8000)) + (snes < 0x800000? 0x400000 : 0);
