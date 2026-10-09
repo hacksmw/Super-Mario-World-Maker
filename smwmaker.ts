@@ -4245,30 +4245,68 @@ function getCompressedGraphicsAddr(index: number) {
     return addr;
 }
 
+function getUncompressedGFX(num: number, direct: boolean = false) {
+    let offset: any;
+
+    if (direct) {
+        offset = snes2pc(num);    
+    } else if (num === 0x7F) {
+        return [];
+    } else {
+        offset = getCompressedGraphicsAddr(num);
+    }
+
+    return decompress_lz2(fileData.slice(offset));
+}
+
 function loadGraphics() {
     let fg1gfx: number[], fg2gfx: number[], bggfx: number[], fg3gfx: number[];
     let sp1gfx: number[], sp2gfx: number[], sp3gfx: number[], sp4gfx: number[];
     let bg2gfx: number[], bg3gfx: number[];
     let anigfx: number[], ani2gfx: number[];
     let mariogfx: number[];
-     
 
     // get tileset
+
+    if ((fgbgGFX >= tilesetList.length)) {
+        throw new Error();
+    }
+
     tileset = tilesetList[fgbgGFX];
 
     /* Get Level's graphics number */
-    fg1 = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 0)];
-    fg2 = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 1)];
-    bg  = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 2)];
-    fg3 = fileData[snes2pc((0xA92B) + (4*fgbgGFX) + 3)];
+
+    fg1 = read1((0xA92B) + (4*fgbgGFX) + 0);
+    fg2 = read1((0xA92B) + (4*fgbgGFX) + 1);
+    bg  = read1((0xA92B) + (4*fgbgGFX) + 2);
+    fg3 = read1((0xA92B) + (4*fgbgGFX) + 3);
+
     bg2 = 0x7f;
     bg3 = 0x7f;
     ani2 = 0x7f;
 
-    sp1 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 0))];
-    sp2 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 1))];
-    sp3 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 2))];
-    sp4 = fileData[snes2pc((spriteGfxTable) + (4*sprGFX + 3))];
+    sp1 = read1((spriteGfxTable) + (4*sprGFX + 0));
+    sp2 = read1((spriteGfxTable) + (4*sprGFX + 1));
+    sp3 = read1((spriteGfxTable) + (4*sprGFX + 2));
+    sp4 = read1((spriteGfxTable) + (4*sprGFX + 3));
+
+    /* Load GFX */
+
+    fg1gfx = getUncompressedGFX(fg1);
+    fg2gfx = getUncompressedGFX(fg2);
+    bggfx  = getUncompressedGFX(bg);
+    fg3gfx = getUncompressedGFX(fg3);  
+
+    // Sprite Graphics
+
+    sp1gfx = getUncompressedGFX(sp1);
+    sp2gfx = getUncompressedGFX(sp2);
+    sp3gfx = getUncompressedGFX(sp3);
+    sp4gfx = getUncompressedGFX(sp4);
+
+    bg2gfx  = getUncompressedGFX(bg2);
+    bg3gfx  = getUncompressedGFX(bg3);
+    ani2gfx = getUncompressedGFX(ani2);
     
     if (isLMModified && lmVer >= 1.62) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
@@ -4280,7 +4318,7 @@ function loadGraphics() {
         if (superGFXBypass) {
             fg1 = read2(pointer + (2 * 7)) & 0b1111_1111_1111;
             fg2 = read2(pointer + (2 * 6)) & 0b1111_1111_1111;
-            bg = read2(pointer + (2 * 5)) & 0b1111_1111_1111;
+            bg =  read2(pointer + (2 * 5)) & 0b1111_1111_1111;
             fg3 = read2(pointer + (2 * 4)) & 0b1111_1111_1111;
             bg2 = read2(pointer + (2 * 3)) & 0b1111_1111_1111;
             bg3 = read2(pointer + (2 * 2)) & 0b1111_1111_1111;
@@ -4292,56 +4330,53 @@ function loadGraphics() {
             sp3 = read2(pointer + (2 * 9)) & 0b1111_1111_1111;
             sp4 = read2(pointer + (2 * 8)) & 0b1111_1111_1111;
         }
-
     } else {
         superGFXBypass = false;
     }
 
-    /* Get Compressed Graphics and Decompress */
+    if (superGFXBypass) {
+        try {
+            // FG/BG GFX
 
-    // FG/BG graphics;
-    
-    fg1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg1)));
-    fg2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg2)));
-    bggfx  = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg )));
-    fg3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(fg3)));  
+            fg1gfx = getUncompressedGFX(fg1)
+            fg2gfx = getUncompressedGFX(fg2)
+            bggfx  = getUncompressedGFX(bg)
+            fg3gfx = getUncompressedGFX(fg3);  
 
-    if (bg2 !== 0x7f) {
-        bg2gfx  = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg2)));
+            // Sprite Graphics
+
+            sp1gfx = getUncompressedGFX(sp1);
+            sp2gfx = getUncompressedGFX(sp2);
+            sp3gfx = getUncompressedGFX(sp3);
+            sp4gfx = getUncompressedGFX(sp4);
+
+            bg2gfx  = getUncompressedGFX(bg2);
+            bg3gfx  = getUncompressedGFX(bg3);
+            ani2gfx = getUncompressedGFX(ani2);
+
+        } catch (e: any) {
+        }
     }
-
-    if (bg3 !== 0x7f) {
-        bg3gfx  = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(bg3)));
-    }
-
-    if (ani2 !== 0x7f) {
-        ani2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(ani2)));
-    }
-
-    // Sprite Graphics
-
-    sp1gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp1)));
-    sp2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp2)));
-    sp3gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp3)));
-    sp4gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(sp4)));
 
     // Animation graphics
+
     let gfx33Pointer: number = 0x8bfc0;
-    let gfx32Pointer: number = 0x88000;
 
     if (isLMModified) {
         gfx33Pointer = (((read1(0x00B890) << 16) | read2(0x00B88B)));
     }
 
+    anigfx = getUncompressedGFX(gfx33Pointer, true);
+
+    let gfx32Pointer: number = 0x88000;
     
     if (isLMModified) {
         gfx32Pointer = (((read1(0x00B890) << 16) | read2(0x00B8D8)));    
     }
-
-    anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
-    mariogfx = decompress_lz2(fileData.slice(snes2pc(gfx32Pointer)));
     
-    /* Convert Graphics */
+    mariogfx = getUncompressedGFX(gfx32Pointer, true);
+
+    // check bpp
 
     if (read1(0x0480D0) === 96) {
         console.log("4bpp");
@@ -4350,6 +4385,8 @@ function loadGraphics() {
         console.log("3bpp");
         is4bpp = false;
     }
+
+    /* Convert Graphics */
 
     fg1bmp = convertGraphics(fg1gfx, is4bpp);
     fg2bmp = convertGraphics(fg2gfx, is4bpp);
@@ -4361,46 +4398,14 @@ function loadGraphics() {
     orgBgbmp = structuredClone(bgbmp);
     orgFg3bmp = structuredClone(fg3bmp);
 
-    if (bg2 === 0x7f) {
-        bg2bmp = new Array(0x80);    
-        for (let i = 0; i < 0x80; i++) {
-            bg2bmp[i] = new Array(64);
-            for (let j = 0; j < 64; j++) {
-                bg2bmp[i][j] = 0;
-            }
-        }
-    } else {
-        bg2bmp = convertGraphics(bg2gfx!, is4bpp);
-    }
-
+    bg2bmp = convertGraphics(bg2gfx!, is4bpp);
     orgBg2bmp = structuredClone(bg2bmp);
 
-    if (bg3 === 0x7f) {
-        bg3bmp = new Array(0x80);    
-        for (let i = 0; i < 0x80; i++) {
-            bg3bmp[i] = new Array(64);
-            for (let j = 0; j < 64; j++) {
-                bg3bmp[i][j] = 0;
-            }
-        }
-    } else {
-        bg3bmp = convertGraphics(bg3gfx!, is4bpp);
-    }
-
+    bg3bmp = convertGraphics(bg3gfx!, is4bpp);
     orgBg3bmp = structuredClone(bg3bmp);
-
-    if (ani2 === 0x7f) {
-        ani2bmp = new Array(0x80);
-        for (let i = 0; i < 0x80; i++) {
-            ani2bmp[i] = new Array(64);
-            for (let j = 0; j < 64; j++) {
-                ani2bmp[i][j] = 0;
-            }
-        }
-    } else {
-        ani2bmp = convertGraphics(ani2gfx!, is4bpp)
-    }
-
+    
+    ani2bmp = convertGraphics(ani2gfx, is4bpp);
+    
     anibmp = convertGraphics(anigfx, is4bpp);
     mariobmp = convertGraphics(mariogfx, is4bpp);
 
@@ -8259,6 +8264,17 @@ function loadBG(bgPointer: number): Nullable<number[]> {
 }
 
 function convertGraphics(org: number[], is4bpp: boolean = false) {
+    if (org.length === 0) {
+        const result = new Array(0x80);    
+        for (let i = 0; i < 0x80; i++) {
+            result[i] = new Array(64);
+            for (let j = 0; j < 64; j++) {
+                result[i][j] = 0;
+            }
+        }
+        return result;
+    }
+    
     if (is4bpp) {
         return convertGraphics4bpp(org);
     } else {
@@ -8266,7 +8282,7 @@ function convertGraphics(org: number[], is4bpp: boolean = false) {
     }
 }
 
-function convertGraphics3bpp(org: number[]) {
+function convertGraphics3bpp(org: number[]) {   
     let bitmapTiles: number[][] = new Array(16 * 8);
     const limit: number = 768;
     for (let i = 0; i < limit; i++) {
@@ -10154,7 +10170,6 @@ function decompress_lz2(data: Uint8Array): number[] {
                 }
                 break;
             default:
-                debugger;
                 throw new Error('unknown command 0b' + (data[pointer] >>> 5).toString(2));
         }
     }
