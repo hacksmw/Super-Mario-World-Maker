@@ -2419,50 +2419,36 @@ function loadROM(lvlNum = 0x105, fileData) {
     loadLevel(lvlNum);
 }
 function loadLevel(lvlNum) {
-    let high, low, bank;
-    let primaryLevelHeader;
-    let secondaryLevelHeader;
     /* Get Layer1, Layer2, Sprite Data Pointer */
-    low = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 0)];
-    high = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 1)];
-    bank = fileData[snes2pc(layer1DatasTable + (3 * lvlNum) + 2)];
-    layer1DataPointer = (bank << 16) | (high << 8) | low;
-    if (snes2pc(layer1DataPointer) >= fileData.length) {
-        throw new Error("Layer 1 Data Pointer is too large.");
-    }
-    low = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 0)];
-    high = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 1)];
-    bank = fileData[snes2pc(layer2DatasTable + (3 * lvlNum) + 2)];
-    layer2DataPointer = (bank << 16) | (high << 8) | low;
-    if (snes2pc(layer2DataPointer) >= fileData.length) {
-        if ((layer2DataPointer >>> 16) !== 0xFF) {
-            throw new Error("Layer 2 Data Pointer is too large.");
-        }
-    }
-    low = fileData[snes2pc(spriteDataTable + (2 * lvlNum) + 0)];
-    high = fileData[snes2pc(spriteDataTable + (2 * lvlNum) + 1)];
+    layer1DataPointer = read3(layer1DatasTable + (3 * lvlNum));
+    layer2DataPointer = read3(layer2DatasTable + (3 * lvlNum));
+    let sprDataOffset, sprDataBank;
+    sprDataOffset = read2(spriteDataTable + (2 * lvlNum));
     if (!isLMModified) {
-        bank = 0x07;
+        sprDataBank = 0x07;
     }
     else {
-        bank = fileData[snes2pc(0x0EF100 + lvlNum)];
+        sprDataBank = read1(0x0EF100 + lvlNum);
     }
-    spriteDataPointer = (bank << 16) | (high << 8) | low;
-    if (snes2pc(spriteDataPointer) >= fileData.length) {
-        throw new Error("Sprite Data Pointer is too large.");
-    }
+    spriteDataPointer = (sprDataBank << 16) | sprDataOffset;
+    // check the overflow.
+    read3(layer1DataPointer);
+    read3(layer2DataPointer);
+    read3(spriteDataPointer);
     /* Get Level Header */
+    let primaryLevelHeader;
+    let secondaryLevelHeader;
     primaryLevelHeader = new Array(5);
-    primaryLevelHeader[0] = fileData[snes2pc(layer1DataPointer + 0)];
-    primaryLevelHeader[1] = fileData[snes2pc(layer1DataPointer + 1)];
-    primaryLevelHeader[2] = fileData[snes2pc(layer1DataPointer + 2)];
-    primaryLevelHeader[3] = fileData[snes2pc(layer1DataPointer + 3)];
-    primaryLevelHeader[4] = fileData[snes2pc(layer1DataPointer + 4)];
+    primaryLevelHeader[0] = read1(layer1DataPointer + 0);
+    primaryLevelHeader[1] = read1(layer1DataPointer + 1);
+    primaryLevelHeader[2] = read1(layer1DataPointer + 2);
+    primaryLevelHeader[3] = read1(layer1DataPointer + 3);
+    primaryLevelHeader[4] = read1(layer1DataPointer + 4);
     secondaryLevelHeader = new Array(4);
-    secondaryLevelHeader[0] = fileData[snes2pc(0x05F000 + lvlNum)];
-    secondaryLevelHeader[1] = fileData[snes2pc(0x05F200 + lvlNum)];
-    secondaryLevelHeader[2] = fileData[snes2pc(0x05F400 + lvlNum)];
-    secondaryLevelHeader[3] = fileData[snes2pc(0x05F600 + lvlNum)];
+    secondaryLevelHeader[0] = read1(0x05F000 + lvlNum);
+    secondaryLevelHeader[1] = read1(0x05F200 + lvlNum);
+    secondaryLevelHeader[2] = read1(0x05F400 + lvlNum);
+    secondaryLevelHeader[3] = read1(0x05F600 + lvlNum);
     secondaryLevelHeader[4] = 0;
     secondaryLevelHeader[5] = 0;
     secondaryLevelHeader[6] = 0;
@@ -9316,9 +9302,23 @@ function decompress_rle1(data) {
     return output;
 }
 function read3(address) {
+    const addr = snes2pc(address);
+    /*
+    if (addr >= fileData.length) {
+        debugger;
+        throw new Error("pointer is bigger than rom");
+    }
+    */
     return ((fileData[snes2pc(address + 2)] << 16) | (((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
 }
 function read2(address) {
+    const addr = snes2pc(address);
+    /*
+    if (addr >= fileData.length) {
+        debugger;
+        throw new Error("pointer is bigger than rom");
+    }
+    */
     return ((((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
 }
 function read1(address) {
