@@ -3592,7 +3592,6 @@ function loadGraphics() {
     if (isLMModified) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
         superGFXBypass = !!(read2(pointer) >>> 15);
-        console.log("superGFXBypass: " + superGFXBypass);
         if (superGFXBypass) {
             fg1 = read2(pointer + (2 * 7)) & 4095;
             fg2 = read2(pointer + (2 * 6)) & 4095;
@@ -3952,13 +3951,11 @@ function load16x16() {
         ];
         const isPage2TilesetSpecific = (read1(0x06F547) !== 0 ? true : false);
         if (isPage2TilesetSpecific) {
-            console.log("Tileset Specific");
             const pointer = ((read1(0x06F58A) << 16) | (read2(0x06F586))) + 0x1000;
             const address = pointer + (fgbgGFX << 11);
             getMap16(0x200, 0x2FF, address, blocks);
         }
         else {
-            console.log("Not Tileset Specific");
             const pointer = pointers[0];
             getMap16(0x200, 0x2FF, pointer, blocks);
         }
