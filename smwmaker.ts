@@ -3938,9 +3938,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                         }
                         break;
                     default:
-                        log("Undefined object: " + objNum.toString(16));
-                        alert("Undefined object: " + objNum.toString(16));
-                        unload();
+                        throw new Error("Undefined object: " + objNum.toString(16))
                         break;
                 }
             }
@@ -8388,10 +8386,8 @@ function fileOpen(): void {
             try {
                 loadROM(levelNum, fileData);
             } catch (e: any) {
-                debugger;
-                throw e;
-                //alert(e.message);
-                //unload();
+                alert(e.message)
+                unload();
             }
 
 
