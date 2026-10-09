@@ -176,6 +176,7 @@ let fgbgGFXindex;
 let customPaletteAddr;
 let useNewSpriteSystem;
 let anibmp, ani2bmp;
+let mariobmp;
 let is4bpp;
 let bg2, bg3;
 let superGFXBypass;
@@ -2800,7 +2801,6 @@ function exAniIndex2div(index) {
         return value;
     }
     else if (0x900 <= index && index <= 0xBE7) {
-        throw new Error("unimplemented");
         return index - 0x900;
     }
     else {
@@ -2817,8 +2817,7 @@ function exAniIndex2gfx(index) {
         throw new Error("undefined");
     }
     else if (0x900 <= index && index <= 0xBE7) {
-        throw new Error("unimplemented");
-        //return index - 0x900;
+        return mariobmp;
     }
     else {
         throw new Error();
@@ -2838,9 +2837,11 @@ function renderExAnimation() {
                 if (ani.frameData[0] >= 0x10000) {
                     continue;
                 }
+                /*
                 if (0x900 <= ani.frameData[0] && ani.frameData[0] <= 0xBE7) {
                     continue;
                 }
+                */
                 let count;
                 switch (type) {
                     case 0:
@@ -3574,6 +3575,7 @@ function loadGraphics() {
     let sp1gfx, sp2gfx, sp3gfx, sp4gfx;
     let bg2gfx, bg3gfx;
     let anigfx, ani2gfx;
+    let mariogfx;
     // get tileset
     tileset = tilesetList[fgbgGFX];
     /* Get Level's graphics number */
@@ -3640,6 +3642,7 @@ function loadGraphics() {
         gfx32Pointer = (((read1(0x00B890) << 16) | read2(0x00B8D8)));
     }
     anigfx = decompress_lz2(fileData.slice(snes2pc(gfx33Pointer)));
+    mariogfx = decompress_lz2(fileData.slice(snes2pc(gfx32Pointer)));
     /* Convert Graphics */
     if (read1(0x0480D0) === 96) {
         is4bpp = true;
@@ -3694,6 +3697,7 @@ function loadGraphics() {
         ani2bmp = convertGraphics(ani2gfx, is4bpp);
     }
     anibmp = convertGraphics(anigfx, is4bpp);
+    mariobmp = convertGraphics(mariogfx, is4bpp);
     sp1bmp = convertGraphics(sp1gfx, is4bpp);
     sp2bmp = convertGraphics(sp2gfx, is4bpp);
     sp3bmp = convertGraphics(sp3gfx, is4bpp);
@@ -3721,6 +3725,12 @@ function original_animation() {
     animate_4_8x8s_line(fg2bmp, anibmp, 0x6A, 0xD8);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x70, 0x110);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x7C, 0x178);
+    if (isLMModified) {
+        fg2bmp[0x00 + 0] = mariobmp[0x2E0 + 0];
+        fg2bmp[0x00 + 1] = mariobmp[0x2E0 + 1];
+        fg2bmp[0x10 + 0] = mariobmp[0x2E0 + 2];
+        fg2bmp[0x10 + 1] = mariobmp[0x2E0 + 3];
+    }
     if (tileset === 0) {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
