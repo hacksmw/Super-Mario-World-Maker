@@ -2430,6 +2430,7 @@ function loadLevel(lvlNum) {
     }
     else {
         sprDataBank = read1(0x0EF100 + lvlNum);
+        console.log("sprDataBank: " + sprDataBank.toString(16));
     }
     spriteDataPointer = (sprDataBank << 16) | sprDataOffset;
     // check overflow.

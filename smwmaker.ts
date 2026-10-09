@@ -2862,6 +2862,7 @@ function loadLevel(lvlNum: number): boolean {
         sprDataBank = 0x07;
     } else {
         sprDataBank = read1(0x0EF100 + lvlNum);
+        console.log("sprDataBank: " + sprDataBank.toString(16));
     }
 
     spriteDataPointer = (sprDataBank << 16) | sprDataOffset;
