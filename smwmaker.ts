@@ -2878,7 +2878,11 @@ function loadLevel(lvlNum: number): boolean {
             read3(realLayer2DataPointer);
         }
     } else {
-        //read3(layer2DataPointer);
+        if ((layer2DataPointer >>> 16) === 0xFF) {
+            const realLayer2DataPointer = 0x0C0000 | (layer2DataPointer & 0xFFFF);
+            read3(realLayer2DataPointer);
+        }
+        read3(layer2DataPointer);
     }
 
     read3(spriteDataPointer); 
@@ -3166,16 +3170,15 @@ label:
     /* Load ExAnimation */
     loadExAnimations(); 
 
-    if (isLMModified) {
-        renderExAnimation();
-    }
+    renderExAnimation();
 
     /* get secondary exits */
     secondExits = getSecondaryExits();
 
     /* Get Layer 2 Objects */
+
     if (isLMModified) {
-        const header = fileData[snes2pc(0x0EF310 + lvlNum)];
+        const header = read1(0x0EF310 + lvlNum);
         
         const v = (header >>> 3) & 0b1;
         const c = (header >>> 1) & 0b1;
@@ -3185,6 +3188,7 @@ label:
         } else {
             isLayer2 = false;
         }
+
         isLayer2 = (layer2List[levelMode] == 1);
     } else {
         isLayer2 = (layer2List[levelMode] == 1);
@@ -3321,6 +3325,8 @@ function exAniIndex2gfx(index: number) {
 }
 
 function renderExAnimation() {
+    if (!isLMModified) return;
+
     const allAnis: ExAni[][] = [globalAnis, levelAnis];
 
     for (let i: number = 0; i < allAnis.length; i++) {

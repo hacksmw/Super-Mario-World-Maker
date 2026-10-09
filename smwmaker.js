@@ -2443,7 +2443,11 @@ function loadLevel(lvlNum) {
         }
     }
     else {
-        //read3(layer2DataPointer);
+        if ((layer2DataPointer >>> 16) === 0xFF) {
+            const realLayer2DataPointer = 0x0C0000 | (layer2DataPointer & 0xFFFF);
+            read3(realLayer2DataPointer);
+        }
+        read3(layer2DataPointer);
     }
     read3(spriteDataPointer);
     /* Get Level Header */
@@ -2665,14 +2669,12 @@ function loadLevel(lvlNum) {
     load16x16();
     /* Load ExAnimation */
     loadExAnimations();
-    if (isLMModified) {
-        renderExAnimation();
-    }
+    renderExAnimation();
     /* get secondary exits */
     secondExits = getSecondaryExits();
     /* Get Layer 2 Objects */
     if (isLMModified) {
-        const header = fileData[snes2pc(0x0EF310 + lvlNum)];
+        const header = read1(0x0EF310 + lvlNum);
         const v = (header >>> 3) & 0b1;
         const c = (header >>> 1) & 0b1;
         if (v === 0 && c === 0) {
@@ -2808,6 +2810,8 @@ function exAniIndex2gfx(index) {
     }
 }
 function renderExAnimation() {
+    if (!isLMModified)
+        return;
     const allAnis = [globalAnis, levelAnis];
     for (let i = 0; i < allAnis.length; i++) {
         let anis = allAnis[i];
