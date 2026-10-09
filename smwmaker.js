@@ -2442,7 +2442,7 @@ function loadLevel(lvlNum) {
         }
     }
     else {
-        read3(layer2DataPointer);
+        //read3(layer2DataPointer);
     }
     read3(spriteDataPointer);
     /* Get Level Header */
@@ -2543,12 +2543,14 @@ function loadLevel(lvlNum) {
         showBottomRowOfTheLevel = (extHeader >>> 6) & 0b1;
         levelUsesEitherLayer2OrLayer3 = (extHeader >>> 7) & 0b1;
         zero = (extHeader >>> 5) & 0b1;
+        console.log("horizontalLevelMode: " + horizontalLevelMode.toString(16));
+        console.log("showBottomRowOfTheLevel: " + showBottomRowOfTheLevel.toString(16));
         if (zero !== 0) {
             throw new Error("extended header is not valid.");
         }
     }
     // read midway information
-    if (isLMModified) {
+    if (isLMModified && lmVer >= 2.20) {
         const pointer = read3(read3(0x05D9E4) + 0x0A);
         const addr1 = pointer + (512 * 0) + lvlNum;
         const addr2 = pointer + (512 * 1) + lvlNum;
@@ -2626,7 +2628,7 @@ function loadLevel(lvlNum) {
         sprGFX = 0;
     }
     // read level's animation settings
-    if (isLMModified) {
+    if (isLMModified && lmVer >= 1.80) {
         const levelAnimationSettings = read1(0x03FE00 + levelNum);
         disableOrgLevelPalAni = (levelAnimationSettings >>> 7) & 1;
         disableOrgLevelAni = (levelAnimationSettings >>> 6) & 1;
@@ -2647,7 +2649,7 @@ function loadLevel(lvlNum) {
     // get custom palette
     if (isLMModified) {
         customPaletteAddr = read3(0x0EF600 + (3 * lvlNum));
-        if (customPaletteAddr !== 0) {
+        if (customPaletteAddr !== 0 && customPaletteAddr !== 0xFFFFFF) {
             pal = getCustomPalette(customPaletteAddr, !!disableOrgLevelPalAni);
             bgColor = getCustomBackAreaColor(customPaletteAddr);
         }
@@ -2917,7 +2919,7 @@ function renderExAnimation() {
 function loadExAnimations() {
     levelAnis = [];
     globalAnis = [];
-    if (isLMModified) {
+    if (isLMModified && lmVer >= 1.62) {
         const globalAnisPointer = read1(read3(0x0583AE) + 0x5C) << 8 + (read2(read3(0x0583AE) + 0x65));
         const lvlAnisPointer = (read3(read3(0x0583ae) + 0xEA) + 3 * levelNum);
         if (read2(read3(0x0583ae) + 0x5B) !== 0) {
@@ -3589,9 +3591,10 @@ function loadGraphics() {
     sp2 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 1))];
     sp3 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 2))];
     sp4 = fileData[snes2pc((spriteGfxTable) + (4 * sprGFX + 3))];
-    if (isLMModified) {
+    if (isLMModified && lmVer >= 1.62) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
         superGFXBypass = !!(read2(pointer) >>> 15);
+        console.log("superGFXBypass: " + superGFXBypass);
         if (superGFXBypass) {
             fg1 = read2(pointer + (2 * 7)) & 4095;
             fg2 = read2(pointer + (2 * 6)) & 4095;
@@ -3642,9 +3645,11 @@ function loadGraphics() {
     mariogfx = decompress_lz2(fileData.slice(snes2pc(gfx32Pointer)));
     /* Convert Graphics */
     if (read1(0x0480D0) === 96) {
+        console.log("4bpp");
         is4bpp = true;
     }
     else {
+        console.log("3bpp");
         is4bpp = false;
     }
     fg1bmp = convertGraphics(fg1gfx, is4bpp);
@@ -3802,7 +3807,7 @@ function getSecondaryExits() {
         header2 = read1(table2 + i);
         header3 = read1(table3 + i);
         header4 = read1(table4 + i);
-        if (isLMModified) {
+        if (isLMModified && lmVer >= 3.0) {
             header5 = read1(read3(0x05DC86) + i);
             header6 = read1(read3(0x05DC8B) + i);
         }
@@ -3981,6 +3986,9 @@ function load16x16() {
             if (bgPointer === 0)
                 break;
             for (let i = 0x0; i < 0x10; i++) {
+                if (k === 0 && (i === 0 || i === 1)) {
+                    continue;
+                }
                 const start = (k * 0x1000) + (i * 0x100);
                 const end = start + (0x100 - 1);
                 const address = bgPointer + i * (0x100 * 8);
@@ -4001,7 +4009,7 @@ function getMap16(start, end, tblAddr, blocks) {
         tile.lowright = new TilePart();
         const col = [tile.upleft, tile.lowleft, tile.upright, tile.lowright];
         let actsLike;
-        if (!isLMModified) {
+        if ((!isLMModified) || lmVer < 1.31) {
             actsLike = i;
         }
         else {
@@ -4013,8 +4021,13 @@ function getMap16(start, end, tblAddr, blocks) {
                 actsLike = read2(pointer + (2 * (start + i)));
             }
             else if (pgGroup === 1) {
-                const pointer = pointer2;
-                actsLike = read2(pointer + (2 * ((start - 0x4000) + i)));
+                if (lmVer >= 2.43) {
+                    const pointer = pointer2;
+                    actsLike = read2(pointer + (2 * ((start - 0x4000) + i)));
+                }
+                else {
+                    actsLike = 0x130;
+                }
             }
             else {
                 throw new Error("Map16 tile number is bigger than 0x7FFF.");
