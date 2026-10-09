@@ -3356,13 +3356,24 @@ function renderExAnimation() {
                     case 0:
                         break;
                     case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
                         let srcGfx: number[][];
                         let destGfx: number[][];
 
-                        srcGfx = exAniIndex2gfx(ani.frameData[0]); 
-                        destGfx = index2page(ani.vramDest);
+                        for (let i = 0; i < type; i++) {
+                            const fromIndex = exAniIndex2div(ani.frameData[0] + i);
+                            const toIndex = index2index(ani.vramDest + i);
+                            const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
+                            const destGfx = index2page(ani.vramDest + i);    
 
-                        destGfx[destIndex] = srcGfx[srcIndex];                                   
+                            destGfx[toIndex] = srcGfx[fromIndex];
+                        }
                         
                         break;
                     default:
