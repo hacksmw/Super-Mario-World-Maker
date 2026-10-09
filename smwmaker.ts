@@ -1308,6 +1308,7 @@ function btn16x16_onclick() {
     canvas.id = "cnv16x16";
     canvas.style.border = "1px solid black";
     canvas.width = 16 * 16;
+    canvas.style.backgroundColor = `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`;
     
     let ctx = canvas.getContext("2d");
 
@@ -3431,6 +3432,33 @@ function renderExAnimation() {
                     default:
                         break;
                 }    
+            } else if (0x13 <= type && type <= 0x13 + 8) {
+                let numColor = ani.numColor + 1;
+                if (numColor === 1) {
+                    const color = ani.frameData[0] & 0b111_1111_1111_1111;
+
+                    const r = ((color >>> 0) & 0b11111) * 8;
+                    const g = ((color >>> 5) & 0b11111) * 8;
+                    const b = ((color >>> 10) & 0b11111) * 8;
+
+                    const where = ani.palDest;
+                    const wherex = where % 16;
+                    const wherey = intdiv(where, 16);
+
+                    if (0x13 + 3 <= type && type <= 0x13 + 3 + 1) {
+                        bgColor.r = r;
+                        bgColor.g = g;
+                        bgColor.b = b;
+                    } else {
+                        pal[wherey][wherex].r = r;
+                        pal[wherey][wherex].g = g;
+                        pal[wherey][wherex].b = b;
+                    }
+
+                    
+
+
+                }
             }
 
             
@@ -4286,8 +4314,6 @@ function loadGraphics() {
     }
 
     if (ani2 !== 0x7f) {
-        console.log(ani2.toString(16));
-
         ani2gfx = decompress_lz2(fileData.slice(getCompressedGraphicsAddr(ani2)));
     }
 
