@@ -3338,9 +3338,6 @@ function renderExAnimation() {
             const type: number = ani.type;
 
             if (type < 0x13) {
-                let srcIndex: number = 0;
-                let destIndex: number = 0;
-
                 if (ani.vramDest >= 0x1C00) {
                     continue;
                 }
@@ -3349,8 +3346,7 @@ function renderExAnimation() {
                     continue;
                 }
 
-                srcIndex = exAniIndex2div(ani.frameData[0]);
-                destIndex = index2index(ani.vramDest);
+                let count: number;
                 
                 switch (type) {
                     case 0:
@@ -3363,10 +3359,8 @@ function renderExAnimation() {
                     case 6:
                     case 7:
                     case 8:
-                        let srcGfx: number[][];
-                        let destGfx: number[][];
-
-                        for (let i = 0; i < type; i++) {
+                        count = type;
+                        for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const toIndex = index2index(ani.vramDest + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
@@ -3375,6 +3369,23 @@ function renderExAnimation() {
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
                         
+                        break;
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                    case 14:
+                        count = 8 + (4 * (type - 8));
+                        for (let i = 0; i < count; i++) {
+                            const fromIndex = exAniIndex2div(ani.frameData[0] + i);
+                            const toIndex = index2index(ani.vramDest + i);
+                            const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
+                            const destGfx = index2page(ani.vramDest + i);    
+
+                            destGfx[toIndex] = srcGfx[fromIndex];
+                        }
+
                         break;
                     default:
                         break;

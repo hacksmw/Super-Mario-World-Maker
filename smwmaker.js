@@ -2832,16 +2832,13 @@ function renderExAnimation() {
             const ani = anis[j];
             const type = ani.type;
             if (type < 0x13) {
-                let srcIndex = 0;
-                let destIndex = 0;
                 if (ani.vramDest >= 0x1C00) {
                     continue;
                 }
                 if (ani.frameData[0] >= 0x10000) {
                     continue;
                 }
-                srcIndex = exAniIndex2div(ani.frameData[0]);
-                destIndex = index2index(ani.vramDest);
+                let count;
                 switch (type) {
                     case 0:
                         break;
@@ -2853,9 +2850,23 @@ function renderExAnimation() {
                     case 6:
                     case 7:
                     case 8:
-                        let srcGfx;
-                        let destGfx;
-                        for (let i = 0; i < type; i++) {
+                        count = type;
+                        for (let i = 0; i < count; i++) {
+                            const fromIndex = exAniIndex2div(ani.frameData[0] + i);
+                            const toIndex = index2index(ani.vramDest + i);
+                            const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
+                            const destGfx = index2page(ani.vramDest + i);
+                            destGfx[toIndex] = srcGfx[fromIndex];
+                        }
+                        break;
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                    case 14:
+                        count = 8 + (4 * (type - 8));
+                        for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const toIndex = index2index(ani.vramDest + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
