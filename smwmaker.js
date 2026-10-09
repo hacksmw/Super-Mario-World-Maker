@@ -2359,7 +2359,7 @@ function loadROM(lvlNum = 0x105, fileData) {
     let gameTitle;
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        //throw new Error("Wrong game title");
+        throw new Error("Wrong game title");
     }
     // if rom file is small then expand the rom.
     if (fileData.length < 1048576) {
@@ -2448,19 +2448,20 @@ function loadLevel(lvlNum) {
     // check overflow.
     read3(layer1DataPointer);
     // if original smw
+    /*
     if (!isLMModified) {
         if ((layer2DataPointer >>> 16) === 0xFF) {
             const realLayer2DataPointer = 0x0C0000 | (layer2DataPointer & 0xFFFF);
             read3(realLayer2DataPointer);
         }
-    }
-    else {
+    } else {
         if ((layer2DataPointer >>> 16) === 0xFF) {
             const realLayer2DataPointer = 0x0C0000 | (layer2DataPointer & 0xFFFF);
             read3(realLayer2DataPointer);
         }
         read3(layer2DataPointer);
     }
+    */
     read3(spriteDataPointer);
     /* Get Level Header */
     let primaryLevelHeader;
@@ -3239,6 +3240,9 @@ function loadObjects(lvlNum, layerDataPointer) {
                             if (objNum === 0x24) {
                                 fgbgGFXindex = fgbgGFXi;
                                 sprGFXindex = sprGFXi;
+                                if (!superGFXBypass) {
+                                    loadOldGfxBypass(fgbgGFXindex, sprGFXindex);
+                                }
                                 log("Old GFX Bypass : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));
                             }
                             else {
@@ -3615,6 +3619,46 @@ function getUncompressedGFX(num, direct = false) {
     }
     return decompress_lz2(fileData.slice(offset));
 }
+function loadOldGfxBypass(fgbgGFXIndex, sprGFXIndex) {
+    const fgbgGFXList = getOldGFXBypassList(fgbgGFXIndex);
+    const sprGFXList = getOldGFXBypassList(sprGFXIndex);
+    if (fgbgGFXIndex !== -1) {
+        fg3 = fgbgGFXList[0];
+        bg = fgbgGFXList[1];
+        fg2 = fgbgGFXList[2];
+        fg1 = fgbgGFXList[3];
+    }
+    if (sprGFXIndex !== -1) {
+        sp4 = sprGFXList[0];
+        sp3 = sprGFXList[1];
+        sp2 = sprGFXList[2];
+        sp1 = sprGFXList[3];
+    }
+    const fg1gfx = getUncompressedGFX(fg1);
+    const fg2gfx = getUncompressedGFX(fg2);
+    const bggfx = getUncompressedGFX(bg);
+    const fg3gfx = getUncompressedGFX(fg3);
+    const sp1gfx = getUncompressedGFX(sp1);
+    const sp2gfx = getUncompressedGFX(sp2);
+    const sp3gfx = getUncompressedGFX(sp3);
+    const sp4gfx = getUncompressedGFX(sp4);
+    fg1bmp = convertGraphics(fg1gfx, is4bpp);
+    fg2bmp = convertGraphics(fg2gfx, is4bpp);
+    fg3bmp = convertGraphics(fg3gfx, is4bpp);
+    bgbmp = convertGraphics(bggfx, is4bpp);
+    orgFg1bmp = structuredClone(fg1bmp);
+    orgFg2bmp = structuredClone(fg2bmp);
+    orgBgbmp = structuredClone(bgbmp);
+    orgFg3bmp = structuredClone(fg3bmp);
+    sp1bmp = convertGraphics(sp1gfx, is4bpp);
+    sp2bmp = convertGraphics(sp2gfx, is4bpp);
+    sp3bmp = convertGraphics(sp3gfx, is4bpp);
+    sp4bmp = convertGraphics(sp4gfx, is4bpp);
+    orgSp1bmp = structuredClone(sp1bmp);
+    orgSp2bmp = structuredClone(sp2bmp);
+    orgSp3bmp = structuredClone(sp3bmp);
+    orgSp4bmp = structuredClone(sp4bmp);
+}
 function loadGraphics() {
     let fg1gfx, fg2gfx, bggfx, fg3gfx;
     let sp1gfx, sp2gfx, sp3gfx, sp4gfx;
@@ -3712,10 +3756,6 @@ function loadGraphics() {
         console.log("4bpp");
         is4bpp = true;
     }
-    console.log(read1(0x0095E9).toString());
-    console.log(read1(0x00AACD).toString());
-    console.log(read1(0x00AB02).toString());
-    console.log(read1(0x00B893).toString());
     /* Convert Graphics */
     fg1bmp = convertGraphics(fg1gfx, is4bpp);
     fg2bmp = convertGraphics(fg2gfx, is4bpp);
@@ -9377,6 +9417,7 @@ function decompress_rle1(data) {
 function read3(address) {
     const addr = snes2pc(address);
     if (addr >= fileData.length) {
+        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((fileData[snes2pc(address + 2)] << 16) | (((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
@@ -9384,6 +9425,7 @@ function read3(address) {
 function read2(address) {
     const addr = snes2pc(address);
     if (addr >= fileData.length) {
+        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
@@ -9391,6 +9433,7 @@ function read2(address) {
 function read1(address) {
     const addr = snes2pc(address);
     if (addr >= fileData.length) {
+        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return fileData[addr + 0];
