@@ -2775,7 +2775,7 @@ function loadROM(lvlNum: number = 0x105, fileData: Uint8Array) {
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
 
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        throw new Error("Wrong game title");
+        //throw new Error("Wrong game title");
     }
     
     // if rom file is small then expand the rom.
@@ -4385,14 +4385,22 @@ function loadGraphics() {
     mariogfx = getUncompressedGFX(gfx32Pointer, true);
 
     // check bpp
+    is4bpp = false;
 
     if (read1(0x0480D0) === 96) {
         console.log("4bpp");
         is4bpp = true;
-    } else {
-        console.log("3bpp");
-        is4bpp = false;
     }
+
+    if (read1(0x0095E9) === 92) {
+        console.log("4bpp");
+        is4bpp = true;
+    }
+
+    console.log(read1(0x0095E9).toString());
+    console.log(read1(0x00AACD).toString());
+    console.log(read1(0x00AB02).toString());
+    console.log(read1(0x00B893).toString());
 
     /* Convert Graphics */
 
@@ -8386,6 +8394,7 @@ function fileOpen(): void {
             try {
                 loadROM(levelNum, fileData);
             } catch (e: any) {
+                throw e;
                 alert(e.message)
                 unload();
             }
