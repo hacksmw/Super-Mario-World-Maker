@@ -3476,15 +3476,13 @@ function loadExAnimations() {
         }
         
         
-        if (globalAnisPointer && read2(read3(0x0583ae)+0x5B) !== 0) {
+        if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae)+0x5B) !== 0) {
             loadExAnimation(globalAnisPointer, globalAnis); 
         }
 
         if (lvlAnisPointer && read1(lvlAnisPointer + 1) !== 0) {
             loadExAnimation(lvlAnisPointer, levelAnis); 
         }
-
-
     }   
 }
 
@@ -3540,7 +3538,7 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
         if (bit === 1) {
             count++;
         }
-    }   
+    }
     
     for (let i = 0; i <= highestUsedAniSlot; i++) {
         const index = read2(tbl+8+count+(i*2));

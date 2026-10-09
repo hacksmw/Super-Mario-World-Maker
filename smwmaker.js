@@ -2939,7 +2939,7 @@ function loadExAnimations() {
         catch (e) {
             lvlAnisPointer = 0;
         }
-        if (globalAnisPointer && read2(read3(0x0583ae) + 0x5B) !== 0) {
+        if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae) + 0x5B) !== 0) {
             loadExAnimation(globalAnisPointer, globalAnis);
         }
         if (lvlAnisPointer && read1(lvlAnisPointer + 1) !== 0) {
