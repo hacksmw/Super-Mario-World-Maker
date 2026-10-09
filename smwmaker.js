@@ -2838,6 +2838,9 @@ function renderExAnimation() {
                 if (ani.frameData[0] >= 0x10000) {
                     continue;
                 }
+                if (0x900 <= ani.frameData[0] && ani.frameData[0] <= 0xBE7) {
+                    continue;
+                }
                 let count;
                 switch (type) {
                     case 0:
