@@ -2857,6 +2857,7 @@ function loadLevel(lvlNum: number): boolean {
 
     sprDataOffset = read2(spriteDataTable + (2 * lvlNum));
 
+    // if original smw
     if (!isLMModified) {
         sprDataBank = 0x07;
     } else {
@@ -2865,11 +2866,21 @@ function loadLevel(lvlNum: number): boolean {
 
     spriteDataPointer = (sprDataBank << 16) | sprDataOffset;
 
-    // check the overflow.
+    // check overflow.
 
     read3(layer1DataPointer);
-    read3(layer2DataPointer);
-    read3(spriteDataPointer);
+
+    // if original smw
+    if (!isLMModified) {
+        if ((layer2DataPointer >>> 16) === 0xFF) {
+            const realLayer2DataPointer = 0x0C0000 | (layer2DataPointer & 0xFFFF);
+            read3(realLayer2DataPointer);
+        }
+    } else {
+        read3(layer2DataPointer);
+    }
+
+    read3(spriteDataPointer); 
 
     /* Get Level Header */
 
@@ -2897,15 +2908,15 @@ function loadLevel(lvlNum: number): boolean {
     secondaryLevelHeader[7] = 0;
 
     if (isLMModified) {
-        secondaryLevelHeader[4] = fileData[snes2pc(0x05DE00 + lvlNum)];
+        secondaryLevelHeader[4] = read1(0x05DE00 + lvlNum);
         if (lmVer >= 3.0) {
-            secondaryLevelHeader[7] = fileData[snes2pc(0x06FE00 + lvlNum)];
-            secondaryLevelHeader[6] = fileData[snes2pc(0x06FC00 + lvlNum)];
+            secondaryLevelHeader[7] = read1(0x06FE00 + lvlNum);
+            secondaryLevelHeader[6] = read1(0x06FC00 + lvlNum);
         } 
         if (lmVer >= 3.40) {
-            secondaryLevelHeader[5] = fileData[snes2pc(0x06FA00 + lvlNum)];
+            secondaryLevelHeader[5] = read1(0x06FA00 + lvlNum);
         }
-    }   
+    }
 
     /* Get Level Information */
 
@@ -2982,6 +2993,7 @@ function loadLevel(lvlNum: number): boolean {
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
     
+    // read horizontal level mode
     if (isLMModified && lmVer === 3.0) {
         // TB0MMMMM 
         const pointer = read3(read3(0x05D9A2)+70) + lvlNum;
@@ -2999,6 +3011,7 @@ function loadLevel(lvlNum: number): boolean {
         }
     }
 
+    // read midway information
     if (isLMModified) {
         const pointer = read3(read3(0x05D9E4)+0x0A);
         
@@ -3088,7 +3101,6 @@ function loadLevel(lvlNum: number): boolean {
         midwayRedirect = 0;
         midwayRedirectLevelNum = 0;
     }
-    
 
     if (fgbgGFX > 15) {
         fgbgGFX = 0;
@@ -3098,6 +3110,7 @@ function loadLevel(lvlNum: number): boolean {
         sprGFX = 0;
     }
 
+    // read level's animation settings
     if (isLMModified) {
         const levelAnimationSettings = read1(0x03FE00 + levelNum);
 
@@ -3113,6 +3126,9 @@ function loadLevel(lvlNum: number): boolean {
         disableCustomGlobalAni = 0;        
     }
  
+
+
+    
     /* Load Palette */
     
     // get palette
@@ -10349,23 +10365,19 @@ function decompress_rle1(data: Uint8Array): number[] {
 
 function read3(address: number): number {
     const addr: number = snes2pc(address);
-    /*
     if (addr >= fileData.length) {
         debugger;
         throw new Error("pointer is bigger than rom");
     }
-    */
     return ((fileData[snes2pc(address+2)] << 16) | (((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
 }
 
 function read2(address: number): number {
     const addr: number = snes2pc(address);
-    /*
     if (addr >= fileData.length) {
         debugger;
         throw new Error("pointer is bigger than rom");
     }
-    */
     return ((((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
 }
 
