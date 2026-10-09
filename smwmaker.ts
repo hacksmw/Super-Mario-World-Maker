@@ -2852,6 +2852,17 @@ function loadROM(lvlNum: number = 0x105, fileData: Uint8Array) {
     loadLevel(lvlNum);  
 }
 
+function getOldGFXBypassList(index: number) {
+    const ptr = 0x0FF200;
+
+    const fg1 = read1(ptr+(index*4)+0);
+    const bg1 = read1(ptr+(index*4)+1);
+    const fg2 = read1(ptr+(index*4)+2);
+    const fg3 = read1(ptr+(index*4)+3);
+
+    return [fg1, bg1, fg2, fg3];
+}
+
 function loadLevel(lvlNum: number): boolean {
     /* Get Layer1, Layer2, Sprite Data Pointer */
 
@@ -4273,6 +4284,7 @@ function loadGraphics() {
     let bg2gfx: number[], bg3gfx: number[];
     let anigfx: number[], ani2gfx: number[];
     let mariogfx: number[];
+
 
     // get tileset
 
@@ -8395,8 +8407,8 @@ function fileOpen(): void {
                 loadROM(levelNum, fileData);
             } catch (e: any) {
                 throw e;
-                alert(e.message)
-                unload();
+                //alert(e.message)
+                //unload();
             }
 
 

@@ -2422,6 +2422,14 @@ function loadROM(lvlNum = 0x105, fileData) {
     console.log("lmVer: " + lmVer);
     loadLevel(lvlNum);
 }
+function getOldGFXBypassList(index) {
+    const ptr = 0x0FF200;
+    const fg1 = read1(ptr + (index * 4) + 0);
+    const bg1 = read1(ptr + (index * 4) + 1);
+    const fg2 = read1(ptr + (index * 4) + 2);
+    const fg3 = read1(ptr + (index * 4) + 3);
+    return [fg1, bg1, fg2, fg3];
+}
 function loadLevel(lvlNum) {
     /* Get Layer1, Layer2, Sprite Data Pointer */
     layer1DataPointer = read3(layer1DatasTable + (3 * lvlNum));
@@ -7368,8 +7376,8 @@ function fileOpen() {
             }
             catch (e) {
                 throw e;
-                alert(e.message);
-                unload();
+                //alert(e.message)
+                //unload();
             }
             btnOpen.disabled = true;
             btnPalette.disabled = false;
