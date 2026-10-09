@@ -3016,8 +3016,30 @@ function loadLevel(lvlNum: number): boolean {
     }
 
     // read midway information
+
+    midSlippery = 0;
+    midWater = 0;
+    separateMidway = 0;
+    midScrNum = 0;
+    midwayY = 0;
+    midwayX = 0;
+    midAction = 0;
+    midBgfgIsRelativeToPlayer = 0;
+    midwayFG = 0;
+    midwayBG = 0;
+    midOffset = 0;
+    midEnterLeft = 0;
+    midwayRedirect = 0;
+    midwayRedirectLevelNum = 0;
+
+label:
     if (isLMModified && lmVer >= 2.20) {
-        const pointer = read3(read3(0x05D9E4)+0x0A);
+        let pointer: number;
+        try {
+            pointer = read3(read3(0x05D9E4)+0x0A);
+        } catch (e) {
+            break label;
+        }
         
         const addr1 = pointer + (512 * 0) + lvlNum;
         const addr2 = pointer + (512 * 1) + lvlNum;
@@ -3089,21 +3111,6 @@ function loadLevel(lvlNum: number): boolean {
             midwayRedirectLevelNum = ((hdr3 & 0b1) << 8) | hdr2;
         }
         
-    } else {
-        midSlippery = 0;
-        midWater = 0;
-        separateMidway = 0;
-        midScrNum = 0;
-        midwayY = 0;
-        midwayX = 0;
-        midAction = 0;
-        midBgfgIsRelativeToPlayer = 0;
-        midwayFG = 0;
-        midwayBG = 0;
-        midOffset = 0;
-        midEnterLeft = 0;
-        midwayRedirect = 0;
-        midwayRedirectLevelNum = 0;
     }
 
     if (fgbgGFX > 15) {
@@ -3453,14 +3460,27 @@ function loadExAnimations() {
     globalAnis = [];
 
     if (isLMModified && lmVer >= 1.62) {
-        const globalAnisPointer = read1(read3(0x0583AE)+0x5C)<<8+(read2(read3(0x0583AE)+0x65));
-        const lvlAnisPointer = (read3(read3(0x0583ae)+0xEA) + 3 * levelNum);
+        let globalAnisPointer: number; 
+        let lvlAnisPointer: number; 
+
+        try {
+            globalAnisPointer = read1(read3(0x0583AE)+0x5C)<<8+(read2(read3(0x0583AE)+0x65));
+        } catch (e) {
+            globalAnisPointer = 0;
+        }
+
+        try {
+            lvlAnisPointer = (read3(read3(0x0583ae)+0xEA) + 3 * levelNum);
+        } catch (e) {
+            lvlAnisPointer = 0;
+        }
         
-        if (read2(read3(0x0583ae)+0x5B) !== 0) {
+        
+        if (globalAnisPointer && read2(read3(0x0583ae)+0x5B) !== 0) {
             loadExAnimation(globalAnisPointer, globalAnis); 
         }
 
-        if (read1(lvlAnisPointer + 1) !== 0) {
+        if (lvlAnisPointer && read1(lvlAnisPointer + 1) !== 0) {
             loadExAnimation(lvlAnisPointer, levelAnis); 
         }
 
@@ -4774,7 +4794,11 @@ function getMap16(start: number, end: number, tblAddr: number, blocks: (number |
             } else if (pgGroup === 1) {
                 if (lmVer >= 2.43) {
                     const pointer = pointer2;
-                    actsLike = read2(pointer + (2 * ((start - 0x4000) + i)));
+                    try {
+                        actsLike = read2(pointer + (2 * ((start - 0x4000) + i)));
+                    } catch (e) {
+                        actsLike = 0x130;    
+                    }
                 } else {
                     actsLike = 0x130;
                 }
@@ -10381,7 +10405,6 @@ function decompress_rle1(data: Uint8Array): number[] {
 function read3(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
-        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((fileData[snes2pc(address+2)] << 16) | (((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
@@ -10390,7 +10413,6 @@ function read3(address: number): number {
 function read2(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
-        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
@@ -10399,7 +10421,6 @@ function read2(address: number): number {
 function read1(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
-        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return fileData[addr+0];
