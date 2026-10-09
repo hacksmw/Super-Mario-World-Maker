@@ -2874,6 +2874,36 @@ function renderExAnimation() {
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
                         break;
+                    case 16:
+                        count = 2;
+                        for (let i = 0; i < count; i++) {
+                            const fromIndex = exAniIndex2div(ani.frameData[0] + i);
+                            const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
+                            const toIndex = index2index(ani.vramDest + (i * 16));
+                            const destGfx = index2page(ani.vramDest + (i * 16));
+                            destGfx[toIndex] = srcGfx[fromIndex];
+                        }
+                        break;
+                    case 17:
+                        count = 4;
+                        for (let i = 0; i < count; i++) {
+                            const fromIndex = exAniIndex2div(ani.frameData[0] + i);
+                            const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
+                            const toIndex = index2index(ani.vramDest + (i % 2) + (intdiv(i, 2) * 16));
+                            const destGfx = index2page(ani.vramDest + (i % 2) + (intdiv(i, 2) * 16));
+                            destGfx[toIndex] = srcGfx[fromIndex];
+                        }
+                        break;
+                    case 18:
+                        count = 8;
+                        for (let i = 0; i < count; i++) {
+                            const fromIndex = exAniIndex2div(ani.frameData[0] + i);
+                            const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
+                            const toIndex = index2index(ani.vramDest + (i % 4) + (intdiv(i, 4) * 16));
+                            const destGfx = index2page(ani.vramDest + (i % 4) + (intdiv(i, 4) * 16));
+                            destGfx[toIndex] = srcGfx[fromIndex];
+                        }
+                        break;
                     default:
                         break;
                 }
