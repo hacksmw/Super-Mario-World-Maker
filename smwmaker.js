@@ -9417,7 +9417,6 @@ function decompress_rle1(data) {
 function read3(address) {
     const addr = snes2pc(address);
     if (addr >= fileData.length) {
-        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((fileData[snes2pc(address + 2)] << 16) | (((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
@@ -9425,7 +9424,6 @@ function read3(address) {
 function read2(address) {
     const addr = snes2pc(address);
     if (addr >= fileData.length) {
-        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((((((fileData[snes2pc(address + 1)] << 8) | fileData[snes2pc(address + 0)])))));
@@ -9433,7 +9431,6 @@ function read2(address) {
 function read1(address) {
     const addr = snes2pc(address);
     if (addr >= fileData.length) {
-        debugger;
         throw new Error("pointer is bigger than rom");
     }
     return fileData[addr + 0];
