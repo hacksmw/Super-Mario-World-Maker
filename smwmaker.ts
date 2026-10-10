@@ -2776,7 +2776,7 @@ function loadROM(lvlNum: number = 0x105, fileData: Uint8Array) {
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
 
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        //throw new Error("Wrong game title");
+        throw new Error("Wrong game title");
     }
     
     // if rom file is small then expand the rom.
@@ -3849,11 +3849,11 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
 
                                 log("Old GFX Bypass : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));
                             } else {
-                                const unknown = fgbgGFXi;
-                                const ani2 = sprGFXi;
+                                const ani2 = fgbgGFXi;
+                                const unknown = sprGFXi;
 
                                 if (!superGFXBypass) {
-                                    
+                                    loadOldAni(ani2);
                                 }
                                 
                                 log("Old GFX Bypass #2 : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));    
@@ -4299,6 +4299,15 @@ function getUncompressedGFX(num: number, direct: boolean = false) {
     }
 
     return decompress_lz2(fileData.slice(offset));
+}
+
+function loadOldAni(index: number) {
+    ani2 = index;
+
+    const ani2gfx: number[] = getUncompressedGFX(ani2);
+    ani2bmp = convertGraphics(ani2gfx, is4bpp);
+    
+    loadOldGfxBypassAni();
 }
 
 function loadOldGfxBypass(fgbgGFXIndex: number, sprGFXIndex: number) {
