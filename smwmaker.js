@@ -2441,7 +2441,6 @@ function loadLevel(lvlNum) {
     }
     else {
         sprDataBank = read1(0x0EF100 + lvlNum);
-        console.log("sprDataBank: " + sprDataBank.toString(16));
     }
     spriteDataPointer = (sprDataBank << 16) | sprDataOffset;
     // check overflow.
@@ -3071,18 +3070,18 @@ function loadObjects(lvlNum, layerDataPointer) {
     loop: while (fileData[snes2pc(pointer)] != 0xFF) {
         let xposition;
         let yposition;
-        let newscreen;
         let settings;
         let objNum;
-        newscreen = (fileData[snes2pc(pointer + 0)] >>> 7);
         xposition = (fileData[snes2pc(pointer + 1)] & 0b1111);
         yposition = (fileData[snes2pc(pointer + 0)] & 0b11111);
         settings = (fileData[snes2pc(pointer + 2)]);
         objNum = (((fileData[snes2pc(pointer + 0)] >>> 5) & 0b11) << 4) | (fileData[snes2pc(pointer + 1)] >>> 4);
-        if (newscreen) {
-            currentScreen++;
-        }
         if (((!(objNum === 0 && ((settings === 0x01) || (settings === 0)))) && (objNum < 0x22 || objNum > 0x2C)) && (!(objNum === 0 && settings < 0x10))) {
+            let newscreen;
+            newscreen = (fileData[snes2pc(pointer + 0)] >>> 7);
+            if (newscreen) {
+                currentScreen++;
+            }
             let newObj;
             newObj = new Obj(objNum, xposition, yposition, settings);
             newObj.screen = currentScreen;
@@ -3298,7 +3297,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                             let conditionalDirectMap16FlagToUse = 0, conditionalDirectMap16UseAddition = 0;
                             if (mode === 0) {
                                 lengthOfHeader = 5;
-                                console.log("Single-screen, single tile");
+                                //console.log("Single-screen, single tile");
                             }
                             else if (mode === 1) {
                                 lengthOfHeader = 5;
@@ -3347,7 +3346,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                             newObj.mode = mode;
                             newObj.submode = submode;
                             objList.push(newObj);
-                            log("Direct Map16 tile (B): 0x" + m16Num.toString(16));
+                            //log("Direct Map16 tile (B): 0x" + m16Num.toString(16));
                             pointer += lengthOfHeader;
                             continue loop;
                         }
