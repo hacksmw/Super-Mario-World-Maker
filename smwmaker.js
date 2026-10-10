@@ -3247,7 +3247,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                             else {
                                 log("Old GFX Bypass (Unknown) : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));
                             }
-                            pointer += 4;
+                            pointer += 3;
                             continue loop;
                         }
                         break;
