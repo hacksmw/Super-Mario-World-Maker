@@ -4425,14 +4425,14 @@ function loadGraphics() {
     bg3gfx  = getUncompressedGFX(bg3);
     ani2gfx = getUncompressedGFX(ani2);
     
-    if (isLMModified && lmVer >= 1.62) {
+    if (isLMModified && lmVer >= 1.61) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
         
         superGFXBypass = !!(read2(pointer) >>> 15); 
 
         console.log("superGFXBypass: " + superGFXBypass);
         
-        if (superGFXBypass) {
+        if (superGFXBypass && lmVer >= 1.70) {
             fg1 = read2(pointer + (2 * 7)) & 0b1111_1111_1111;
             fg2 = read2(pointer + (2 * 6)) & 0b1111_1111_1111;
             bg =  read2(pointer + (2 * 5)) & 0b1111_1111_1111;
@@ -4446,35 +4446,105 @@ function loadGraphics() {
             sp2 = read2(pointer + (2 * 10)) & 0b1111_1111_1111;
             sp3 = read2(pointer + (2 * 9)) & 0b1111_1111_1111;
             sp4 = read2(pointer + (2 * 8)) & 0b1111_1111_1111;
+        } else if (superGFXBypass && lmVer >= 1.61) {
+            fg1 = read2(pointer + (2 * 4)) & 0b1111_1111_1111;
+            fg2 = read2(pointer + (2 * 3)) & 0b1111_1111_1111;
+            bg =  read2(pointer + (2 * 2)) & 0b1111_1111_1111;
+            fg3 = read2(pointer + (2 * 1)) & 0b1111_1111_1111;
+            
+            ani2 = read2(pointer + (2 * 9)) & 0b1111_1111_1111;
+
+            sp1 = read2(pointer + (2 * 8)) & 0b1111_1111_1111;
+            sp2 = read2(pointer + (2 * 7)) & 0b1111_1111_1111;
+            sp3 = read2(pointer + (2 * 6)) & 0b1111_1111_1111;
+            sp4 = read2(pointer + (2 * 5)) & 0b1111_1111_1111;
+
+            console.log("fg1 = " + fg1.toString(16));
+            console.log("fg2 = " + fg2.toString(16));
+            console.log("bg = "  + bg.toString(16));
+            console.log("fg3 = " + fg3.toString(16));
+
+            console.log("sp1 = " + sp1.toString(16));
+            console.log("sp2 = " + sp2.toString(16));
+            console.log("sp3 = " + sp3.toString(16));
+            console.log("sp4 = " + sp4.toString(16));
+
+            console.log("an2 = " + ani2.toString(16));
         }
     } else {
         superGFXBypass = false;
     }
 
     if (superGFXBypass) {
+        
+        // FG/BG GFX
         try {
-            // FG/BG GFX
-
             fg1gfx = getUncompressedGFX(fg1)
+        } catch (e) {
+            log("fg1 gfx error");
+        }
+
+        try {
             fg2gfx = getUncompressedGFX(fg2)
+        } catch (e) {
+            log("fg2 gfx error");
+        }
+
+        try {
             bggfx  = getUncompressedGFX(bg)
+        } catch (e) {
+            log("bg1 gfx error");
+        }
+
+        try {
             fg3gfx = getUncompressedGFX(fg3);  
+        } catch (e) {
+            log("fg3 gfx error")
+        }
 
-            // Sprite Graphics
+        // Sprite Graphics
 
+        try {
             sp1gfx = getUncompressedGFX(sp1);
+        } catch (e) {
+            log("sp1 gfx error")
+        }
+
+        try {
             sp2gfx = getUncompressedGFX(sp2);
+        } catch (e) {
+            log("sp2 gfx error");
+        }
+
+        try {
             sp3gfx = getUncompressedGFX(sp3);
+        } catch (e) {
+            log("sp3 gfx error");
+        }
+
+        try {
             sp4gfx = getUncompressedGFX(sp4);
+        } catch (e) {
+            log("sp4 gfx error");
+        }
 
+        try {
             bg2gfx  = getUncompressedGFX(bg2);
-            bg3gfx  = getUncompressedGFX(bg3);
-            ani2gfx = getUncompressedGFX(ani2);
-
-        } catch (e: any) {
-            superGFXBypass = false;
+        } catch (e) {
+            log("bg2 gfx error");
         }
         
+        try {
+            bg3gfx  = getUncompressedGFX(bg3);
+        } catch (e) {
+            log("bg3 gfx error");
+        }
+
+        try {
+            ani2gfx = getUncompressedGFX(ani2);
+        } catch (e) {
+            log("an2 gfx error");
+        }
     }
 
     // Animation graphics
