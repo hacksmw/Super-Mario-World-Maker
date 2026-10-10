@@ -2776,7 +2776,7 @@ function loadROM(lvlNum: number = 0x105, fileData: Uint8Array) {
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
 
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        throw new Error("Wrong game title");
+        //throw new Error("Wrong game title");
     }
     
     // if rom file is small then expand the rom.
@@ -2800,8 +2800,6 @@ function loadROM(lvlNum: number = 0x105, fileData: Uint8Array) {
     } else {
         lmModified = false;
     }
-
-    console.log((fileData[snes2pc(0x0FF0A0, fileType)]).toString(16))
 
     let lunarMagicVer: number;
 
@@ -4333,6 +4331,14 @@ function loadOldGfxBypass(fgbgGFXIndex: number, sprGFXIndex: number) {
     orgSp2bmp = structuredClone(sp2bmp);
     orgSp3bmp = structuredClone(sp3bmp);
     orgSp4bmp = structuredClone(sp4bmp);
+
+    if (!disableOrgLevelAni) {
+        original_animation();
+    }
+
+    loadExAnimations(); 
+
+    renderExAnimation();
 }
 
 function loadGraphics() {
