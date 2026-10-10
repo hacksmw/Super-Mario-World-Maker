@@ -2776,7 +2776,7 @@ function loadROM(lvlNum: number = 0x105, fileData: Uint8Array) {
     gameTitle = String.fromCharCode(...fileData.slice(snes2pc(0x00ffc0, fileType), snes2pc(0x00ffc0, fileType) + 21));
 
     if (gameTitle !== "SUPER MARIOWORLD     ") {
-        throw new Error("Wrong game title");
+        //throw new Error("Wrong game title");
     }
     
     // if rom file is small then expand the rom.
@@ -3345,7 +3345,17 @@ function exAniIndex2gfx(index: number) {
 function renderExAnimation() {
     if (!isLMModified) return;
 
-    const allAnis: ExAni[][] = [globalAnis, levelAnis];
+    let allAnis: ExAni[][];
+    
+    allAnis = [globalAnis, levelAnis];
+
+    if (disableCustomLevelAni && disableCustomGlobalAni) {
+        allAnis = [];
+    } else if (disableCustomGlobalAni) {
+        allAnis = [levelAnis];
+    } else if (disableCustomLevelAni) {
+        allAnis = [globalAnis];
+    }
 
     for (let i: number = 0; i < allAnis.length; i++) {
         let anis: ExAni[] = allAnis[i];
@@ -3839,7 +3849,14 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
 
                                 log("Old GFX Bypass : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));
                             } else {
-                                log("Old GFX Bypass (Unknown) : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));    
+                                const unknown = fgbgGFXi;
+                                const ani2 = sprGFXi;
+
+                                if (!superGFXBypass) {
+                                    
+                                }
+                                
+                                log("Old GFX Bypass #2 : " + fgbgGFXi.toString(16) + " " + sprGFXi.toString(16));    
                             }
 
                             pointer += 3;
@@ -4332,6 +4349,10 @@ function loadOldGfxBypass(fgbgGFXIndex: number, sprGFXIndex: number) {
     orgSp3bmp = structuredClone(sp3bmp);
     orgSp4bmp = structuredClone(sp4bmp);
 
+    loadOldGfxBypassAni();
+}
+
+function loadOldGfxBypassAni() {
     if (!disableOrgLevelAni) {
         original_animation();
     }
