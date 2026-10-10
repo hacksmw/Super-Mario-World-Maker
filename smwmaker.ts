@@ -4811,16 +4811,7 @@ function load16x16() {
         getMap16(0x153, 0x16D, 0x0DE7B8, blocks);        
     }
 
-    if (isLMModified && 1.31 <= lmVer && lmVer <= 1.65) {
-        const pointer = 0x118000;
-        
-        getMap16(0x200, 0x2FF, pointer + (fgbgGFX * 0x100 * 8), blocks);
-
-        for (let i = 0x3; i < 0x10; i++) {
-            getMap16(i * 0x100, i * 0x100 + 0xFF, pointer + ((0x0F * 0x100 * 8) + ((i-3) * 0x100 * 8)), blocks);
-        }
-        
-    } else if (isLMModified) {
+    if (isLMModified && 1.31 <= lmVer) {
         const pointers = [
             ((read1(0x06F557) << 16) | ((read2(0x06F553) + 0x1000) & 0xFFFF)),
             ((read1(0x06F560) << 16) | ((read2(0x06F55C) + 0x8000) & 0xFFFF)),
