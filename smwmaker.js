@@ -9776,6 +9776,10 @@ function ips_create(source, target) {
     write8('F'.charCodeAt(0), out);
     if (sourcelen > targetlen)
         write24(targetlen, out);
+    const test = applyIpsPatch(source, out);
+    if (!arrayCompare(source, test)) {
+        throw new Error("IPS Failed");
+    }
     if (out.length === 8) {
         return out;
     }

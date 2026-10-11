@@ -10906,9 +10906,17 @@ function ips_create(source: number[], target: number[]) {
     write8('O'.charCodeAt(0), out);
     write8('F'.charCodeAt(0), out);
     if (sourcelen > targetlen) write24(targetlen, out);
+
+    const test = applyIpsPatch(source, out);
+
+    if (!arrayCompare(source, test)) {
+        throw new Error("IPS Failed");
+    }
+
     if (out.length === 8) {
         return out;
-    }
+    }  
+
     return out;
 }
 
