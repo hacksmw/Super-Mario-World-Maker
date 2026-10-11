@@ -10909,7 +10909,7 @@ function ips_create(source: number[], target: number[]) {
 
     const test = applyIpsPatch(source, out);
 
-    if (!arrayCompare(source, test)) {
+    if (!arrayCompare(target, test)) {
         throw new Error("IPS Failed");
     }
 

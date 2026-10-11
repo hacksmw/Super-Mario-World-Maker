@@ -9777,7 +9777,7 @@ function ips_create(source, target) {
     if (sourcelen > targetlen)
         write24(targetlen, out);
     const test = applyIpsPatch(source, out);
-    if (!arrayCompare(source, test)) {
+    if (!arrayCompare(target, test)) {
         throw new Error("IPS Failed");
     }
     if (out.length === 8) {
