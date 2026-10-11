@@ -3015,11 +3015,24 @@ function loadLevel(lvlNum: number): boolean {
     showBottomRowOfTheLevel = 0;
     levelUsesEitherLayer2OrLayer3 = 0;
     
+    let pointer: number;
+
     // read horizontal level mode
-    if (isLMModified && lmVer === 3.0) {
+    if (lmVer > 3.00) {
+        // tested for 3.1 3.63 3.01 3.02 3.03 3.04 3.11
+        pointer = read3(read3(0x05D9A2)+0x5B+1);
+    } else if (lmVer === 3.0) {
+        pointer = read3(read3(0x05D9A2)+70);
+    } else {
+        pointer = 0;
+    }
+
+    console.log("pointer: " + pointer.toString(16)) ;
+
+    if (pointer) {
         // TB0MMMMM 
-        const pointer = read3(read3(0x05D9A2)+70) + lvlNum;
-        const extHeader = read1(pointer);
+        const offset = pointer + lvlNum;
+        const extHeader = read1(offset);
 
         let zero: number;
 
@@ -4283,7 +4296,11 @@ function getCompressedGraphicsAddr(index: number) {
     } else if (0x80 <= index && index <= 0xFF) {
         addr = snes2pc(read3(0x0FF600 + ((index - 0x80)*3)));
     } else if (0x100 <= index && index <= 0xFFF) {
-        addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
+        if (lmVer === 1.62 || lmVer === 1.61) {
+            addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
+        } else {
+            addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
+        }
     } else {
         debugger;
         throw new Error();
@@ -4424,6 +4441,8 @@ function loadGraphics() {
     bg2gfx  = getUncompressedGFX(bg2);
     bg3gfx  = getUncompressedGFX(bg3);
     ani2gfx = getUncompressedGFX(ani2);
+
+    superGFXBypass = false;
     
     if (isLMModified && lmVer >= 1.61) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
@@ -10375,7 +10394,9 @@ function unload() {
 function hex(val: number, length = 2): string {
     let result: string;
     let j: number;
-    if (val === undefined) debugger;
+    if (val === undefined) {
+        return "undefined";
+    }
     result = val.toString(16).toUpperCase();
     j = length - result.length;
     for (let i = 0; i < j; i++) {
@@ -10615,6 +10636,7 @@ function decompress_rle1(data: Uint8Array): number[] {
 function read3(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
+        //debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((fileData[snes2pc(address+2)] << 16) | (((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
@@ -10623,6 +10645,7 @@ function read3(address: number): number {
 function read2(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
+        //debugger;
         throw new Error("pointer is bigger than rom");
     }
     return ((((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
@@ -10631,6 +10654,7 @@ function read2(address: number): number {
 function read1(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
+        //debugger;
         throw new Error("pointer is bigger than rom");
     }
     return fileData[addr+0];
