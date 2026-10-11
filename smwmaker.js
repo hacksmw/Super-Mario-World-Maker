@@ -2961,7 +2961,7 @@ function renderExAnimation() {
 function loadExAnimations() {
     levelAnis = [];
     globalAnis = [];
-    if (isLMModified && lmVer >= 1.62) {
+    if (isLMModified && lmVer >= 1.61) {
         let globalAnisPointer;
         let lvlAnisPointer;
         try {
@@ -4196,7 +4196,7 @@ function load16x16() {
             const end = start + 0xFF;
             getMap16(start, end, (pointer + (0xF * (0x100 * 8))) + ((i - 3) * (0x100 * 8)), blocks);
         }
-        for (let i = 0x4; i < 0x10; i++) {
+        for (let i = 0x3; i < 0x10; i++) {
             const start = i * 0x100;
             const end = start + 0xFF;
             getMap16(start, end, old_map16_offset_calc(start), blocks);
@@ -4229,13 +4229,19 @@ function load16x16() {
     bgTiles = bgBlocks;
 }
 function old_map16_offset_calc(index) {
-    console.log("index is " + index.toString(16));
     const BANK = read2(0x06F57A);
     const OFFSET = read2(0x06F583);
+    const UNKNOWN = read2(0x06F540 + 0x2E + 1);
+    const BANK2 = read2(0x06F540 + 0xB + 1);
     if (index >= 0x400) {
         const bank = (BANK >>> 8);
         const offset = ((index * 2) << 2) + OFFSET;
         const result = ((bank << 16) | offset);
+        return result;
+    }
+    else if (index >= 0x300) {
+        const bank = (BANK2 >>> 8);
+        const result = ((bank << 16) | (((((index * 2) << 2) & 0x07FF) + UNKNOWN) & 0xFFFF));
         return result;
     }
     else {
