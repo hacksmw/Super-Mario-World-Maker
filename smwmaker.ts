@@ -1316,7 +1316,7 @@ function btn16x16_onclick() {
     const blksLength = map16.length;
     const bgTilesLength = bgTiles.length;
 
-    const limit = 0x200;
+    const limit = 0x1000;
     const bgLimit = 0x1000;
 
     const blksHeight = Math.ceil(limit / 16);
@@ -4988,12 +4988,28 @@ function load16x16() {
 
         getMap16(0x200, 0x2FF, (pointer + (fgbgGFX * (0x100 * 8))), blocks);
 
-        for (let i = 0x3; i < 0x10; i++) {
+        for (let i = 0x3; i < 0x4; i++) {
             const start = i * 0x100;
             const end = start + 0xFF;
 
             getMap16(start, end, (pointer + (0xF * (0x100 * 8))) + ((i-3) * (0x100 * 8)), blocks)
         }
+
+        for (let i = 0x4; i < 0x10; i++) {
+            const start = i * 0x100;
+            const end = start + 0xFF;
+
+            getMap16(start, end, old_map16_offset_calc(start), blocks);
+        }
+        
+        /*
+        const BANK = read2(0x06F57A);
+        const OFFSET = read2(0x06F583);
+
+        console.log("Map16 Bank: " + BANK.toString(16));
+        console.log("Map16 Offset: " + OFFSET.toString(16));
+        console.log("Test: " + old_map16_offset_calc(0x400).toString(16));
+        */
 
         const bgPointers = 0x0EFD50;
 
@@ -5021,7 +5037,23 @@ function load16x16() {
     }
 
     map16 = blocks;
-    bgTiles = bgBlocks;  
+    bgTiles = bgBlocks; 
+}
+
+function old_map16_offset_calc(index: number): number {
+    console.log("index is " + index.toString(16));
+
+    const BANK = read2(0x06F57A);
+    const OFFSET = read2(0x06F583);
+
+    if (index >= 0x400) {
+        const bank = (BANK >>> 8);
+        const offset = ((index * 2) << 2) + OFFSET;
+        const result = ((bank << 16) | offset); 
+        return result;
+    } else {
+        throw new Error();
+    }
 }
 
 function getMap16(start: number, end: number, tblAddr: number, blocks: (number | Tile)[]) {
