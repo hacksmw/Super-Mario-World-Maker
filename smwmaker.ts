@@ -1316,7 +1316,7 @@ function btn16x16_onclick() {
     const blksLength = map16.length;
     const bgTilesLength = bgTiles.length;
 
-    const limit = 0x500;
+    const limit = 0x1000;
     const bgLimit = 0x200;
 
     const blksHeight = Math.ceil(limit / 16);
@@ -4900,7 +4900,7 @@ function load16x16() {
         getMap16(0x153, 0x16D, 0x0DE7B8, blocks);        
     }
 
-    if (isLMModified && 1.31 <= lmVer) {
+    if (isLMModified &&  1.65 < lmVer) {
         const pointers = [
             ((read1(0x06F557) << 16) | ((read2(0x06F553) + 0x1000) & 0xFFFF)),
             ((read1(0x06F560) << 16) | ((read2(0x06F55C) + 0x8000) & 0xFFFF)),
@@ -4976,6 +4976,25 @@ function load16x16() {
             }
 
         }
+    } else if (isLMModified && 1.30 <= lmVer) {
+        const bank = read2(0x06F540 + 0xB + 1) >>> 8;
+        const offset = read2(0x06F540 + 0x29 + 1);
+        
+        
+        console.log("bank: " + bank.toString(16));
+        console.log("offset: " + offset.toString(16));
+
+        const pointer = (bank << 16) | offset;
+
+        getMap16(0x200, 0x2FF, (pointer + (fgbgGFX * (0x100 * 8))), blocks);
+
+        for (let i = 0x3; i < 0x10; i++) {
+            const start = i * 0x100;
+            const end = start + 0xFF;
+
+            getMap16(start, end, (pointer + (0xF * (0x100 * 8))) + ((i-3) * (0x100 * 8)), blocks)
+        }
+
     }
 
     map16 = blocks;
@@ -10395,7 +10414,7 @@ function hex(val: number, length = 2): string {
     let result: string;
     let j: number;
     if (val === undefined) {
-        return "undefined";
+        return "Undefined";
     }
     result = val.toString(16).toUpperCase();
     j = length - result.length;
