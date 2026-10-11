@@ -191,13 +191,20 @@
 			function arrayCompare(a, b) {
 			    let aLen = a.length;
 			    let bLen = b.length;
+				
+				if (aLen !== bLen) {
+					return false;
+				}
+				
 				const len = Math.min(aLen, bLen);
-			    for (let i = 0; i < len; i++) {
+			    
+				for (let i = 0; i < len; i++) {
 			        if (a[i] !== b[i]) {
 						return false;
 			        }
 			    }
-			    return true;
+			    
+				return true;
 				
 			}
 
