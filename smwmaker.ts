@@ -1316,8 +1316,8 @@ function btn16x16_onclick() {
     const blksLength = map16.length;
     const bgTilesLength = bgTiles.length;
 
-    const limit = 0x1000;
-    const bgLimit = 0x200;
+    const limit = 0x200;
+    const bgLimit = 0x1000;
 
     const blksHeight = Math.ceil(limit / 16);
     const bgTilesHeight = Math.ceil(bgLimit / 16);   
@@ -4296,8 +4296,8 @@ function getCompressedGraphicsAddr(index: number) {
     } else if (0x80 <= index && index <= 0xFF) {
         addr = snes2pc(read3(0x0FF600 + ((index - 0x80)*3)));
     } else if (0x100 <= index && index <= 0xFFF) {
-        if (lmVer === 1.62 || lmVer === 1.61) {
-            addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
+        if (lmVer <= 1.70) {
+            addr = snes2pc(read3(read3(0x0FF873) + ((index - 0x100)*3)));
         } else {
             addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
         }
@@ -4993,6 +4993,29 @@ function load16x16() {
             const end = start + 0xFF;
 
             getMap16(start, end, (pointer + (0xF * (0x100 * 8))) + ((i-3) * (0x100 * 8)), blocks)
+        }
+
+        const bgPointers = 0x0EFD50;
+
+        for (let k = 0; k < 1; k++) {
+            const bgPointer = read3(bgPointers + (3 * k));
+
+            if (bgPointer === 0) 
+                break;
+
+            for (let i = 0x0; i < 0x10; i++) {
+                if (k === 0 && (i === 0 || i === 1)) {
+                    continue;
+                }
+
+                const start = (k * 0x1000) + (i * 0x100);
+                const end = start + (0x100 - 1);
+
+                const address = bgPointer + i * (0x100 * 8);
+
+                getMap16(start, end, address, bgBlocks);
+            }
+
         }
 
     }
