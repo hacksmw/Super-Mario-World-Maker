@@ -3623,7 +3623,7 @@ function getCompressedGraphicsAddr(index) {
         addr = snes2pc(read3(0x0FF600 + ((index - 0x80) * 3)));
     }
     else if (0x100 <= index && index <= 0xFFF) {
-        if (lmVer <= 1.70) {
+        if (lmVer < 1.70) {
             addr = snes2pc(read3(read3(0x0FF873) + ((index - 0x100) * 3)));
         }
         else {
