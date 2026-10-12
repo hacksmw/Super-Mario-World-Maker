@@ -2985,7 +2985,7 @@ function loadExAnimations() {
         catch (e) {
             lvlAnisPointer = 0;
         }
-        if (globalAnisPointer && read2(read3(0x0583ae) + 0x5B) !== 0) {
+        if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae) + 0x5B) !== 0) {
             console.log("Global ExAnimation is enabled");
             loadExAnimation(globalAnisPointer, globalAnis);
             console.log("globalAnis.length = " + globalAnis.length);
