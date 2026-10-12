@@ -7477,28 +7477,41 @@ function getBGPage(bgPointer) {
     return bgPage;
 }
 function loadBG(bgPointer) {
-    let temp, temp1;
-    let bgData;
     if (!bgPointer) {
         return null;
     }
-    temp = decompress_rle1(fileData.slice(snes2pc(bgPointer)));
-    temp1 = new Array(temp.length);
-    for (let i = 0; i < temp1.length; i++) {
-        temp1[i] = 0;
+    let result = [];
+    const data = decompress_rle1(fileData.slice(snes2pc(bgPointer)));
+    if (lmVer < 1.70) {
+        const length = data.length;
+        for (let i = 0; i < length; i++) {
+            result[i] = 0;
+        }
+        for (let i = 0; i < length / 2; i++) {
+            result[(intdiv(i, 16)) * 16 + i] = data[i];
+        }
+        const half = data.slice(Math.floor(data.length / 2));
+        for (let i = 0; i < half.length; i++) {
+            result[(intdiv(i, 16) + 1) * 16 + i] = half[i];
+        }
+        return result;
     }
-    for (let i = 0; i < Math.floor(temp.length / 2); i++) {
-        temp1[intdiv(i, 16) * 16 + i] = temp[i];
+    else {
+        const length = data.length / 2;
+        result.length = length * 2;
+        for (let i = 0; i < length * 2; i++) {
+            result[i] = 0;
+        }
+        for (let i = 0; i < length; i++) {
+            result[(intdiv(i, 16)) * 16 + i] = data[i];
+        }
+        const half = result.slice(result.length / 2);
+        for (let i = 0; i < half.length; i++) {
+            result[(intdiv(i, 16) + 1) * 16 + i] = half[(intdiv(i, 16)) * 16 + i];
+        }
+        result.length = result.length / 2;
+        return result;
     }
-    for (let i = Math.floor(temp.length / 2); i < temp.length; i++) {
-        //console.log(temp[i]);
-    }
-    temp = temp.slice(Math.floor(temp.length / 2));
-    for (let i = 0; i < temp.length; i++) {
-        temp1[(intdiv(i, 16) + 1) * 16 + i] = temp[i];
-    }
-    bgData = temp1;
-    return bgData;
 }
 function convertGraphics(org, is4bpp = false) {
     if (org.length === 0) {
