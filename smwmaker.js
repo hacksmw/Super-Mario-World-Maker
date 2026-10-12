@@ -2977,10 +2977,20 @@ function loadExAnimations() {
             lvlAnisPointer = 0;
         }
         if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae) + 0x5B) !== 0) {
+            console.log("Global ExAnimation is enabled");
             loadExAnimation(globalAnisPointer, globalAnis);
+            console.log("globalAnis.length = " + globalAnis.length);
         }
-        if (lvlAnisPointer && read1(lvlAnisPointer + 1) !== 0) {
+        else {
+            console.log("Global ExAnimation is disabled");
+        }
+        if (lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0) {
+            console.log("Level ExAnimation is enabled");
             loadExAnimation(lvlAnisPointer, levelAnis);
+            console.log("levelAnis.length = " + levelAnis.length);
+        }
+        else {
+            console.log("Level ExAnimation is disabled");
         }
     }
 }
