@@ -3509,6 +3509,20 @@ function loadExAnimations() {
         let globalAnisPointer: number; 
         let lvlAnisPointer: number; 
 
+        //const pointer = (read3(read3(0xA418+1)+0x19+1)));
+
+        if (isLMModified && lmVer < 1.70) {
+            const pointer = read3(read3((read3(0x0583AE))+0x1A)+(levelNum*3));
+
+            console.log(pointer.toString(16));
+
+            if (pointer !== 0x00FFFF) {
+                const numOfAnis = read1(pointer);
+                console.log("Number of animation is " + numOfAnis);
+            }
+
+        }
+
         try {
             globalAnisPointer = read1(read3(0x0583AE)+0x5C)<<8+(read2(read3(0x0583AE)+0x65));
         } catch (e) {
@@ -3522,7 +3536,7 @@ function loadExAnimations() {
         }
         
         
-        if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae)+0x5B) !== 0) {
+        if (globalAnisPointer && read2(read3(0x0583ae)+0x5B) !== 0) {
             console.log("Global ExAnimation is enabled")
             loadExAnimation(globalAnisPointer, globalAnis); 
             console.log("globalAnis.length = " + globalAnis.length);
@@ -8489,6 +8503,32 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
     return undefined_obj_image(objNum, settings, tileset);
 }
 
+function getSprWidth(sprNum: number, extra: number = 0): number {
+    return 1;
+}
+
+function getSprHeight(sprNum: number, extra: number = 0): number {
+    return 1;
+}
+
+function getSprX(spr: Sprite) {
+    return spr.xPosition;
+}
+
+function getSprY(spr: Sprite) {
+    return spr.yPosition;
+}
+
+function getSprRealX(x: number, spr: Sprite) {
+    return x;
+}
+
+function getSprRealY(y: number, spr: Sprite) {
+    return y;
+}
+
+
+
 function getBackAreaColor(backAreaColorNum: number) {
     let temp: number;
     let r: number, g: number, b: number;
@@ -8528,7 +8568,7 @@ function loadBG(bgPointer: number): Nullable<number[]> {
 
     const data = decompress_rle1(fileData.slice(snes2pc(bgPointer)));
 
-    if (lmVer < 1.70 || data.length < 2048 ) {
+    if (lmVer < 1.70 || data.length < 2048) {
         const length = data.length;
         for (let i = 0; i < length; i++) {
             result[i] = 0;
@@ -10729,7 +10769,7 @@ function decompress_rle1(data: Uint8Array): number[] {
 function read3(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
-        //debugger;
+        
         throw new Error("pointer is bigger than rom");
     }
     return ((fileData[snes2pc(address+2)] << 16) | (((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
@@ -10738,7 +10778,7 @@ function read3(address: number): number {
 function read2(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
-        //debugger;
+        
         throw new Error("pointer is bigger than rom");
     }
     return ((((((fileData[snes2pc(address+1)] << 8) | fileData[snes2pc(address+0)])))));
@@ -10747,7 +10787,7 @@ function read2(address: number): number {
 function read1(address: number): number {
     const addr: number = snes2pc(address);
     if (addr >= fileData.length) {
-        //debugger;
+        
         throw new Error("pointer is bigger than rom");
     }
     return fileData[addr+0];
