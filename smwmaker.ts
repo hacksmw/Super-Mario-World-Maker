@@ -8528,7 +8528,7 @@ function loadBG(bgPointer: number): Nullable<number[]> {
 
     const data = decompress_rle1(fileData.slice(snes2pc(bgPointer)));
 
-    if (lmVer < 1.70) {
+    if (lmVer < 1.70 || data.length < 2048 ) {
         const length = data.length;
         for (let i = 0; i < length; i++) {
             result[i] = 0;
