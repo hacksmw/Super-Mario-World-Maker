@@ -1316,7 +1316,7 @@ function btn16x16_onclick() {
     const blksLength = map16.length;
     const bgTilesLength = bgTiles.length;
 
-    const limit = 0x1000;
+    const limit = 0x200;
     const bgLimit = 0x1000;
 
     const blksHeight = Math.ceil(limit / 16);
@@ -3808,7 +3808,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                             
                             objList.push(newObj);       
                             
-                            log("Direct Map16 tile (A): 0x" + number.toString(16));
+                            //log("Direct Map16 tile (A): 0x" + number.toString(16));
                             
                             pointer += 4;
                             continue loop;
@@ -5002,32 +5002,26 @@ function load16x16() {
             getMap16(start, end, old_map16_offset_calc(start), blocks);
         }
         
-        /*
-        const BANK = read2(0x06F57A);
-        const OFFSET = read2(0x06F583);
+        
+        const OFFSET = read2(0x058DA2);
+        const BANK = read1(0x058dc9);
 
         console.log("Map16 Bank: " + BANK.toString(16));
         console.log("Map16 Offset: " + OFFSET.toString(16));
-        console.log("Test: " + old_map16_offset_calc(0x400).toString(16));
-        */
 
-        const bgPointers = 0x0EFD50;
+        {
+            const OFFSET = read2(0x058DA2);
+            const BANK = read1(0x058dc9);
 
-        for (let k = 0; k < 1; k++) {
-            const bgPointer = read3(bgPointers + (3 * k));
+            const bgPointer = (BANK << 16) | OFFSET;
 
-            if (bgPointer === 0) 
-                break;
+            console.log("bgPointer: " + bgPointer.toString(16));
 
-            for (let i = 0x0; i < 0x10; i++) {
-                if (k === 0 && (i === 0 || i === 1)) {
-                    continue;
-                }
+            for (let i = 0x2; i < 0x10; i++) {
+                const start = (i * 0x100);
+                const end = start + (0xFF);
 
-                const start = (k * 0x1000) + (i * 0x100);
-                const end = start + (0x100 - 1);
-
-                const address = bgPointer + i * (0x100 * 8);
+                const address = bgPointer + (i) * (0x100 * 8);
 
                 getMap16(start, end, address, bgBlocks);
             }
