@@ -10436,7 +10436,7 @@ function decompress_lz2(data: Uint8Array): number[] {
                         debugOutput = "";
                         len = (((data[pointer] & 0b11) << 8) | data[pointer+1]) + 1;
                         for (i = 0; i < len; i++) {
-                            if (len % 2 === 0) {
+                            if (i % 2 === 0) {
                                 output.push(data[pointer + 2]);
                                 debugOutput += hex(data[pointer + 2]) + " ";
                             } else {
