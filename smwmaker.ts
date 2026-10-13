@@ -4779,6 +4779,7 @@ function loadGraphics() {
 
     if (!disableOrgLevelAni) {
         original_animation();
+        original_animation2();
     }
 }
 

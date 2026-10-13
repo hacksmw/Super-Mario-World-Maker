@@ -4024,6 +4024,7 @@ function loadGraphics() {
     orgSp4bmp = structuredClone(sp4bmp);
     if (!disableOrgLevelAni) {
         original_animation();
+        original_animation2();
     }
 }
 function original_animation() {
