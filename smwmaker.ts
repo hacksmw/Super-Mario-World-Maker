@@ -6533,7 +6533,7 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
 
     switch (sprNum) {
         case 0x8A:
-            // bird
+            // yoshi's house bird
             return getSprImg4x4([null, null, null, 0x1D1], 0xA, true);
             break;
         case 0xC6:
@@ -6608,9 +6608,12 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             return getSprImg4x4([0x1A7, 0x1A8, 0x1B7, 0x1B8], 0x9);
             break;
         case 0x4D:
+            // monty mole
+            return getSprImg4x4([null, null, 0x188, 0x189], 0x8);
+            break;
         case 0x4E:
             // monty mole
-            return getSprImg4x4([0x186, 0x187, 0x196, 0x197], 0x8);
+            return getSprImg4x4([0x18C, 0x18D, 0x19C, 0x19D], 0x8);
             break;
         case 0x4A:
             // goal point sphere
@@ -6768,6 +6771,10 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
         case 0xD7:
             // diagonal bullet bill generator
             return getSprImg4x4([0x1A6, 0x1A7, 0x1B6, 0x1B7], 0x9);
+            break;
+        case 0x8E:
+            // invisible warp hole
+            return getSprImg4x4([null, 0x07f, null, 0x07f], 0x9);
             break;
         case 0xD8:
             // bowser statue fire breath generator
@@ -6972,6 +6979,35 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
                 const result4 = getSpr8x8Img(0xF1, color);  
                 
                 return getSprImg4x4([0xE0, 0xE1, 0xF0, 0xF1], color);
+            }
+            break;
+        case 0xCC:
+            // para goomba generator
+            return getSprImg4x4([0x1E8, 0x1E9, 0x1F8, 0x1F9], 0xA);
+            break;
+        case 0xCD:
+            // para bomb generator
+            return getSprImg4x4([0x1C2, 0x1C3, 0x1D2, 0x1D3], 0xD);
+            break;
+        case 0xCE:
+            // para bomb goomba generator
+            {
+                const upleft = getSpr8x8Img(0x1A3, 0xA);
+                const upright = getSpr8x8Img(0x1A3, 0xA, true);
+                const dnleft = getSpr8x8Img(0x1B3, 0xA);
+                const dnright = getSpr8x8Img(0x1B3, 0xA, true);
+
+                canvas.width = 16;
+                canvas.height = 16;
+
+                const ctx = canvas.getContext("2d");
+
+                ctx!.putImageData(upleft, 0, 0);
+                ctx!.putImageData(upright, 8, 0);
+                ctx!.putImageData(dnleft, 0, 8);
+                ctx!.putImageData(dnright, 8, 8);
+
+                return canvas.toDataURL("image/png");
             }
             break;
         default: 
