@@ -11578,14 +11578,9 @@ function convertIndex(index: number) {
     return (0x20 * (index - 0x600)) + 0x7D00;
 }
 
-function original_animation2() {
-    const tblPointer: number = 0x05B999;
-    const smb3block: number = convertAddress(read2(0x05BAC9));
-    original_animate(smb3block, 0x40);
-}
-
 function original_animate(start: number, index: number) {
     const fromIndex = exAniIndex2div(start);
+    
     const srcGfx = exAniIndex2gfx(start);
     const destGfx = index2page(index);
 
@@ -11593,3 +11588,24 @@ function original_animate(start: number, index: number) {
         destGfx[index+i] = srcGfx[fromIndex+i];
     }
 }
+
+function original_animation2() {
+    const tblPointer: number = 0x05B999;
+    
+    const smb3block: number = convertAddress(read2(0x05BAC9));
+
+    const questionBox: number = convertAddress(read2(0x05B999));
+    const noteblock: number = convertAddress(read2(0x05B9A1));
+    const block: number = convertAddress(read2(0x05B9A9));
+    const midway: number = convertAddress(read2(0x05B9B1));
+    const spinblock: number = convertAddress(read2(0x05B9B9));
+    const berry: number = convertAddress(read2(0x05B9C1));
+
+    original_animate(smb3block, 0x40);
+    original_animate(questionBox, 0x60);
+    original_animate(noteblock, 0x64);
+    original_animate(block, 0x68);
+    original_animate(midway, 0x74);
+    original_animate(spinblock, 0xEA);
+}
+
