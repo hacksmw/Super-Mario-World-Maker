@@ -3321,8 +3321,14 @@ function index2page(index: number): number[][] {
             return sp3bmp;
         case 11:
             return sp4bmp;
+        case 12:
+        case 13:
+        case 14:
+            return anibmp;
+        case 17:
+            return ani2bmp;
+        
     }
-    debugger
     throw new Error("index is not valid: " + index.toString(16) + ", " + div.toString(16));
 }
 
@@ -4525,6 +4531,7 @@ function loadOldGfxBypass(fgbgGFXIndex: number, sprGFXIndex: number) {
 function loadOldGfxBypassAni() {
     if (!disableOrgLevelAni) {
         original_animation();
+        original_animation2();
     }
 
     loadExAnimations(); 
@@ -11555,5 +11562,33 @@ function checkRomFileSize(fileData: any, header: boolean = true): boolean {
             throw new Error("Wrong File Size: " + fileData.length);
             return false;
             break;
+    }
+}
+
+function convertAddress(address: number) {
+    if (address >= 0x7D00) {
+        return 0x600 + ((address - 0x7D00) / 0x20);
+    } else {
+        throw new Error("unimplemented");
+    }
+}
+
+function convertIndex(index: number) {
+    return (0x20 * (index - 0x600)) + 0x7D00;
+}
+
+function original_animation2() {
+    const tblPointer: number = 0x05B999;
+    const smb3block: number = convertAddress(read2(0x05BAC9));
+    original_animate(smb3block, 0x40);
+}
+
+function original_animate(start: number, index: number) {
+    const fromIndex = exAniIndex2div(start);
+    const srcGfx = exAniIndex2gfx(start);
+    const destGfx = index2page(index);
+
+    for (let i = 0; i < 4; i++) {
+        destGfx[index+i] = srcGfx[fromIndex+i];
     }
 }
