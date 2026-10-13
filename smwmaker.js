@@ -75,6 +75,7 @@ class ExAni {
     palDest = 0;
     useLevelsAlterGFX = 0;
     frameData = [];
+    isOld = false;
 }
 class Sprite {
     xPosition = 0;
@@ -2796,7 +2797,8 @@ function index2page(index) {
         case 11:
             return sp4bmp;
     }
-    throw new Error();
+    debugger;
+    throw new Error("index is not valid: " + index.toString(16) + ", " + div.toString(16));
 }
 function exAniIndex2div(index) {
     if (0x600 <= index && index <= 0x77F) {
@@ -2851,6 +2853,10 @@ function renderExAnimation() {
         for (let j = 0; j < anis.length; j++) {
             const ani = anis[j];
             const type = ani.type;
+            const used = ani.used;
+            if (!used) {
+                continue;
+            }
             if (type < 0x13) {
                 if (ani.vramDest >= 0x1C00) {
                     continue;
@@ -2967,10 +2973,105 @@ function loadExAnimations() {
         //const pointer = (read3(read3(0xA418+1)+0x19+1)));
         if (isLMModified && lmVer < 1.70) {
             const pointer = read3(read3((read3(0x0583AE)) + 0x1A) + (levelNum * 3));
-            console.log(pointer.toString(16));
             if (pointer !== 0x00FFFF) {
                 const numOfAnis = read1(pointer);
-                console.log("Number of animation is " + numOfAnis);
+                for (let i = 0; i < numOfAnis; i++) {
+                    const offset = pointer + 1 + (i * (3 + (16 * 2)));
+                    const aniType = read1(offset) >>> 4;
+                    const trigger = read1(offset) & 0xF;
+                    const destData = read2(offset + 1);
+                    const framesData = new Array(16);
+                    for (let j = 0; j < framesData.length; j++) {
+                        framesData[j] = read2(offset + 3 + j * 2);
+                    }
+                    let a = new ExAni();
+                    a.isOld = true;
+                    a.used = 1;
+                    a.frames = 16;
+                    switch (trigger) {
+                        case 0:
+                            // not used
+                            a.used = 0;
+                            a.type = 0;
+                            break;
+                        case 1:
+                            a.trigger = 0;
+                            break;
+                        case 2:
+                            a.trigger = 1;
+                            break;
+                        case 3:
+                            a.trigger = 2;
+                            break;
+                        case 4:
+                            a.trigger = 3;
+                            break;
+                        default:
+                            throw new Error("not valid trigger type.");
+                            break;
+                    }
+                    a.frameData = [];
+                    if (aniType !== 0) {
+                        for (let j = 0; j < 16; j++) {
+                            const frameData = framesData[j];
+                            const frame = convertAddr2index(frameData);
+                            a.frameData.push(frame);
+                        }
+                        a.vramDest = destData >>> 4;
+                    }
+                    switch (aniType) {
+                        case 0:
+                            // palette
+                            if (destData === 0) {
+                                a.type = 22;
+                                a.palDest = 0;
+                                a.numColor = 1;
+                                a.frameData = framesData.slice();
+                            }
+                            else {
+                                a.type = 19;
+                                a.palDest = destData;
+                                a.numColor = 1;
+                                a.frameData = framesData.slice();
+                            }
+                            break;
+                        case 1:
+                            a.type = 15;
+                            break;
+                        case 2:
+                            a.type = 1;
+                            break;
+                        case 3:
+                            a.type = 16;
+                            break;
+                        case 4:
+                            // four 8x8 16
+                            a.type = 17;
+                            break;
+                        case 5:
+                            a.type = 2;
+                            break;
+                        case 6:
+                            a.type = 3;
+                            break;
+                        case 8:
+                            a.type = 4;
+                            break;
+                        case 0xA:
+                            a.type = 5;
+                            break;
+                        case 0xC:
+                            a.type = 6;
+                            break;
+                        case 0xE:
+                            a.type = 7;
+                            break;
+                        default:
+                            throw new Error("aniType is invalid");
+                            break;
+                    }
+                    levelAnis.push(a);
+                }
             }
         }
         try {
@@ -2993,7 +3094,7 @@ function loadExAnimations() {
         else {
             console.log("Global ExAnimation is disabled");
         }
-        if (lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0) {
+        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0) {
             console.log("Level ExAnimation is enabled");
             loadExAnimation(lvlAnisPointer, levelAnis);
             console.log("levelAnis.length = " + levelAnis.length);
