@@ -8851,6 +8851,69 @@ function getRealX(x, obj, tset = -1) {
     }
     return x;
 }
+function convertAddress(address) {
+    if (address >= 0x7D00) {
+        return 0x600 + ((address - 0x7D00) / 0x20);
+    }
+    else {
+        return 0x900 + ((address - 0x2000) / 0x20);
+    }
+}
+function convertIndex(index) {
+    if (index < 0x900) {
+        return (0x20 * (index - 0x600)) + 0x7D00;
+    }
+    else {
+        return (0x20 * (index - 0x900)) + 0x2000;
+    }
+}
+function original_animate(start, index, stacked = false) {
+    const fromIndex = exAniIndex2div(start);
+    const srcGfx = exAniIndex2gfx(start);
+    const destGfx = index2page(index);
+    for (let i = 0; i < 4; i++) {
+        if (stacked) {
+            if (intdiv(i, 2) === 0) {
+                destGfx[index2index(index + i)] = srcGfx[fromIndex + i];
+            }
+            else {
+                destGfx[index2index(14 + index + i)] = srcGfx[fromIndex + i];
+            }
+        }
+        else {
+            destGfx[index2index(index + i)] = srcGfx[fromIndex + i];
+        }
+    }
+}
+function original_animation2() {
+    const tblPointer = 0x05B999;
+    const smb3block = convertAddress(read2(0x05BAC9));
+    const questionBox = convertAddress(read2(0x05B999));
+    const noteblock = convertAddress(read2(0x05B9A1));
+    const block = convertAddress(read2(0x05B9A9));
+    const midway = convertAddress(read2(0x05B9B1));
+    const spinblock = convertAddress(read2(0x05B9B9));
+    const berry = convertAddress(read2(0x05B9C1));
+    const plant = convertAddress(read2(0x5b9e1));
+    const swc = convertAddress(read2(0x5b9f9));
+    const water = convertAddress(read2(0x5ba09));
+    const lava = convertAddress(read2(0x5ba11));
+    original_animate(smb3block, 0x40);
+    return;
+    original_animate(questionBox, 0x60);
+    original_animate(noteblock, 0x64);
+    original_animate(block, 0x68);
+    original_animate(midway, 0x74);
+    original_animate(spinblock, 0xEA);
+    original_animate(berry, 0x80, true);
+    original_animate(plant, 0x5C);
+    original_animate(swc, 0xDA);
+    original_animate(water, 0x70);
+    original_animate(lava, 0x4C);
+    for (let i = 0; i < 52; i++) {
+        console.log("i = " + (tblPointer + i * 8).toString(16) + ", start = " + convertAddress(read2(tblPointer + i * 8)).toString(16));
+    }
+}
 function expand(data, size, extended, format, mirror, header = true) {
     let romData;
     // strip header
@@ -10342,68 +10405,5 @@ function checkRomFileSize(fileData, header = true) {
             throw new Error("Wrong File Size: " + fileData.length);
             return false;
             break;
-    }
-}
-function convertAddress(address) {
-    if (address >= 0x7D00) {
-        return 0x600 + ((address - 0x7D00) / 0x20);
-    }
-    else {
-        return 0x900 + ((address - 0x2000) / 0x20);
-    }
-}
-function convertIndex(index) {
-    if (index < 0x900) {
-        return (0x20 * (index - 0x600)) + 0x7D00;
-    }
-    else {
-        return (0x20 * (index - 0x900)) + 0x2000;
-    }
-}
-function original_animate(start, index, stacked = false) {
-    const fromIndex = exAniIndex2div(start);
-    const srcGfx = exAniIndex2gfx(start);
-    const destGfx = index2page(index);
-    for (let i = 0; i < 4; i++) {
-        if (stacked) {
-            if (intdiv(i, 2) === 0) {
-                destGfx[index2index(index + i)] = srcGfx[fromIndex + i];
-            }
-            else {
-                destGfx[index2index(14 + index + i)] = srcGfx[fromIndex + i];
-            }
-        }
-        else {
-            destGfx[index2index(index + i)] = srcGfx[fromIndex + i];
-        }
-    }
-}
-function original_animation2() {
-    const tblPointer = 0x05B999;
-    const smb3block = convertAddress(read2(0x05BAC9));
-    const questionBox = convertAddress(read2(0x05B999));
-    const noteblock = convertAddress(read2(0x05B9A1));
-    const block = convertAddress(read2(0x05B9A9));
-    const midway = convertAddress(read2(0x05B9B1));
-    const spinblock = convertAddress(read2(0x05B9B9));
-    const berry = convertAddress(read2(0x05B9C1));
-    const plant = convertAddress(read2(0x5b9e1));
-    const swc = convertAddress(read2(0x5b9f9));
-    const water = convertAddress(read2(0x5ba09));
-    const lava = convertAddress(read2(0x5ba11));
-    original_animate(smb3block, 0x40);
-    return;
-    original_animate(questionBox, 0x60);
-    original_animate(noteblock, 0x64);
-    original_animate(block, 0x68);
-    original_animate(midway, 0x74);
-    original_animate(spinblock, 0xEA);
-    original_animate(berry, 0x80, true);
-    original_animate(plant, 0x5C);
-    original_animate(swc, 0xDA);
-    original_animate(water, 0x70);
-    original_animate(lava, 0x4C);
-    for (let i = 0; i < 52; i++) {
-        console.log("i = " + (tblPointer + i * 8).toString(16) + ", start = " + convertAddress(read2(tblPointer + i * 8)).toString(16));
     }
 }
