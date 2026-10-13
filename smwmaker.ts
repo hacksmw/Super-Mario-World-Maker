@@ -4448,7 +4448,6 @@ function getCompressedGraphicsAddr(index: number) {
             addr = snes2pc(read3(read3(0x0FF937) + ((index - 0x100)*3)));
         }
     } else {
-        debugger;
         throw new Error();
     }
     return addr;
@@ -4804,12 +4803,15 @@ function original_animation() {
 
     animate_4_8x8s_line(fg1bmp, anibmp, 0x7C, 0x178);
 
+    /*
+    // berry
     if (isLMModified) {
         fg2bmp[0x00 + 0] = mariobmp[0x2E0 + 0];
         fg2bmp[0x00 + 1] = mariobmp[0x2E0 + 1];
         fg2bmp[0x10 + 0] = mariobmp[0x2E0 + 2];
         fg2bmp[0x10 + 1] = mariobmp[0x2E0 + 3];
     }
+    */
 
     if (tileset === 0) {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
@@ -11570,22 +11572,35 @@ function convertAddress(address: number) {
     if (address >= 0x7D00) {
         return 0x600 + ((address - 0x7D00) / 0x20);
     } else {
-        throw new Error("unimplemented");
+        return 0x900 + ((address - 0x2000) / 0x20);
     }
 }
 
 function convertIndex(index: number) {
-    return (0x20 * (index - 0x600)) + 0x7D00;
+    if (index < 0x900) {
+        return (0x20 * (index - 0x600)) + 0x7D00;
+    } else {
+        return (0x20 * (index - 0x900)) + 0x2000;
+    }
 }
 
-function original_animate(start: number, index: number) {
+function original_animate(start: number, index: number, stacked = false) {
     const fromIndex = exAniIndex2div(start);
-    
+
     const srcGfx = exAniIndex2gfx(start);
     const destGfx = index2page(index);
 
     for (let i = 0; i < 4; i++) {
-        destGfx[index+i] = srcGfx[fromIndex+i];
+        if (stacked) {
+            if (intdiv(i, 2) === 0) {
+                destGfx[index2index(index+i)] = srcGfx[fromIndex+i];
+            } else {
+                destGfx[index2index(14+index+i)] = srcGfx[fromIndex+i];
+            }
+            
+        } else {
+            destGfx[index2index(index+i)] = srcGfx[fromIndex+i];
+        }   
     }
 }
 
@@ -11607,5 +11622,5 @@ function original_animation2() {
     original_animate(block, 0x68);
     original_animate(midway, 0x74);
     original_animate(spinblock, 0xEA);
+    original_animate(berry, 0x80, true);
 }
-
