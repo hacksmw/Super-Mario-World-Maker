@@ -4041,7 +4041,6 @@ function original_animation() {
     animate_4_8x8s_line(fg2bmp, anibmp, 0x6A, 0xD8);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x70, 0x110);
     animate_4_8x8s_line(fg1bmp, anibmp, 0x7C, 0x178);
-    /*
     // berry
     if (isLMModified) {
         fg2bmp[0x00 + 0] = mariobmp[0x2E0 + 0];
@@ -4049,7 +4048,6 @@ function original_animation() {
         fg2bmp[0x10 + 0] = mariobmp[0x2E0 + 2];
         fg2bmp[0x10 + 1] = mariobmp[0x2E0 + 3];
     }
-    */
     if (tileset === 0) {
         animate_4_8x8s_line(fg1bmp, anibmp, 0x40, 0xC0);
         animate_4_8x8s_line(fg1bmp, anibmp, 0x44, 0x98);
