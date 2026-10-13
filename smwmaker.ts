@@ -11613,12 +11613,28 @@ function original_animation2() {
     const midway: number = convertAddress(read2(0x05B9B1));
     const spinblock: number = convertAddress(read2(0x05B9B9));
     const berry: number = convertAddress(read2(0x05B9C1));
+    const plant: number = convertAddress(read2(0x5b9e1));
+    const swc: number = convertAddress(read2(0x5b9f9));
+    const water: number = convertAddress(read2(0x5ba09));
+    const lava: number = convertAddress(read2(0x5ba11));
 
     original_animate(smb3block, 0x40);
+
+    return;
+
     original_animate(questionBox, 0x60);
     original_animate(noteblock, 0x64);
     original_animate(block, 0x68);
     original_animate(midway, 0x74);
     original_animate(spinblock, 0xEA);
     original_animate(berry, 0x80, true);
+    original_animate(plant, 0x5C);
+    original_animate(swc, 0xDA);
+    original_animate(water, 0x70);
+    original_animate(lava, 0x4C);
+
+
+    for (let i = 0; i < 52; i++) {
+        console.log("i = " + (tblPointer + i * 8).toString(16) + ", start = " + convertAddress(read2(tblPointer + i * 8)).toString(16));
+    }
 }
