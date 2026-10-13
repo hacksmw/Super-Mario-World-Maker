@@ -6568,17 +6568,9 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             // fuzzball
             return getSprImg4x4([0x1C8, 0x1C9, 0x1D8, 0x1D9], 0xA, true);
             break;
-        case 0x70:
-            // pokey
-            return getSprImg4x4([0x18A, 0x18B, 0x19A, 0x19B], 0xA);
-            break;
         case 0x87:
             // lakitu's cloud
             return getSprImg4x4([0x60, 0x61, 0x70, 0x71], 0x8);
-            break;
-        case 0x64:
-            // rope mechanism
-            return getSprImg4x4([0x1C0, 0x1C1, 0x1D0, 0x1D1], 0xB);
             break;
         case 0x4C:
             // exploding block
@@ -6981,6 +6973,14 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
                 return getSprImg4x4([0xE0, 0xE1, 0xF0, 0xF1], color);
             }
             break;
+        case 0x3F:
+            // para goomba
+            return getSprImg4x4([0x1E8, 0x1E9, 0x1F8, 0x1F9], 0xA);
+            break;
+        case 0x40:
+            // para bomb
+            return getSprImg4x4([0x1C2, 0x1C3, 0x1D2, 0x1D3], 0xD);
+            break;
         case 0xCC:
             // para goomba generator
             return getSprImg4x4([0x1E8, 0x1E9, 0x1F8, 0x1F9], 0xA);
@@ -7009,6 +7009,26 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
 
                 return canvas.toDataURL("image/png");
             }
+            break;
+        case 0x1E:
+            // lakitu
+            return getSprImg4x4([0x60, 0x61, 0x70, 0x71], 0xC);
+            break
+        case 0x20:
+            // magikoopa's magic
+            return getSprImg4x4([0x188, 0x189, 0x198, null], 0xA);
+            break;
+        case 0x61:
+            // skulls
+            return getSprImg4x4([0x1E0, 0x1E1, 0x1F0, 0x1F1], 0x9);
+            break;
+        case 0x86:
+            // wiggler
+            return getSprImg4x4([0x18C, 0x18D, 0x19C, 0x19D], 0xA);
+            break;
+        case 0xA8:
+            // blargg
+            return getSprImg4x4([0x1A0, 0x1A1, 0x1B0, 0x1B1], 0xA);
             break;
         default: 
             {
