@@ -2277,6 +2277,11 @@ function create_object_view(obj, index, type = "layer1") {
         screen = spr.screenNum;
         x = getSprX(spr);
         y = getSprY(spr);
+        if (num === 0x5) {
+            console.log("x :", x);
+            console.log("y :", y);
+            console.log("screenNum: ", screen);
+        }
         myObject.className = "sprite";
         myObject.style.backgroundColor = 'lightblue';
         myObject.style.zIndex = (0x1800000).toString();
@@ -5428,6 +5433,18 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x6C:
+            return getSprImgFreesize([[null, 0x3D, 0x3D, 0x3D, 0x3D, 0x3D], [null, null, null, null, null, null]], 0xD);
+            break;
+        case 0x6B:
+            // spring board;
+            return getSprImgFreesize([[0x3D, 0x3D, 0x3D, 0x3D, 0x3D, null], [null, null, null, null, null, null]], 0xD);
+        case 0x59:
+            // turn block bridge vertical
+            return getSprImgFreesize([[0x40, 0x41], [0x50, 0x51]], 0x8);
+        case 0x5A:
+            // turn block bridge
+            return getSprImgFreesize([[0x40, 0x41], [0x50, 0x51]], 0x8);
         case 0xCA:
             // missile launcher
             return getSprImgFreesize([[null, 0x184, 0x185, null], [null, 0x194, 0x195, null], [0x180, 0x181, 0x182, 0x183], [0x190, 0x191, 0x192, 0x193]], 0x9);
@@ -7823,11 +7840,15 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x5A:
+            return 5;
         case 0xCA:
         case 0x34:
             return 2;
         case 0x86:
             return 4;
+        case 0x6B:
+        case 0x6C:
         case 0xC3:
             return 3;
         case 0x4B:
@@ -7850,6 +7871,7 @@ function getSprHeight(sprNum, extra = 0) {
     switch (sprNum) {
         case 0xCA:
             return 2;
+        case 0x59:
         case 0x70:
             return 5;
         case 0xC3:
@@ -7880,6 +7902,10 @@ function getSprX(spr) {
         return spr.xPosition;
     }
     switch (spr.spriteID) {
+        case 0x6C:
+            return spr.xPosition - 3;
+        case 0x5A:
+            return spr.xPosition - 2;
         case 0x34:
         case 0xC3:
             return spr.xPosition - 1;
@@ -7894,6 +7920,8 @@ function getSprY(spr) {
         return spr.yPosition;
     }
     switch (spr.spriteID) {
+        case 0x59:
+            return spr.yPosition - 2;
         case 0xCA:
             return spr.yPosition + 1;
         case 0x4B:
@@ -7919,6 +7947,10 @@ function getSprRealX(x, spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x6C:
+            return x + 3;
+        case 0x5A:
+            return x + 2;
         case 0x34:
         case 0xC3:
             return x + 1;
@@ -7932,6 +7964,8 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x59:
+            return y + 2;
         case 0xCA:
             return y - 1;
         case 0x4B:
