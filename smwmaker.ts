@@ -4684,10 +4684,21 @@ function loadGraphics() {
         // FG/BG GFX
         try {
             fg1gfx = getUncompressedGFX(fg1)
+            fg2gfx = getUncompressedGFX(fg2)
+            bggfx  = getUncompressedGFX(bg)
+            fg3gfx = getUncompressedGFX(fg3);  
+            sp1gfx = getUncompressedGFX(sp1);
+            sp2gfx = getUncompressedGFX(sp2);
+            sp3gfx = getUncompressedGFX(sp3);
+            sp4gfx = getUncompressedGFX(sp4);
+            bg2gfx  = getUncompressedGFX(bg2);
+            bg3gfx  = getUncompressedGFX(bg3);
+            ani2gfx = getUncompressedGFX(ani2);
         } catch (e) {
-            log("fg1 gfx error");
+            log("custom gfx error");
         }
 
+        /*
         try {
             fg2gfx = getUncompressedGFX(fg2)
         } catch (e) {
@@ -4749,6 +4760,7 @@ function loadGraphics() {
         } catch (e) {
             log("an2 gfx error");
         }
+        */
     }
 
     // Animation graphics
@@ -6623,10 +6635,40 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x43:
+            return getSprImgFreesize([[0x1CE,0x1CF],[0x1DE,0x1DF],[0x1EE,0x1EF],[0x1FE,0x1FF]], 0xB);
+        case 0x23:
+        case 0x25:
+            //red net koopa
+            return getSprImgFreesize([[0x107,0x108],[0x117,0x118],[0x127,0x128],[0x137,0x138]], 0xC);
+        case 0x22:
+        case 0x24:
+            // green net koopa
+            return getSprImgFreesize([[0x107,0x108],[0x117,0x118],[0x127,0x128],[0x137,0x138]], 0xD);
+        case 0x1F:
+            // magikoopa
+            return getSprImgFreesize([[0x1A4,0x1A5],[0x1B4,0x1B5],[0x1C4,0x1C5],[0x1D4,0x1D5]], 0xB);
+        case 0x1A:
+            // classic plant
+            return getSprImgFreesize([[0xAE,0xAF],[0xBE,0xBF],[0xCE,0xCF],[0xDE,0xDF]], 0xC, true);
+        case 0xAB:
+            // rex
+            return getSprImgFreesize([[0x18A,0x18B],[0x19A,0x19B],[0x1AA,0x1AB],[0x1BA,0x1BB]], 0xB);
         case 0x05:
             // red koopa
             return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0xA3],[0xB2,0xB3]], 0xC);
             break;
+        case 0x04:
+            // green koopa
+            return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0xA3],[0xB2,0xB3]], 0xD);
+            break;
+        case 0x06:
+            // blue koopa
+            return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0xA3],[0xB2,0xB3]], 0xB);
+        case 0x07:
+            // yellow koopa
+            return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0xA3],[0xB2,0xB3]], 0xA);
+
         case 0x8A:
             // yoshi's house bird
             return getSprImg4x4([null, null, null, 0x1D1], 0xA, true);
@@ -6994,7 +7036,7 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             break;
         case 0x3E:
             // pow switch
-            return getSprImg4x4([0x42, 0x43, 0x52, 0x53], 0x9);
+            return getSprImg4x4([0x42, 0x43, 0x52, 0x53], 0xB);
             break;
         case 0x21:
             // moving coin
@@ -7105,6 +7147,8 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
                 return canvas.toDataURL("image/png");
             }
             break;
+        case 0xAE:
+            // fishin' boo
         case 0x1E:
             // lakitu
             return getSprImg4x4([0x60, 0x61, 0x70, 0x71], 0xC);
@@ -7123,7 +7167,7 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             break;
         case 0xA8:
             // blargg
-            return getSprImg4x4([0x1A0, 0x1A1, 0x1B0, 0x1B1], 0xA);
+            return getSprImgFreesize([[null, null], [0x1A0, 0x1A1], [0x1B0, 0x1B1], [null, null]], 0xA);
             break;
         default: 
             {
@@ -8792,7 +8836,19 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xA8:
+        case 0x43:
+        case 0x25:
+        case 0x24:
+        case 0x22:
+        case 0x23:
+        case 0x1F:
+        case 0x1A:
+        case 0xAB:
+        case 0x4:
         case 0x5:
+        case 0x6:
+        case 0x7:
             return 2;
             break;
         default:
@@ -8817,7 +8873,15 @@ function getSprY(spr: Sprite) {
         return spr.yPosition
     }
     switch (spr.spriteID) {
+        case 0xA8:
+            return spr.yPosition - 1;
+        case 0x1A:
+            return spr.yPosition - 2;
+        case 0xAB:
+        case 0x04:
         case 0x05:
+        case 0x06:
+        case 0x07:
             return spr.yPosition - 1;
         default:
             break;
@@ -8841,7 +8905,15 @@ function getSprRealY(y: number, spr: Sprite) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x1A:
+            return y + 2;
+        case 0xA8:
+        case 0x1F:
+        case 0xAB:
+        case 0x04:
         case 0x05:
+        case 0x06:
+        case 0x07:
             return y + 1;
             break;
         default:
@@ -10166,7 +10238,9 @@ function original_animation2() {
     const water: number = convertAddress(read2(0x5ba09));
     const lava: number = convertAddress(read2(0x5ba11));
 
-    original_animate(smb3block, 0x40);
+    if (tileset !== 0x1) {
+        original_animate(smb3block, 0x40);
+    }
 
     return;
 
