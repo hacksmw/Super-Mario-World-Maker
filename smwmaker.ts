@@ -2744,7 +2744,7 @@ function render() {
         main.style.overflowY = "hidden";
         if (lmVer >= 3.0) {
             stage.style.height = (16 * (horizontalLevelModesHeight[horizontalLevelMode])) + 'px';
-            stage.style.width = (256 * Math.min(horizontalLevelModesWidth[horizontalLevelMode])) + 'px';
+            stage.style.width = (256 * Math.min((screenLength + 1), horizontalLevelModesWidth[horizontalLevelMode])) + 'px';
         } else {
             stage.style.height = (16 * 27) + 'px';
             stage.style.width = (256 * (screenLength + 1)) + 'px';
@@ -4856,10 +4856,12 @@ function original_animation() {
 
     // berry
     if (isLMModified) {
+        
         fg2bmp[0x00 + 0] = mariobmp[0x2E0 + 0];
         fg2bmp[0x00 + 1] = mariobmp[0x2E0 + 1];
         fg2bmp[0x10 + 0] = mariobmp[0x2E0 + 2];
         fg2bmp[0x10 + 1] = mariobmp[0x2E0 + 3];
+        
     }
 
     if (tileset === 0) {
@@ -6575,7 +6577,9 @@ function getSprImg4x4(tiles: any, color: number, flipx: boolean = false) {
     return canvas.toDataURL('image/png');
 }
 
-function getSprImgFreesize(tiles: any, color: number, flipx: boolean = false) {
+function getSprImgFreesize(tiles: any, color: number, flipx: boolean = false, flipy: boolean = false, 
+    colorMap: any = null, flipXMap: any = null, flipYMap: any = null) {
+
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
     let width: number, height: number;
@@ -6597,14 +6601,41 @@ function getSprImgFreesize(tiles: any, color: number, flipx: boolean = false) {
 
     const result: any[][] = [];
 
+    if (colorMap === null) {
+        colorMap = new Array(height);
+        for (let i = 0; i < height; i++) {
+            colorMap[i] = new Array(width);
+            for (let j = 0; j < width; j++) {
+                colorMap[i][j] = null;
+            }
+        }
+    }
+
+    if (flipXMap === null) {
+        flipXMap = new Array(height);
+        for (let i = 0; i < height; i++) {
+            flipXMap[i] = new Array(width);
+            for (let j = 0; j < width; j++) {
+                flipXMap[i][j] = null;
+            }
+        }
+    }
+
     for (let i = 0; i < height; i++) {
         result[i] = [];
         for (let j = 0; j < width; j++) {
             if (j < tiles[i].length && tiles[i][j] !== null) {
-                if (flipx) {
-                    result[i].push(getSpr8x8Img(tiles[i][j], color, true));
+                let localColor;
+                if (colorMap[i][j] !== null) {
+                    localColor = colorMap[i][j];
                 } else {
-                    result[i].push(getSpr8x8Img(tiles[i][j], color));
+                    localColor = color;
+                }
+
+                if (flipx) {
+                    result[i].push(getSpr8x8Img(tiles[i][j], localColor, true));
+                } else {
+                    result[i].push(getSpr8x8Img(tiles[i][j], localColor));
                 }
             } else {
                 result[i].push(null);
@@ -6635,7 +6666,52 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0xCA:
+            // missile launcher
+            return getSprImgFreesize([[null, 0x184, 0x185, null], [null, 0x194, 0x195, null], [0x180, 0x181, 0x182, 0x183], [0x190, 0x191, 0x192, 0x193]], 0x9);
+        case 0x70:
+            // pokey
+            return getSprImgFreesize([[0x18A, 0x18B], [0x19A, 0x19B], 
+                [0x1E8, 0x1E9], [0x1F8, 0x1F9], [0x1E8, 0x1E9], [0x1F8, 0x1F9], [0x1E8, 0x1E9], [0x1F8, 0x1F9], [0x1E8, 0x1E9], [0x1F8, 0x1F9]
+            ], 0xA); 
+            break;
+        case 0x34:
+            // boss fireball
+            return getSprImgFreesize([[0x14A, 0x14B, 0x14C, 0x14D], [0x15A, 0x15B, 0x15C, 0x15D]], 0xA, true); 
+            break;
+        case 0x4B:
+            return getSprImgFreesize([
+                [null, 0x1EC, 0x1ED, null], 
+                [null, 0x1FC, 0x1FD, null],
+                [null, 0x1EE, 0x1EF, null],
+                [null, 0x1FE, 0x1ff, null]
+            ], 0x0D);
+        case 0xC3:
+            // big fish
+            return getSprImgFreesize([
+                [null, null, null, null, null],
+                [null, 0x186, 0x187, 0x1C0, 0x1C1],
+                [null, 0x196, 0x197, 0x1D0, 0x1D1],
+                [null, 0x1A6, 0x1A7, 0x1C2, 0x1C3],
+                [null, 0x1B6, 0x1B7, 0x1D2, 0x1D3],
+                [null, null, null, null, null]
+            ], 0xE);
+        case 0x49:
+            // pipe
+            return getSprImgFreesize([[0x1A4, 0x1A5, 0x1A6, 0x1A7], [0x1B4, 0x1B5, 0x1B6, 0x1B7]], 0xD);
+        case 0x44:
+            // missile
+            return getSprImgFreesize([[0x180, 0x181, 0x182, 0x183], [0x190, 0x191, 0x192, 0x193]], 0x9, true);
+        case 0xD0:
+            // dolphin generator
+            return getSprImgFreesize([[0x188, 0x189, 0x1E7, 0x1E8, 0x1E9, null], [0x198, 0x199, 0x1F7, 0x1F8, 0x1F9, null]], 0xB, true);
+        case 0xCF:
+        case 0x42:
+        case 0x41:
+            // dolpins
+            return getSprImgFreesize([[0x188, 0x189, 0x1E7, 0x1E8, 0x1E9, null], [0x198, 0x199, 0x1F7, 0x1F8, 0x1F9, null]], 0xB);
         case 0x43:
+            // dolphin vertical
             return getSprImgFreesize([[0x1CE,0x1CF],[0x1DE,0x1DF],[0x1EE,0x1EF],[0x1FE,0x1FF]], 0xB);
         case 0x23:
         case 0x25:
@@ -6668,7 +6744,6 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
         case 0x07:
             // yellow koopa
             return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0xA3],[0xB2,0xB3]], 0xA);
-
         case 0x8A:
             // yoshi's house bird
             return getSprImg4x4([null, null, null, 0x1D1], 0xA, true);
@@ -7163,7 +7238,10 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             break;
         case 0x86:
             // wiggler
-            return getSprImg4x4([0x18C, 0x18D, 0x19C, 0x19D], 0xA);
+            return getSprImgFreesize([
+                [0x18C, 0x18D, 0x1C4, 0x1C5, 0x1C6, 0x1C7, 0x1C8, 0x1C9],
+                [0x19C, 0x19D, 0x1D4, 0x1D5, 0x1D6, 0x1D7, 0x1D8, 0x1D9],
+            ], 0x0A);
             break;
         case 0xA8:
             // blargg
@@ -8828,6 +8906,25 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
     if (extra !== 0) {
         return 1;
     }
+    switch (sprNum) {
+        case 0xCA:
+        case 0x34:
+            return 2;
+        case 0x86:
+            return 4;
+        case 0xC3:
+            return 3;
+        case 0x4B:
+        case 0x49:
+        case 0x44:
+            return 2;
+        case 0x42:
+        case 0x41:
+        case 0xCF:
+        case 0xD0:
+            return 3;
+            break;
+    }
     return 1;
 }
 
@@ -8836,6 +8933,13 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xCA:
+            return 2;
+        case 0x70:
+            return 5;
+        case 0xC3:
+            return 3;
+        case 0x4B:
         case 0xA8:
         case 0x43:
         case 0x25:
@@ -8862,6 +8966,11 @@ function getSprX(spr: Sprite) {
         return spr.xPosition;
     }
     switch (spr.spriteID) {
+        
+        case 0x34:
+        case 0xC3:
+            return spr.xPosition - 1;
+            break;
         default:
             break;
     }
@@ -8873,6 +8982,11 @@ function getSprY(spr: Sprite) {
         return spr.yPosition
     }
     switch (spr.spriteID) {
+        case 0xCA:
+            return spr.yPosition + 1;
+        case 0x4B:
+        case 0xC3:
+            return spr.yPosition - 1;
         case 0xA8:
             return spr.yPosition - 1;
         case 0x1A:
@@ -8894,6 +9008,9 @@ function getSprRealX(x: number, spr: Sprite) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x34:
+        case 0xC3:
+            return x + 1;
         default:
             break;
     }
@@ -8905,6 +9022,11 @@ function getSprRealY(y: number, spr: Sprite) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xCA:
+            return y - 1;
+        case 0x4B:
+        case 0xC3:
+            return y + 1;
         case 0x1A:
             return y + 2;
         case 0xA8:
@@ -8921,8 +9043,6 @@ function getSprRealY(y: number, spr: Sprite) {
     }
     return y;
 }
-
-
 
 function getBackAreaColor(backAreaColorNum: number) {
     let temp: number;
@@ -9117,7 +9237,8 @@ function fileOpen(): void {
             try {
                 loadROM(levelNum, fileData);
             } catch (e: any) {
-                throw e;
+                debugger;
+                //throw e;
                 //alert(e.message)
                 //unload();
             }
