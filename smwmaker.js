@@ -7974,7 +7974,7 @@ function getLevelBG() {
 function renderBG() {
     const canvas = document.createElement("canvas");
     canvas.width = 32 * 16;
-    canvas.height = 27 * 16;
+    canvas.height = 32 * 16;
     let bgBitmap = getLevelBG();
     const ctx = canvas.getContext("2d");
     if (bgBitmap !== null) {

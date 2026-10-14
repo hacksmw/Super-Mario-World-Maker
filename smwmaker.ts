@@ -9139,7 +9139,7 @@ function renderBG() {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     
     canvas.width = 32 * 16;
-    canvas.height = 27 * 16;
+    canvas.height = 32 * 16;
 
     let bgBitmap = getLevelBG();
 
