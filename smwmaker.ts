@@ -762,19 +762,19 @@ function stage_onmousemove(this: any, e: MouseEvent): void {
 
     if (!isVertical) {
         if (editMode !== "sprite") {
-            target!.style.left = (((data[index].screen)+(data[index].x)) * 16) + 'px';
+            target!.style.left = (((data[index].screen*16)+(data[index].x)) * 16) + 'px';
             target!.style.top = (((data[index].y)) * 16) + 'px';
         } else {
-            target!.style.left = (((sprites[index].screenNum)+(sprites[index].xPosition)) * 16) + 'px';
+            target!.style.left = (((sprites[index].screenNum*16)+(sprites[index].xPosition)) * 16) + 'px';
             target!.style.top = (((sprites[index].yPosition)) * 16) + 'px';
         }
     } else {
         if (editMode !== "sprite") {
             target!.style.left = (((data[index].y)) * 16) + 'px';
-            target!.style.top = (((data[index].screen)+(data[index].x)) * 16) + 'px';
+            target!.style.top = (((data[index].screen*16)+(data[index].x)) * 16) + 'px';
         } else {
             target!.style.left = (((sprites[index].yPosition)) * 16) + 'px';
-            target!.style.top = (((sprites[index].screenNum)+(sprites[index].xPosition)) * 16) + 'px';
+            target!.style.top = (((sprites[index].screenNum*16)+(sprites[index].xPosition)) * 16) + 'px';
         }
     }
 
@@ -5597,9 +5597,9 @@ function bone_like_image(objNum: number, settings: number, tileset: number = 0, 
     const ctx = canvas.getContext("2d");
 
     for (let j = 0; j < width; j++) {
-        ctx!.putImageData(top, j * 16, 0);
         ctx!.putImageData(btm, j * 16, (height-1)*16);
-
+        ctx!.putImageData(top, j * 16, 0);
+        
         for (let i = 1; i < height - 1; i++) {
             ctx!.putImageData(mid, j * 16, i * 16);
         }
