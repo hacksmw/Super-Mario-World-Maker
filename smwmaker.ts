@@ -745,11 +745,11 @@ function stage_onmousemove(this: any, e: MouseEvent): void {
     } else {
         sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            sprites[index].yPosition = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111;
-            sprites[index].xPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b1111; 
+            sprites[index].yPosition = getSprRealY(Math.floor((prevObjLeft + deltaX) / 16) % 16, sprites[index]) & 0b11111;
+            sprites[index].xPosition = getSprRealX(Math.floor((prevObjTop + deltaY) / 16), sprites[index]) & 0b1111; 
         } else {
-            sprites[index].xPosition = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111;
-            sprites[index].yPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b11111;             
+            sprites[index].xPosition = getSprRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16), sprites[index]) & 0b1111;
+            sprites[index].yPosition = getSprRealY(Math.floor((prevObjTop + deltaY) / 16), sprites[index]) & 0b11111;             
         }
     }
 
@@ -890,7 +890,7 @@ function stage_onkeydown(this: any, e: KeyboardEvent): void {
 
             sprites.push(spr);
             
-            //render();
+            
 
             
 
@@ -1166,6 +1166,19 @@ function spr_ondblclick(this: any, e: MouseEvent): void {
         this.style.backgroundColor = '';
         this.style.backgroundImage = `url(${img})`;
     }   
+
+    const screen = spr.screenNum;
+
+    const x = getSprX(spr);
+    const y = getSprY(spr);
+
+    if (isVertical) {
+        this.style.top = ((256 * screen) + (x * 16)) + 'px';
+        this.style.left = (y * 16) + 'px';
+    } else {
+        this.style.top = (y * 16) + 'px';
+        this.style.left = ((256 * screen) + (x * 16)) + 'px';
+    }
 }
 
 function window_onload(): void {
@@ -2654,8 +2667,8 @@ function create_object_view(obj: any, index: number, type: string = "layer1") {
 
         screen = spr.screenNum;
 
-        x = spr.xPosition;
-        y = spr.yPosition;
+        x = getSprX(spr);
+        y = getSprY(spr);
 
         myObject.className = "sprite";
         myObject.style.backgroundColor = 'lightblue';
@@ -3360,6 +3373,7 @@ function exAniIndex2div(index: number) {
     } else if (0x900 <= index && index <= 0xBE7) {
         return index - 0x900;
     } else {
+        debugger;
         throw new Error();
     }
 }
@@ -3400,7 +3414,7 @@ function renderExAnimation() {
             const type: number = ani.type;
             const used: number = ani.used;
 
-            if (!used) {
+            if ((!used) || type === 0) {
                 continue;
             }
 
@@ -3684,7 +3698,7 @@ function loadExAnimations() {
             console.log("Global ExAnimation is disabled")
         }
 
-        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF)  !== 0) {
+        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF)  !== 0 /*&& read1(lvlAnisPointer + 1) !== 0*/) {
             console.log("Level ExAnimation is enabled")
             loadExAnimation(lvlAnisPointer, levelAnis); 
             console.log("levelAnis.length = " + levelAnis.length);
@@ -3773,8 +3787,13 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
 
             const ani = new ExAni();
             
-            ani.used = 1;
-            ani.type = aniType;
+            if (ani.type !== 0) {
+                
+                ani.used = 1;
+                ani.type = aniType;
+            } else {
+                continue;
+            }
             ani.trigger = trigger;
             ani.frames = frames;
             ani.palDest = palDest;
@@ -8713,18 +8732,46 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
 }
 
 function getSprX(spr: Sprite) {
+    if (spr.extra !== 0) {
+        return spr.xPosition;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return spr.xPosition;
 }
 
 function getSprY(spr: Sprite) {
+    if (spr.extra !== 0) {
+        return spr.yPosition
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return spr.yPosition;
 }
 
 function getSprRealX(x: number, spr: Sprite) {
+    if (spr.extra !== 0) {
+        return x;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return x;
 }
 
 function getSprRealY(y: number, spr: Sprite) {
+    if (spr.extra !== 0) {
+        return y;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return y;
 }
 

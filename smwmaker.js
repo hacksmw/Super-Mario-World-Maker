@@ -651,12 +651,12 @@ function stage_onmousemove(e) {
     else {
         sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            sprites[index].yPosition = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b11111;
-            sprites[index].xPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b1111;
+            sprites[index].yPosition = getSprRealY(Math.floor((prevObjLeft + deltaX) / 16) % 16, sprites[index]) & 0b11111;
+            sprites[index].xPosition = getSprRealX(Math.floor((prevObjTop + deltaY) / 16), sprites[index]) & 0b1111;
         }
         else {
-            sprites[index].xPosition = (Math.floor((prevObjLeft + deltaX) / 16) % 16) & 0b1111;
-            sprites[index].yPosition = Math.floor((prevObjTop + deltaY) / 16) & 0b11111;
+            sprites[index].xPosition = getSprRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16), sprites[index]) & 0b1111;
+            sprites[index].yPosition = getSprRealY(Math.floor((prevObjTop + deltaY) / 16), sprites[index]) & 0b11111;
         }
     }
     target.style.left = ((prevObjLeft + deltaX)) + "px";
@@ -772,7 +772,6 @@ function stage_onkeydown(e) {
             spr.extra = 0;
             spr.spriteID = val;
             sprites.push(spr);
-            //render();
             let stage = document.querySelector("#stage");
             let myObject = create_object_view(spr, sprites.length - 1, "sprite");
             stage.appendChild(myObject);
@@ -1001,6 +1000,17 @@ function spr_ondblclick(e) {
         this.style.border = "";
         this.style.backgroundColor = '';
         this.style.backgroundImage = `url(${img})`;
+    }
+    const screen = spr.screenNum;
+    const x = getSprX(spr);
+    const y = getSprY(spr);
+    if (isVertical) {
+        this.style.top = ((256 * screen) + (x * 16)) + 'px';
+        this.style.left = (y * 16) + 'px';
+    }
+    else {
+        this.style.top = (y * 16) + 'px';
+        this.style.left = ((256 * screen) + (x * 16)) + 'px';
     }
 }
 function window_onload() {
@@ -2265,8 +2275,8 @@ function create_object_view(obj, index, type = "layer1") {
         data = spr.extra;
         img = getSprImg(num, data);
         screen = spr.screenNum;
-        x = spr.xPosition;
-        y = spr.yPosition;
+        x = getSprX(spr);
+        y = getSprY(spr);
         myObject.className = "sprite";
         myObject.style.backgroundColor = 'lightblue';
         myObject.style.zIndex = (0x1800000).toString();
@@ -2834,6 +2844,7 @@ function exAniIndex2div(index) {
         return index - 0x900;
     }
     else {
+        debugger;
         throw new Error();
     }
 }
@@ -2873,7 +2884,7 @@ function renderExAnimation() {
             const ani = anis[j];
             const type = ani.type;
             const used = ani.used;
-            if (!used) {
+            if ((!used) || type === 0) {
                 continue;
             }
             if (type < 0x13) {
@@ -3113,7 +3124,7 @@ function loadExAnimations() {
         else {
             console.log("Global ExAnimation is disabled");
         }
-        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0) {
+        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0 /*&& read1(lvlAnisPointer + 1) !== 0*/) {
             console.log("Level ExAnimation is enabled");
             loadExAnimation(lvlAnisPointer, levelAnis);
             console.log("levelAnis.length = " + levelAnis.length);
@@ -3196,8 +3207,13 @@ function loadExAnimation(pointer, anis) {
                 frameData.push(index);
             }
             const ani = new ExAni();
-            ani.used = 1;
-            ani.type = aniType;
+            if (ani.type !== 0) {
+                ani.used = 1;
+                ani.type = aniType;
+            }
+            else {
+                continue;
+            }
             ani.trigger = trigger;
             ani.frames = frames;
             ani.palDest = palDest;
@@ -7644,15 +7660,43 @@ function getSprHeight(sprNum, extra = 0) {
     return 1;
 }
 function getSprX(spr) {
+    if (spr.extra !== 0) {
+        return spr.xPosition;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return spr.xPosition;
 }
 function getSprY(spr) {
+    if (spr.extra !== 0) {
+        return spr.yPosition;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return spr.yPosition;
 }
 function getSprRealX(x, spr) {
+    if (spr.extra !== 0) {
+        return x;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return x;
 }
 function getSprRealY(y, spr) {
+    if (spr.extra !== 0) {
+        return y;
+    }
+    switch (spr.spriteID) {
+        default:
+            break;
+    }
     return y;
 }
 function getBackAreaColor(backAreaColorNum) {
