@@ -760,8 +760,24 @@ function stage_onmousemove(this: any, e: MouseEvent): void {
         }
     }
 
-    target!.style.left = ((prevObjLeft + deltaX)) + "px";
-    target!.style.top = ((prevObjTop + deltaY)) + "px";
+    if (!isVertical) {
+        if (editMode !== "sprite") {
+            target!.style.left = (((data[index].screen)+(data[index].x)) * 16) + 'px';
+            target!.style.top = (((data[index].y)) * 16) + 'px';
+        } else {
+            target!.style.left = (((sprites[index].screenNum)+(sprites[index].xPosition)) * 16) + 'px';
+            target!.style.top = (((sprites[index].yPosition)) * 16) + 'px';
+        }
+    } else {
+        if (editMode !== "sprite") {
+            target!.style.left = (((data[index].y)) * 16) + 'px';
+            target!.style.top = (((data[index].screen)+(data[index].x)) * 16) + 'px';
+        } else {
+            target!.style.left = (((sprites[index].yPosition)) * 16) + 'px';
+            target!.style.top = (((sprites[index].screenNum)+(sprites[index].xPosition)) * 16) + 'px';
+        }
+    }
+
 }
 
 function obj_onmousedown(this: any, e: MouseEvent) {
