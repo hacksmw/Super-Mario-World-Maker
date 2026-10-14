@@ -2726,8 +2726,14 @@ function render() {
     } else {
         main.style.overflowX = "show";
         main.style.overflowY = "hidden";
-        stage.style.height = (16 * 27) + 'px';
-        stage.style.width = (256 * (screenLength + 1)) + 'px';
+        if (lmVer >= 3.0) {
+            stage.style.height = (16 * (horizontalLevelModesHeight[horizontalLevelMode])) + 'px';
+            stage.style.width = (256 * Math.min(horizontalLevelModesWidth[horizontalLevelMode])) + 'px';
+        } else {
+            stage.style.height = (16 * 27) + 'px';
+            stage.style.width = (256 * (screenLength + 1)) + 'px';
+        }
+        
     }
     
     stage.onmousedown = stage_onmousedown;
@@ -3800,7 +3806,6 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
         
         let settings: number;
         let objNum: number;  
-
         
         xposition = (fileData[snes2pc(pointer + 1)] & 0b1111);
         yposition = (fileData[snes2pc(pointer + 0)] & 0b11111);
@@ -3818,7 +3823,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                 currentScreen++;
             }
             let newObj: Obj;
-            newObj = new Obj(objNum, xposition, yposition, settings);
+            newObj = new Obj(objNum, xposition, ((currentVScreen) * 32) + yposition, settings);
             newObj.screen = currentScreen;
             objList.push(newObj);
         } else {
@@ -3860,6 +3865,8 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
 
                     currentScreen = to;
                     currentVScreen = toV;
+
+                    console.log("toV: " + toV);
 
                 } else {
                     if (settings === 0x02) {
@@ -3959,7 +3966,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
 
                             const number = ((((fileData[snes2pc(pointer + 1)] >>> 4) & 0b1) << 8) | (fileData[snes2pc(pointer + 3)]));
                             
-                            const newObj: Obj = new Obj(objNum, xposition, yposition, settings);
+                            const newObj: Obj = new Obj(objNum, xposition, (currentVScreen * 32) + yposition, settings);
                             
                             newObj.screen = currentScreen;
                             newObj.tileNum = number;
@@ -3989,7 +3996,7 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                             const extB = fileData[snes2pc(pointer + 4)];
                             const settings = fileData[snes2pc(pointer + 2)];
 
-                            const newObj: Obj = new Obj(objNum, x, y, settings);
+                            const newObj: Obj = new Obj(objNum, x, (currentVScreen * 32) + y, settings);
                             
                             newObj.screen = currentScreen;
                             newObj.extA = extA;
@@ -4121,11 +4128,9 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
                                 } else {
                                     throw new Error("undefined");
                                 }
-                            }
+                            }                           
 
-                            
-
-                            const newObj: Obj = new Obj(objNum, x, y, settings);
+                            const newObj: Obj = new Obj(objNum, x, (currentVScreen * 32) + y, settings);
                             
                             newObj.screen = currentScreen;
                             
@@ -8001,7 +8006,7 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
         rightbtm = (0x13C);
 
         if (type === 1 || type === 3) {
-            rightbtm = (0x138);
+            rightbtm = (0x13F);
         }
 
         

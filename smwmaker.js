@@ -2320,8 +2320,14 @@ function render() {
     else {
         main.style.overflowX = "show";
         main.style.overflowY = "hidden";
-        stage.style.height = (16 * 27) + 'px';
-        stage.style.width = (256 * (screenLength + 1)) + 'px';
+        if (lmVer >= 3.0) {
+            stage.style.height = (16 * (horizontalLevelModesHeight[horizontalLevelMode])) + 'px';
+            stage.style.width = (256 * Math.min(horizontalLevelModesWidth[horizontalLevelMode])) + 'px';
+        }
+        else {
+            stage.style.height = (16 * 27) + 'px';
+            stage.style.width = (256 * (screenLength + 1)) + 'px';
+        }
     }
     stage.onmousedown = stage_onmousedown;
     stage.onmousemove = stage_onmousemove;
@@ -3228,7 +3234,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                 currentScreen++;
             }
             let newObj;
-            newObj = new Obj(objNum, xposition, yposition, settings);
+            newObj = new Obj(objNum, xposition, ((currentVScreen) * 32) + yposition, settings);
             newObj.screen = currentScreen;
             objList.push(newObj);
         }
@@ -3265,6 +3271,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                     let toV = (fileData[snes2pc(pointer + 1)]) & 0b1111;
                     currentScreen = to;
                     currentVScreen = toV;
+                    console.log("toV: " + toV);
                 }
                 else {
                     if (settings === 0x02) {
@@ -3349,7 +3356,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                             const height = ((fileData[snes2pc(pointer + 2)] >>> 4) & 0b1111) + 1;
                             const width = ((fileData[snes2pc(pointer + 2)] >>> 0) & 0b1111) + 1;
                             const number = ((((fileData[snes2pc(pointer + 1)] >>> 4) & 0b1) << 8) | (fileData[snes2pc(pointer + 3)]));
-                            const newObj = new Obj(objNum, xposition, yposition, settings);
+                            const newObj = new Obj(objNum, xposition, (currentVScreen * 32) + yposition, settings);
                             newObj.screen = currentScreen;
                             newObj.tileNum = number;
                             newObj.tileWidth = width;
@@ -3372,7 +3379,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                             const extA = fileData[snes2pc(pointer + 3)];
                             const extB = fileData[snes2pc(pointer + 4)];
                             const settings = fileData[snes2pc(pointer + 2)];
-                            const newObj = new Obj(objNum, x, y, settings);
+                            const newObj = new Obj(objNum, x, (currentVScreen * 32) + y, settings);
                             newObj.screen = currentScreen;
                             newObj.extA = extA;
                             newObj.extB = extB;
@@ -3481,7 +3488,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                                     throw new Error("undefined");
                                 }
                             }
-                            const newObj = new Obj(objNum, x, y, settings);
+                            const newObj = new Obj(objNum, x, (currentVScreen * 32) + y, settings);
                             newObj.screen = currentScreen;
                             newObj.tileNum = m16Num;
                             newObj.tileWidth = width;
@@ -6855,7 +6862,7 @@ function getObjImg(objNum, settings, tileset = 0) {
         righttop = (0x13B);
         rightbtm = (0x13C);
         if (type === 1 || type === 3) {
-            rightbtm = (0x138);
+            rightbtm = (0x13F);
         }
         if (type === 0 || type === 1) {
             return stone_like_image(objNum, settings, tileset, lefttop, midtop, midtop, 0x25, 0x25, 0x25, leftbtm, midbtm, midbtm);
