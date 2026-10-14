@@ -5581,7 +5581,7 @@ function grass_like_image2(objNum: number, settings: number, tileset: number = 0
     return canvas.toDataURL('image/png');
 }
 
-function bone_like_image(objNum: number, settings: number, tileset: number = 0, topBlock = 0x131, midBlock = 0x131, btmBlock = 0x131) {
+function bone_like_image(objNum: number, settings: number, tileset: number = 0, topBlock: any = 0x131, midBlock: any = 0x131, btmBlock: any = 0x131) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
     const height = getHeight(objNum, settings, tileset);
@@ -5597,12 +5597,17 @@ function bone_like_image(objNum: number, settings: number, tileset: number = 0, 
     const ctx = canvas.getContext("2d");
 
     for (let j = 0; j < width; j++) {
-        ctx!.putImageData(btm, j * 16, (height-1)*16);
-        ctx!.putImageData(top, j * 16, 0);
-        
-        for (let i = 1; i < height - 1; i++) {
+        for (let i = 0; i < height; i++) {
             ctx!.putImageData(mid, j * 16, i * 16);
         }
+        if (btmBlock !== null) {
+            ctx!.putImageData(btm, j * 16, (height-1)*16);
+        }
+        if (topBlock !== null) {
+            ctx!.putImageData(top, j * 16, 0);
+        }
+        
+
     }
 
 
@@ -8725,13 +8730,13 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
             } else if (objNum === 0x3e) {
                 const mode = ((settings >>> 0) & 0b1111);
                 if (mode === 0) {
-                    return bone_like_image(objNum, settings, tileset, 0x150, 0x150, 0x14D);
+                    return bone_like_image(objNum, settings, tileset, null, 0x150, 0x14D);
                 } else if (mode === 1) {
-                    return bone_like_image(objNum, settings, tileset, 0x150, 0x150, 0x150);
+                    return bone_like_image(objNum, settings, tileset, null, 0x150, 0x150);
                 } else if (mode === 2) {
-                    return bone_like_image(objNum, settings, tileset, 0x151, 0x151, 0x14F);
+                    return bone_like_image(objNum, settings, tileset, null, 0x151, 0x14F);
                 } else if (mode === 3) {
-                    return bone_like_image(objNum, settings, tileset, 0x151, 0x151, 0x151);
+                    return bone_like_image(objNum, settings, tileset, null, 0x151, 0x151);
                 }
             } else if (objNum === 0x3C) {
                 // slope
@@ -8745,7 +8750,7 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
                     return very_steep_slope_2_image(objNum, settings, tileset, 0x1CA, 0x1CB, 0x1F1, 0x3F);
                 }
             } else if (objNum === 0x3d) {
-                return bone_like_image(objNum, settings, tileset, 0x165, 0x165, 0x14e);
+                return bone_like_image(objNum, settings, tileset, null, 0x165, 0x14e);
             } else if (objNum === 0x3b) {
                 return single_block_image(objNum, settings, tileset, 0x1ff);
             } else if (objNum === 0x3a) {
