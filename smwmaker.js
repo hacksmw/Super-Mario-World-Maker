@@ -638,24 +638,30 @@ function stage_onmousemove(e) {
         return;
     }
     if (editMode == "layer1" || editMode == "layer2") {
-        data[index].screen = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            data[index].y = getRealY((Math.floor((prevObjLeft + deltaX) / 16) % 16), data[index]) & 0b11111;
-            data[index].x = getRealX(Math.floor((prevObjTop + deltaY) / 16) & 0b1111, data[index]) & 0b1111;
+            const realY = getRealY(Math.floor((prevObjTop + deltaY) / 16), data[index]);
+            data[index].screen = Math.floor(realY / 16) & 0b11111;
+            data[index].x = (realY % 16) & 0b1111;
+            data[index].y = getRealX((Math.floor((prevObjLeft + deltaX) / 16)), data[index]) & 0b11111;
         }
         else {
-            data[index].x = getRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16), data[index]) & 0b1111;
+            const realX = getRealX((Math.floor((prevObjLeft + deltaX) / 16)), data[index]);
+            data[index].screen = Math.floor(realX / 16) & 0b11111;
+            data[index].x = (realX % 16) & 0b1111;
             data[index].y = getRealY(Math.floor((prevObjTop + deltaY) / 16) & 0b11111, data[index]) & 0b11111;
         }
     }
     else {
-        sprites[index].screenNum = Math.floor(Math.floor((prevObjLeft + deltaX) / 16) / 16) & 0b11111;
         if (isVertical) {
-            sprites[index].yPosition = getSprRealY(Math.floor((prevObjLeft + deltaX) / 16) % 16, sprites[index]) & 0b11111;
-            sprites[index].xPosition = getSprRealX(Math.floor((prevObjTop + deltaY) / 16), sprites[index]) & 0b1111;
+            const realY = getSprRealY(Math.floor((prevObjTop + deltaY) / 16), sprites[index]);
+            sprites[index].screenNum = Math.floor(realY / 16) & 0b11111;
+            sprites[index].xPosition = (realY % 16) & 0b1111;
+            sprites[index].yPosition = getSprRealX(Math.floor((prevObjLeft + deltaX) / 16), sprites[index]) & 0b11111;
         }
         else {
-            sprites[index].xPosition = getSprRealX((Math.floor((prevObjLeft + deltaX) / 16) % 16), sprites[index]) & 0b1111;
+            const realX = getSprRealX(Math.floor((prevObjLeft + deltaX) / 16), sprites[index]);
+            sprites[index].screenNum = Math.floor(realX / 16) & 0b11111;
+            sprites[index].xPosition = (realX % 16) & 0b1111;
             sprites[index].yPosition = getSprRealY(Math.floor((prevObjTop + deltaY) / 16), sprites[index]) & 0b11111;
         }
     }
