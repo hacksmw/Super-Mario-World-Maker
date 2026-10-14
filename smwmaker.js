@@ -16,6 +16,14 @@ const verticalList = {
 const defaultBGList = [0x0CD900, 0x0CDAB9, 0x0CDC71, 0x0CDD44, 0x0CDE54,
     0x0CDF59, 0x0CE103, 0x0CE472, 0x0CE674, 0x0CE684, 0x0CE7C0, 0x0CE8EE,
     0x0CE8FE, 0x0CEC82, 0x0CEF80, 0x0CF175, 0x0CF45A];
+const horizontalLevelModesWidth = [
+    0x20, 0x20, 0x1E, 0x1C, 0x1A, 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
+    0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0, 0x0, 0x0
+];
+const horizontalLevelModesHeight = [
+    0x1B, 0x1C, 0x1D, 0x20, 0x22, 0x25, 0x26, 0x28, 0x2A, 0x2C, 0x2F, 0x31, 0x34, 0x38, 0x3B,
+    0x40, 0x44, 0x4A, 0x51, 0x59, 0x63, 0x70, 0x80, 0x95, 0xB3, 0xE0, 0X12A, 0x1C0, 0x380, 0x0, 0x0, 0x0
+];
 class TilePart {
     gfx = 0;
     xflip = 0;
@@ -3261,6 +3269,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                 else {
                     if (settings === 0x02) {
                         // extended exit object
+                        log("extended exit object");
                         const scrNumber = (fileData[snes2pc(pointer + 0)]) & 0b11111;
                         const waterFlag = ((fileData[snes2pc(pointer + 4)] >>> 3) & 0b1);
                         const secondaryExitID = (((fileData[snes2pc(pointer + 4)] >>> 4) << 9) |
@@ -3279,6 +3288,7 @@ function loadObjects(lvlNum, layerDataPointer) {
                     }
                     else if (settings === 0x03) {
                         // extended jump object
+                        log("extended jump object");
                         const scrNumber = (fileData[snes2pc(pointer + 1)]) & 0b1111;
                         currentScreen = scrNumber;
                         const toV = (fileData[snes2pc(pointer + 0)]) & 0b11111;
