@@ -8986,50 +8986,80 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
 }
 
 function getSprX(spr: Sprite) {
-    if (spr.extra !== 0) {
-        return spr.xPosition;
+    if (!isVertical) {
+        return calcSprX(spr);
+    } else {
+        return calcSprY(spr);
     }
+}
+
+function getSprY(spr: Sprite) {
+    if (!isVertical) {
+        return calcSprY(spr);
+    } else {
+        return calcSprX(spr);
+    }
+}
+
+function calcSprX(spr: Sprite) {
+    let x: number = spr.xPosition;
+
+    if (isVertical) {
+        x = spr.yPosition;
+    }
+
+    if (spr.extra !== 0) {
+        return x;
+    }  
+
     switch (spr.spriteID) {
         case 0x6C:
-            return spr.xPosition - 3;
+            return x - 3;
         case 0x5A:
-            return spr.xPosition - 2;
+            return x - 2;
         case 0x34:
         case 0xC3:
-            return spr.xPosition - 1;
+            return x - 1;
             break;
         default:
             break;
     }
-    return spr.xPosition;
+    return x;
 }
 
-function getSprY(spr: Sprite) {
-    if (spr.extra !== 0) {
-        return spr.yPosition
+function calcSprY(spr: Sprite) {
+    let y: number = spr.yPosition;
+
+    if (isVertical) {
+        y = spr.xPosition
     }
+
+    if (spr.extra !== 0) {
+        return y;
+    }
+
     switch (spr.spriteID) {
         case 0x59:
-            return spr.yPosition - 2;
+            return y - 2;
         case 0xCA:
-            return spr.yPosition + 1;
+            return y + 1;
         case 0x4B:
         case 0xC3:
-            return spr.yPosition - 1;
+            return y - 1;
         case 0xA8:
-            return spr.yPosition - 1;
+            return y - 1;
         case 0x1A:
-            return spr.yPosition - 2;
+            return y - 2;
         case 0xAB:
         case 0x04:
         case 0x05:
         case 0x06:
         case 0x07:
-            return spr.yPosition - 1;
+            return y - 1;
         default:
             break;
     }
-    return spr.yPosition;
+    return y;
 }
 
 function getSprRealX(x: number, spr: Sprite) {
@@ -10056,7 +10086,29 @@ function getHeight(objNum: number, settings: number, tileset = 0): number {
     return result;    
 }
 
-function getX(obj: Obj, tset: number = -1): number {
+function getX(obj: Obj, tset: number = -1) {
+    if (!isVertical) {
+        return calcX(obj, tset);
+    } else {
+        return calcY(obj, tset);
+    }
+}
+
+function getY(obj: Obj, tset: number = -1) {
+    if (!isVertical) {
+        return calcY(obj, tset);
+    } else {
+        return calcX(obj, tset);
+    }
+}
+
+function calcX(obj: Obj, tset: number = -1): number {
+    let x: number = obj.x;
+
+    if (isVertical) {
+        x = obj.y;
+    }
+
     const objNum = obj.objNum;
     const settings = obj.settings;
     
@@ -10068,9 +10120,9 @@ function getX(obj: Obj, tset: number = -1): number {
         case 0:
             {
                 if (settings === 0x46) {
-                    return obj.x - 1;
+                    return x - 1;
                 }
-                return obj.x;
+                return x;
             }
             
             break;
@@ -10080,13 +10132,13 @@ function getX(obj: Obj, tset: number = -1): number {
                 const height = getHeight(objNum, settings, tset);
 
                 if (type === 0) {  
-                    return (obj.x + 2) - ((height - 1) * 2);
+                    return (x + 2) - ((height - 1) * 2);
                 } else if (type === 1) {
-                    return obj.x - (height - 2);
+                    return x - (height - 2);
                 } else if (type === 2) {
-                    return (obj.x + 4) - (4*(height-1));
+                    return (x + 4) - (4*(height-1));
                 } else {
-                    return obj.x;
+                    return x;
                 }
             }
             break;
@@ -10096,15 +10148,15 @@ function getX(obj: Obj, tset: number = -1): number {
                     // plain / forest
                     if (objNum === 0x3A) {
                         const a = (settings >>> 0) & 0b1111;
-                        return obj.x - a;
+                        return x - a;
 
                     } else if (objNum === 0x39) {
-                        return obj.x + 2 - getHeight(objNum, settings, tset);
+                        return x + 2 - getHeight(objNum, settings, tset);
                     } else if (objNum === 0x3B) {
                         const a = (settings >>> 4) & 0b1111;
                         const b = (settings >>> 0) & 0b1111;
                         
-                        return obj.x -1 -a -b;
+                        return x -1 -a -b;
                     }
 
                 } else if (tset === 1) { 
@@ -10118,10 +10170,10 @@ function getX(obj: Obj, tset: number = -1): number {
 
                         if (type === 0) {
                             //console.log(tset);
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                            return x + 1 - getWidth(objNum, settings, tset);
                         } else if (type === 1) {
                             //console.log(tset);
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                            return x + 1 - getWidth(objNum, settings, tset);
                         }
                     }
 
@@ -10133,16 +10185,16 @@ function getX(obj: Obj, tset: number = -1): number {
 
                         if (type === 0) {
                             const width = getWidth(objNum, settings, tset);
-                            return obj.x + 1 - width;
+                            return x + 1 - width;
                         }
                     } else if (objNum === 0x39) {
                         const type = (settings >>> 0) & 0b1111;
                         const width = getWidth(objNum, settings, tset);
 
                         if (type === 0) {
-                            return obj.x + 2 - width;
+                            return x + 2 - width;
                         } else if (type === 1) {
-                            return obj.x + 1 - width;
+                            return x + 1 - width;
                         }
                     } else if (objNum === 0x37) {
                         // canvasses
@@ -10153,16 +10205,16 @@ function getX(obj: Obj, tset: number = -1): number {
                     if (objNum === 0x37) {
                         const type = (settings >>> 0) & 0b1111;
                         if (type === 0) {
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                            return x + 1 - getWidth(objNum, settings, tset);
                         } else if (type === 1) {
-                            return obj.x + 1 - getWidth(objNum, settings, tset);
+                            return x + 1 - getWidth(objNum, settings, tset);
                         }
                     } else if (objNum === 0x3B) {
                         const type = (settings >>> 4) & 0b1111;
 
                         if (type === 0) {
                             const width = getWidth(objNum, settings, tset);
-                            return obj.x + 1 - width;
+                            return x + 1 - width;
                         }
                         
                         
@@ -10171,23 +10223,29 @@ function getX(obj: Obj, tset: number = -1): number {
                         const width = getWidth(objNum, settings, tset);
 
                         if (type === 0) {  
-                            return obj.x + 2 - width;
+                            return x + 2 - width;
                         } else if (type === 1) {
-                            return obj.x + 1 - width;
+                            return x + 1 - width;
                         } else if (type === 4) {
-                            return obj.x + 1 - width;
+                            return x + 1 - width;
                         }
 
                     }
                 }
-                return obj.x;
+                return x;
             }
             break;
     }
-    return obj.x;
+    return x;
 }
 
-function getY(obj: Obj, tset: number = -1): number {
+function calcY(obj: Obj, tset: number = -1): number {
+    let y = obj.y;
+
+    if (isVertical) {
+        y = obj.x;
+    }
+
     const objNum = obj.objNum;
     
     if (tset === -1) {
@@ -10201,7 +10259,7 @@ function getY(obj: Obj, tset: number = -1): number {
         }
     }
 
-    return obj.y;
+    return y;
 }
 
 function getRealY(y: number, obj: Obj, tset: number = -1): number {
