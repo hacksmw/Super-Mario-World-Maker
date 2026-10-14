@@ -2675,6 +2675,9 @@ function create_object_view(obj: any, index: number, type: string = "layer1") {
         
         myObject.style.zIndex = (0x1800000).toString();
 
+        myObject.style.width = (getSprWidth(num) * 16 ) + 'px';
+        myObject.style.height = (getSprHeight(num) * 16 ) + 'px';
+
         myObject.ondblclick = spr_ondblclick;
         myObject.onkeydown = spr_onkeydown;
         myObject.onmousedown = obj_onmousedown;
@@ -3884,8 +3887,6 @@ function loadObjects(lvlNum: number, layerDataPointer: number) {
 
                     currentScreen = to;
                     currentVScreen = toV;
-
-                    console.log("toV: " + toV);
 
                 } else {
                     if (settings === 0x02) {
@@ -6562,6 +6563,58 @@ function getSprImg4x4(tiles: any, color: number, flipx: boolean = false) {
     return canvas.toDataURL('image/png');
 }
 
+function getSprImgFreesize(tiles: any, color: number, flipx: boolean = false) {
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    let width: number, height: number;
+
+    height = tiles.length;
+
+    width = 0;
+
+    for (let i = 0; i < height; i++) {
+        if (tiles[i].length > width) {
+            width = tiles[i].length;
+        }
+    }
+
+    canvas.width = width * 8;
+    canvas.height = height * 8;
+
+    const ctx = canvas.getContext("2d");
+
+    const result: any[][] = [];
+
+    for (let i = 0; i < height; i++) {
+        result[i] = [];
+        for (let j = 0; j < width; j++) {
+            if (j < tiles[i].length && tiles[i][j] !== null) {
+                if (flipx) {
+                    result[i].push(getSpr8x8Img(tiles[i][j], color, true));
+                } else {
+                    result[i].push(getSpr8x8Img(tiles[i][j], color));
+                }
+            } else {
+                result[i].push(null);
+            }
+        }
+    }
+
+    for (let i = 0; i < result.length; i++) {
+        for (let j = 0; j < result[i].length; j++) {
+            if (result[i][j] !== null) {
+                if (flipx) {
+                    ctx!.putImageData(result[i][j], (((result[i].length - 1) - j)) * 8, i * 8);
+                } else {
+                    ctx!.putImageData(result[i][j], j * 8, i * 8);        
+                }
+            }
+        }
+    }  
+
+    return canvas.toDataURL('image/png');
+}
+
 function getSprImg(sprNum: number = 0, extra: number = 0) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
@@ -6570,6 +6623,10 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x05:
+            // red koopa
+            return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0xA3],[0xB2,0xB3]], 0xC);
+            break;
         case 0x8A:
             // yoshi's house bird
             return getSprImg4x4([null, null, null, 0x1D1], 0xA, true);
@@ -8724,10 +8781,23 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
 }
 
 function getSprWidth(sprNum: number, extra: number = 0): number {
+    if (extra !== 0) {
+        return 1;
+    }
     return 1;
 }
 
 function getSprHeight(sprNum: number, extra: number = 0): number {
+    if (extra !== 0) {
+        return 1;
+    }
+    switch (sprNum) {
+        case 0x5:
+            return 2;
+            break;
+        default:
+            break;
+    }
     return 1;
 }
 
@@ -8747,6 +8817,8 @@ function getSprY(spr: Sprite) {
         return spr.yPosition
     }
     switch (spr.spriteID) {
+        case 0x05:
+            return spr.yPosition - 1;
         default:
             break;
     }
@@ -8769,6 +8841,9 @@ function getSprRealY(y: number, spr: Sprite) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x05:
+            return y + 1;
+            break;
         default:
             break;
     }
