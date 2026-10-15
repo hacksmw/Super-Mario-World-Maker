@@ -6880,7 +6880,16 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
                 [0x18E, 0x18F, 0x1AE, 0x1AF, 0x194, 0x195, 0x196, 0x197],
                 [0x19E, 0x19F, 0x1bE, 0x1bF, 0x184, 0x185, 0x186, 0x187],
 
-            ], 0x9);
+            ], 0x9, false, false, null, [
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, 2, 2, 2, 2],
+                [null, null, null, null, 2, 2, 2, 2],
+            ]);
         case 0x9E:
             // ball and chain
             return getSprImgFreesize([
