@@ -5477,6 +5477,19 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x67:
+            // grinder
+            return getSprImgFreesize([
+                [0x16C, 0x16D, 0x16D, 0x16C],
+                [0x17C, 0x17D, 0x17D, 0x17C],
+                [0x17C, 0x17D, 0x17D, 0x17C],
+                [0x16C, 0x16D, 0x16D, 0x16C],
+            ], 0x9, false, false, null, [
+                [0, 0, 1, 1],
+                [0, 0, 1, 1],
+                [2, 2, 3, 3],
+                [2, 2, 3, 3],
+            ]);
         case 0x60:
             // green switch
             return getSprImgFreesize([
@@ -8313,6 +8326,7 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x67:
         case 0x60:
             return 2;
         case 0x52:
@@ -8403,6 +8417,7 @@ function getSprHeight(sprNum, extra = 0) {
     switch (sprNum) {
         case 0x54:
             return 4;
+        case 0x67:
         case 0x7E:
         case 0x7F:
         case 0x83:
@@ -8544,6 +8559,7 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x67:
         case 0x7E:
         case 0x7F:
         case 0x83:
@@ -8652,6 +8668,7 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x67:
         case 0x7E:
         case 0x7F:
         case 0x83:
