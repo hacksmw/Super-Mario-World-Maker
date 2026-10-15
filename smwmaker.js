@@ -5386,7 +5386,7 @@ function getSprImg4x4(tiles, color, flipx = false) {
     }
     return canvas.toDataURL('image/png');
 }
-function getSprImgFreesize(tiles, color, flipx = false, flipy = false, colorMap = null, flipXMap = null, flipYMap = null) {
+function getSprImgFreesize(tiles, color, flipx = false, flipy = false, colorMap = null, flipMap = null) {
     const canvas = document.createElement("canvas");
     let width, height;
     height = tiles.length;
@@ -5409,12 +5409,12 @@ function getSprImgFreesize(tiles, color, flipx = false, flipy = false, colorMap 
             }
         }
     }
-    if (flipXMap === null) {
-        flipXMap = new Array(height);
+    if (flipMap === null) {
+        flipMap = new Array(height);
         for (let i = 0; i < height; i++) {
-            flipXMap[i] = new Array(width);
+            flipMap[i] = new Array(width);
             for (let j = 0; j < width; j++) {
-                flipXMap[i][j] = null;
+                flipMap[i][j] = null;
             }
         }
     }
@@ -5429,15 +5429,22 @@ function getSprImgFreesize(tiles, color, flipx = false, flipy = false, colorMap 
                 else {
                     localColor = color;
                 }
-                if (flipx && (!flipy)) {
-                    result[i].push(getSpr8x8Img(tiles[i][j], localColor, true));
+                let localFlipX = flipx;
+                let localFlipY = flipy;
+                if (flipMap[i][j] !== null) {
+                    let flip = flipMap[i][j];
+                    if (flip === 1) {
+                        localFlipX = !localFlipX;
+                    }
+                    else if (flip === 2) {
+                        localFlipY = !localFlipY;
+                    }
+                    else if (flip === 3) {
+                        localFlipX = !localFlipX;
+                        localFlipY = !localFlipY;
+                    }
                 }
-                else if ((!flipx) && flipy) {
-                    result[i].push(getSpr8x8Img(tiles[i][j], localColor, false, true));
-                }
-                else if ((!flipx) && (!flipy)) {
-                    result[i].push(getSpr8x8Img(tiles[i][j], localColor));
-                }
+                result[i].push(getSpr8x8Img(tiles[i][j], localColor, localFlipX, localFlipY));
             }
             else {
                 result[i].push(null);
@@ -5453,6 +5460,9 @@ function getSprImgFreesize(tiles, color, flipx = false, flipy = false, colorMap 
                 else if ((!flipx) && flipy) {
                     ctx.putImageData(result[i][j], j * 8, (((result.length - 1) - i)) * 8);
                 }
+                else if (flipx && flipy) {
+                    ctx.putImageData(result[i][j], (((result[i].length - 1) - j)) * 8, (((result.length - 1) - i)) * 8);
+                }
                 else if ((!flipx) && (!flipy)) {
                     ctx.putImageData(result[i][j], j * 8, i * 8);
                 }
@@ -5467,6 +5477,25 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x4F:
+        case 0x50:
+            // jumping plant
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [null, 0xAE, 0xAF, null],
+                [null, 0xBE, 0xBF, null],
+                [null, 0xC4, 0xC4, null],
+            ], 0xC, false, false, [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, 0xD, 0xD, null],
+            ], [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, 1, null],
+            ]);
         case 0x64:
             return getSprImgFreesize([
                 [null, null, null, null],
@@ -6052,7 +6081,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0xC7:
             // invisible mushroom
-            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
+            return getSprImgFreesize([[0x24, 0x25], [0x34, 0x35]], 0xC, true);
             break;
         case 0xBD:
             // sliding blue koopa with no shell
@@ -8081,6 +8110,9 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x4F:
+        case 0x50:
+            return 2;
         case 0x64:
         case 0x2A:
             return 2;
@@ -8145,6 +8177,9 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x4F:
+        case 0x50:
+            return 2;
         case 0x64:
             return 6;
         case 0x2A:
@@ -8255,6 +8290,8 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x4F:
+        case 0x50:
         case 0x64:
             return y - 1;
         case 0x2A:
@@ -8336,6 +8373,8 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x4F:
+        case 0x50:
         case 0x64:
             return y + 1;
         case 0x2A:
