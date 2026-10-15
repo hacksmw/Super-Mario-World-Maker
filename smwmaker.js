@@ -5477,6 +5477,24 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xBA:
+            // timed lift
+            return getSprImgFreesize([
+                [0x1C4, 0x1C5, 0x1C5, 0x1C4],
+                [0x1D4, 0x1D5, 0x1D5, 0x1D4],
+            ], 0xD, false, false, null, [
+                [0, 0, 1, 1],
+                [0, 0, 1, 1],
+            ]);
+        case 0xAA:
+            // fishbone
+            return getSprImgFreesize([
+                [0x1A6, 0x1A7, 0x1A3, null],
+                [0x1B6, 0x1B7, 0x1A3, null],
+            ], 0xE, false, false, null, [
+                [0, 0, 0, 0],
+                [0, 0, 2, 0],
+            ]);
         case 0xA4:
             // floating ball
             return getSprImgFreesize([
@@ -5686,6 +5704,7 @@ function getSprImg(sprNum = 0, extra = 0) {
                 [0, 0, 1, 1],
                 [0, 0, 1, 1],
             ]);
+        case 0xB4:
         case 0x67:
             // grinder
             return getSprImgFreesize([
@@ -8540,6 +8559,8 @@ function getSprWidth(sprNum, extra = 0) {
         case 0xA1:
         case 0x9E:
             return 3;
+        case 0xBA:
+        case 0xAA:
         case 0xD4:
         case 0x9D:
         case 0x9A:
@@ -8553,6 +8574,7 @@ function getSprWidth(sprNum, extra = 0) {
             return 4;
         case 0x8B:
             return 2;
+        case 0xB4:
         case 0x67:
         case 0x60:
             return 2;
@@ -8659,6 +8681,7 @@ function getSprHeight(sprNum, extra = 0) {
             return 6;
         case 0x54:
             return 4;
+        case 0xB4:
         case 0x67:
         case 0x7E:
         case 0x7F:
@@ -8817,6 +8840,7 @@ function calcSprY(spr) {
         case 0xA3:
         case 0x9E:
             return y + 1;
+        case 0xB4:
         case 0x67:
         case 0xD4:
         case 0x9D:
@@ -8945,6 +8969,7 @@ function getSprRealY(y, spr) {
             return 18;
         case 0xD4:
         case 0x9D:
+        case 0xB4:
         case 0x67:
         case 0x9A:
         case 0x7E:
