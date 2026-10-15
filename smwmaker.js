@@ -5477,6 +5477,57 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x8D:
+            // ghost house exit
+            return getSprImgFreesize([
+                [null, 0x19C, 0x19D, 0x19E, 0x19F, null, null, null],
+                [null, 0x1AC, 0x1AD, 0x1AE, 0x1AF, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [0x1A1, null, null, null, null, 0x1A1, 0x1A0, null],
+                [0x1B1, null, null, null, null, 0x1B1, 0x1B0, null],
+                [0x1C1, null, null, null, null, 0x1C1, 0x1C0, null],
+                [0x1C1, null, null, null, null, 0x1C1, 0x1C0, null],
+                [0x1B1, null, null, null, null, 0x1B1, 0x1B0, null],
+                [0x1A1, null, null, null, null, 0x1A1, 0x1A0, null],
+            ], 0xE, false, false, [
+                [null, 0x9, 0x9, 0x9, 0x9, null, null, null],
+                [null, 0x9, 0x9, 0x9, 0x9, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+            ], [
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [0, null, null, null, null, 1, 1, null],
+                [0, null, null, null, null, 1, 1, null],
+                [0, null, null, null, null, 1, 1, null],
+                [2, null, null, null, null, 3, 3, null],
+                [2, null, null, null, null, 3, 3, null],
+                [2, null, null, null, null, 3, 3, null],
+            ]);
+        case 0x8B:
+            // smoke
+            return getSprImgFreesize([
+                [0x1C5, 0x1C6, 0x1C6, 0x1C5],
+                [0x1D5, 0x1D6, 0x1D6, 0x1D5],
+            ], 0xA, false, false, null, [
+                [0, 0, 1, 1],
+                [0, 0, 1, 1],
+            ]);
         case 0x67:
             // grinder
             return getSprImgFreesize([
@@ -8326,6 +8377,10 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x8D:
+            return 4;
+        case 0x8B:
+            return 2;
         case 0x67:
         case 0x60:
             return 2;
@@ -8415,6 +8470,8 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x8D:
+            return 6;
         case 0x54:
             return 4;
         case 0x67:
@@ -8510,6 +8567,8 @@ function calcSprX(spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x8D:
+            return 0;
         case 0x35:
         case 0x52:
             return x - 1;
@@ -8559,6 +8618,8 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x8D:
+            return 18;
         case 0x67:
         case 0x7E:
         case 0x7F:
@@ -8622,6 +8683,8 @@ function getSprRealX(x, spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x8D:
+            return 0;
         case 0x35:
         case 0x52:
             return x + 1;
@@ -8668,6 +8731,8 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x8D:
+            return 18;
         case 0x67:
         case 0x7E:
         case 0x7F:
