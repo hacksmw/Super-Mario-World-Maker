@@ -5477,6 +5477,32 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x9C:
+            // wing block 2
+            return getSprImgFreesize([
+                [null, null, null, null, null, null, null, null],
+                [0xC7, 0xC6, null, null, null, null, 0xC6, 0xC7],
+                [0xD7, 0xD6, 0x40, 0x41, 0x40, 0x41, 0xD6, 0xD7],
+                [null, null, 0x50, 0x51, 0x50, 0x51, null, null],
+            ], 0x9, false, false, null, [
+                [null, null, null, null, null, null, null, null],
+                [1, 1, null, null, null, null, null, null],
+                [1, 1, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+            ]);
+        case 0xC1:
+            // wing block
+            return getSprImgFreesize([
+                [null, null, null, null, null, null, null, null, null, null],
+                [0xC7, 0xC6, null, null, null, null, null, null, 0xC6, 0xC7],
+                [0xD7, 0xD6, 0x40, 0x41, 0x40, 0x41, 0x40, 0x41, 0xD6, 0xD7],
+                [null, null, 0x50, 0x51, 0x50, 0x51, 0x50, 0x51, null, null],
+            ], 0x9, false, false, null, [
+                [null, null, null, null, null, null, null, null, null, null],
+                [1, 1, null, null, null, null, null, null, null, null],
+                [1, 1, null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null, null, null],
+            ]);
         case 0x4F:
         case 0x50:
             // jumping plant
@@ -6213,36 +6239,96 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0x3F:
             // para goomba
-            return getSprImg4x4([0x1E8, 0x1E9, 0x1F8, 0x1F9], 0xA);
+            return getSprImgFreesize([
+                [null, 0x1E2, 0x1E3, null],
+                [null, 0x1F2, 0x1F3, null],
+                [null, 0x1A3, 0x1A3, null],
+                [null, 0x1B3, 0x1B3, null],
+            ], 0xA, false, false, [
+                [null, 0xB, 0xB, null],
+                [null, 0xB, 0xB, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ], [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, 1, null],
+                [null, null, 1, null],
+            ]);
             break;
         case 0x40:
             // para bomb
-            return getSprImg4x4([0x1C2, 0x1C3, 0x1D2, 0x1D3], 0xD);
+            return getSprImgFreesize([
+                [null, 0x1E2, 0x1E3, null],
+                [null, 0x1F2, 0x1F3, null],
+                [null, 0x1A2, 0x1A2, null],
+                [null, 0x1B2, 0x1B2, null],
+            ], 0xA, false, false, [
+                [null, 0xB, 0xB, null],
+                [null, 0xB, 0xB, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ], [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, 1, null],
+                [null, null, 1, null],
+            ]);
             break;
         case 0xCC:
             // para goomba generator
-            return getSprImg4x4([0x1E8, 0x1E9, 0x1F8, 0x1F9], 0xA);
-            break;
+            return getSprImgFreesize([
+                [null, 0x1E2, 0x1E3, null],
+                [null, 0x1F2, 0x1F3, null],
+                [null, 0x1A3, 0x1A3, null],
+                [null, 0x1B3, 0x1B3, null],
+            ], 0xA, false, false, [
+                [null, 0xB, 0xB, null],
+                [null, 0xB, 0xB, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ], [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, 1, null],
+                [null, null, 1, null],
+            ]);
         case 0xCD:
             // para bomb generator
-            return getSprImg4x4([0x1C2, 0x1C3, 0x1D2, 0x1D3], 0xD);
-            break;
+            return getSprImgFreesize([
+                [null, 0x1E2, 0x1E3, null],
+                [null, 0x1F2, 0x1F3, null],
+                [null, 0x1A2, 0x1A2, null],
+                [null, 0x1B2, 0x1B2, null],
+            ], 0xA, false, false, [
+                [null, 0xB, 0xB, null],
+                [null, 0xB, 0xB, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ], [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, 1, null],
+                [null, null, 1, null],
+            ]);
         case 0xCE:
             // para bomb goomba generator
-            {
-                const upleft = getSpr8x8Img(0x1A3, 0xA);
-                const upright = getSpr8x8Img(0x1A3, 0xA, true);
-                const dnleft = getSpr8x8Img(0x1B3, 0xA);
-                const dnright = getSpr8x8Img(0x1B3, 0xA, true);
-                canvas.width = 16;
-                canvas.height = 16;
-                const ctx = canvas.getContext("2d");
-                ctx.putImageData(upleft, 0, 0);
-                ctx.putImageData(upright, 8, 0);
-                ctx.putImageData(dnleft, 0, 8);
-                ctx.putImageData(dnright, 8, 8);
-                return canvas.toDataURL("image/png");
-            }
+            return getSprImgFreesize([
+                [null, 0x1E2, 0x1E3, null],
+                [null, 0x1F2, 0x1F3, null],
+                [null, 0x1A3, 0x1A3, null],
+                [null, 0x1B3, 0x1B3, null],
+            ], 0xA, false, false, [
+                [null, 0xB, 0xB, null],
+                [null, 0xB, 0xB, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ], [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, 1, null],
+                [null, null, 1, null],
+            ]);
             break;
         case 0xAE:
         // fishin' boo
@@ -8110,6 +8196,16 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x3F:
+        case 0x40:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+            return 2;
+        case 0x9C:
+            return 4;
+        case 0xC1:
+            return 5;
         case 0x4F:
         case 0x50:
             return 2;
@@ -8177,6 +8273,15 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x3F:
+        case 0x40:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+            return 2;
+        case 0x9C:
+        case 0xC1:
+            return 2;
         case 0x4F:
         case 0x50:
             return 2;
@@ -8255,6 +8360,13 @@ function calcSprX(spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x3F:
+        case 0x40:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0x9C:
+        case 0xC1:
         case 0x64:
         case 0xBC:
             return x - 1;
@@ -8290,6 +8402,13 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x3F:
+        case 0x40:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0x9C:
+        case 0xC1:
         case 0x4F:
         case 0x50:
         case 0x64:
@@ -8341,6 +8460,13 @@ function getSprRealX(x, spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x3F:
+        case 0x40:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0x9C:
+        case 0xC1:
         case 0x64:
             return x + 1;
         case 0xBC:
@@ -8373,6 +8499,13 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x3F:
+        case 0x40:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0x9C:
+        case 0xC1:
         case 0x4F:
         case 0x50:
         case 0x64:
