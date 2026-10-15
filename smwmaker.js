@@ -5477,6 +5477,27 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x54:
+            // net
+            return getSprImgFreesize([
+                [null, null, null, null, null, null, null, null],
+                [null, 0x100, 0x101, 0x102, 0x102, 0x101, 0x100, null],
+                [null, 0x110, 0x111, 0x112, 0x112, 0x111, 0x110, null],
+                [null, 0x120, 0x121, 0x122, 0x122, 0x121, 0x120, null],
+                [null, 0x120, 0x121, 0x122, 0x122, 0x121, 0x120, null],
+                [null, 0x110, 0x111, 0x112, 0x112, 0x111, 0x110, null],
+                [null, 0x100, 0x101, 0x102, 0x102, 0x101, 0x100, null],
+                [null, null, null, null, null, null, null, null],
+            ], 0xC, false, false, null, [
+                [null, null, null, null, null, null, null, null],
+                [null, 0, 0, 0, 0, 1, 1, null],
+                [null, 0, 0, 0, 0, 1, 1, null],
+                [null, 0, 0, 0, 0, 1, 1, null],
+                [null, 0, 0, 0, 0, 1, 1, null],
+                [null, 2, 2, 2, 2, 3, 3, null],
+                [null, 2, 2, 2, 2, 3, 3, null],
+                [null, null, null, null, null, null, null, null],
+            ]);
         case 0x35:
             // green yoshi
             return getSprImgFreesize([
@@ -7340,7 +7361,7 @@ function getObjImg(objNum, settings, tileset = 0) {
     }
     else if (objNum === 0x1D) {
         // bottom Net
-        return bone_like_image(objNum, settings, tileset, 0xb, 0xb, 0xe);
+        return bone_like_image(objNum, settings, tileset, null, 0xb, 0xe);
     }
     else if (objNum === 0x20) {
         return grass_like_image(objNum, settings, tileset, 0x156, 0x157, 0x158);
@@ -8280,6 +8301,7 @@ function getSprWidth(sprNum, extra = 0) {
     }
     switch (sprNum) {
         case 0x52:
+        case 0x54:
             return 4;
         case 0x7E:
         case 0x7F:
@@ -8364,6 +8386,8 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x54:
+            return 4;
         case 0x7E:
         case 0x7F:
         case 0x83:
