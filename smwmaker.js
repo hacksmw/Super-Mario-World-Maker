@@ -5477,6 +5477,28 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xC5:
+        case 0x28:
+            // big boo
+            return getSprImgFreesize([
+                [0x180, 0x181, 0x182, 0x183, 0x184, 0x185, 0x186, 0x187],
+                [0x190, 0x191, 0x192, 0x193, 0x194, 0x195, 0x196, 0x197],
+                [0x1A0, 0x1A1, 0x1A2, 0x1A3, 0x1A4, 0x1A5, 0x1A6, 0x1A7],
+                [0x1B0, 0x1B1, 0x1B2, 0x1B3, 0x1B4, 0x1B5, 0x1B6, 0x1B7],
+                [0x1B0, 0x1B1, 0x1B2, 0x1B3, 0x1C4, 0x1C5, 0x1C6, 0x1C7],
+                [0x1A0, 0x1A1, 0x1A2, 0x1A3, 0x1D4, 0x1D5, 0x1D6, 0x1D7],
+                [0x190, 0x191, 0x192, 0x193, 0x1E4, 0x1E5, 0x1E6, 0x1E7],
+                [0x180, 0x181, 0x182, 0x183, 0x1F4, 0x1F5, 0x1F6, 0x1F7],
+            ], 0xE, false, false, null, [
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [2, 2, 2, 2, 0, 0, 0, 0],
+                [2, 2, 2, 2, 0, 0, 0, 0],
+                [2, 2, 2, 2, 0, 0, 0, 0],
+                [2, 2, 2, 2, 0, 0, 0, 0],
+            ]);
         case 0xC0:
             // gray platform on lava
             return getSprImgFreesize([
@@ -8580,6 +8602,8 @@ function getSprWidth(sprNum, extra = 0) {
             return 3;
         case 0x9F:
         case 0x90:
+        case 0xC5:
+        case 0x28:
             return 4;
         case 0x8D:
             return 4;
@@ -8686,6 +8710,8 @@ function getSprHeight(sprNum, extra = 0) {
         case 0x9D:
         case 0x9A:
             return 2;
+        case 0xC5:
+        case 0x28:
         case 0x90:
             return 4;
         case 0x8D:
