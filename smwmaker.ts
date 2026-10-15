@@ -6716,6 +6716,16 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0xC0:
+            // gray platform on lava
+            return getSprImgFreesize([
+                [0x185, 0x186, 0x186, 0x187, 0x186, 0x185],
+                [0x195, 0x196, 0x196, 0x197, 0x196, 0x195],
+            ], 0x9, false, false, null, [
+                [0, 0, 0, 0, 1, 1],
+                [0, 0, 0, 0, 1, 1],
+            ]);
+            break;
         case 0xBA:
             // timed lift
             return getSprImgFreesize([
@@ -9649,6 +9659,7 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xC0:
         case 0xA4:
         case 0xA3:
         case 0xA1:
