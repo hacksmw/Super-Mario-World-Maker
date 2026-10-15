@@ -6716,6 +6716,16 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0xA3:
+            // gray flatform
+            return getSprImgFreesize([
+                [null, null, 0x1A2, 0x1A3, null, null],
+                [null, null, 0x1B2, 0x1B3, null, null],
+                [null, null, 0x1A2, 0x1A3, null, null],
+                [null, null, 0x1B2, 0x1B3, null, null],
+                [0x160, 0x161, 0x161, 0x162, 0x162, 0x163],
+                [0x170, 0x171, 0x171, 0x172, 0x172, 0x173],
+            ], 0x9);
         case 0xA1:
             // bowling ball
             return getSprImgFreesize([
@@ -9603,6 +9613,7 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xA3:
         case 0xA1:
         case 0x9E:
             return 3;
@@ -9709,6 +9720,7 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xA3:
         case 0xA1:
             return 3;
         case 0x9F:
@@ -9824,6 +9836,7 @@ function calcSprX(spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0xA3:
         case 0xA1:
         case 0x9E:
         case 0xD4:
@@ -9887,10 +9900,10 @@ function calcSprY(spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 18;
+        case 0xA3:
         case 0x9E:
             return y + 1;
         case 0x67:
-
         case 0xD4:
         case 0x9D:
         case 0x9A:
@@ -9963,6 +9976,7 @@ function getSprRealX(x: number, spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0xA3:
         case 0xA1:
         case 0x9E:
         case 0xD4:
@@ -10041,6 +10055,7 @@ function getSprRealY(y: number, spr: Sprite) {
         case 0x50:
         case 0x64:
             return y + 1;
+        case 0xA3:
         case 0x9E:
         case 0x2A:
         case 0xBF:
