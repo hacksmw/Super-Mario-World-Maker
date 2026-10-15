@@ -6695,12 +6695,85 @@ function getSprImgFreesize(tiles: any, color: number, flipx: boolean = false, fl
 function getSprImg(sprNum: number = 0, extra: number = 0) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
-    if (extra !== 0) {
+    if (extra !== 0 && sprNum !== 0x7B) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
 
     switch (sprNum) {
+        case 0xA2:
+            // mechakoopa
+            return getSprImgFreesize([
+                [null, null, null, null, null, null],
+                [null, 0x140, 0x141, 0x142, null, null],
+                [null, 0x150, 0x151, 0x152, 0x170, null],
+                [null, 0x160, 0x161, 0x162, null, null],
+                [null, 0x170, 0x171, 0x172, null, null],
+            ], 0xD);
+        case 0x9B:
+            // hammer bro
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [null, 0x15A, 0x14A, null, null],
+                [0x146, 0x147, 0x148, 0x149, null],
+                [0x156, 0x157, 0x158, 0x159, null],
+            ], 0xB);
+        case 0x6E:
+            // dino rhino
+            return getSprImgFreesize([
+                [null, 0x1C0, 0x1C1, 0x1C2, 0x1C3, null],
+                [null, 0x1D0, 0x1D1, 0x1D2, 0x1D3, null],
+                [null, 0x1E4, 0x1E5, 0x1E6, 0x1E7, null],
+                [null, 0x1F4, 0x1F5, 0x1F6, 0x1F7, null],
+            ], 0xF);
+            break;
+        case 0x63:
+        case 0x62:
+            // brown flatform
+            return getSprImgFreesize([
+                [null, null, null, null, null, null, null, null],
+                [null, 0x160, 0x161, 0x161, 0x162, 0x162, 0x163, null],
+                [null, 0x170, 0x171, 0x171, 0x172, 0x172, 0x173, null],
+                [null, null, null, null, null, null, null, null]
+            ], 0x8);
+        case 0x5F:
+            // brown flatform
+            return getSprImgFreesize([
+                [null, null, null, null, null, null, null, null, null, null],
+                [null, 0x160, 0x161, 0x161, 0x162, 0x161, 0x162, 0x162, 0x163, null],
+                [null, 0x170, 0x171, 0x171, 0x172, 0x171, 0x172, 0x172, 0x173, null],
+                [null, null, null, null, null, null, null, null, null, null]
+            ], 0x8);
+        case 0x5B:
+            // floating brown platform
+            return getSprImgFreesize([
+                [0x160, 0x161, 0x161, 0x162, 0x162, 0x163],
+                [0x170, 0x171, 0x171, 0x172, 0x172, 0x173]
+            ], 0x8);
+        case 0x5C:
+            // floating checkerboard
+            return getSprImgFreesize([
+                [0x1EA, 0x1EB, 0x1EB, 0x1EC, 0x1EB, 0x1EC, 0x1EB, 0x1EC, 0x1EC, 0x1ED],
+                [0x1FA, 0x1FB, 0x1FB, 0x1FC, 0x1FB, 0x1FC, 0x1FB, 0x1FC, 0x1FC, 0x1FD]
+            ], 0x8);
+        case 0x55:
+        case 0x57:
+            // checkerboard
+            return getSprImgFreesize([
+                [0x1EA, 0x1EB, 0x1EB, 0x1EC, 0x1EB, 0x1EC, 0x1EB, 0x1EC, 0x1EC, 0x1ED],
+                [0x1FA, 0x1FB, 0x1FB, 0x1FC, 0x1FB, 0x1FC, 0x1FB, 0x1FC, 0x1FC, 0x1FD]
+            ], 0x9);
+            break;
+        case 0x30:
+        case 0x32:
+            // dry bones
+            return getSprImgFreesize([[null, 0x164, 0x165, null], [null, 0x174, 0x175, null], [null, null, 0x1E6, 0x1E7], [null, null, 0x1F6, 0x1F7]], 0x9);
+            break;
+        case 0x7B:
+            // goal point
+            return getSprImgFreesize([[null, null, null, null], [null, 0xD4, 0xD5, 0xD5]], 0x9);
+            break;
         case 0x6C:
+            // spring board
             return getSprImgFreesize([[null, 0x3D, 0x3D, 0x3D, 0x3D, 0x3D], [null, null, null, null, null, null]], 0xD);
             break;
         case 0x6B:
@@ -6726,6 +6799,7 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             return getSprImgFreesize([[0x14A, 0x14B, 0x14C, 0x14D], [0x15A, 0x15B, 0x15C, 0x15D]], 0xA, true); 
             break;
         case 0x4B:
+            // pipe lakitu
             return getSprImgFreesize([
                 [null, 0x1EC, 0x1ED, null], 
                 [null, 0x1FC, 0x1FD, null],
@@ -8949,11 +9023,33 @@ function getObjImg(objNum: number, settings: number, tileset: number = 0) {
 }
 
 function getSprWidth(sprNum: number, extra: number = 0): number {
-    if (extra !== 0) {
+    if (extra !== 0 && sprNum !== 0x7B) {
         return 1;
     }
     switch (sprNum) {
-        
+        case 0xA2:
+        case 0x6E:
+            return 3;
+        case 0x63:
+        case 0x62:
+            return 4;
+        case 0x5F:
+            return 5;
+            break;
+        case 0x61:
+            return 4;
+        case 0x5B:
+            return 3;
+        case 0x57:
+        case 0x55:
+        case 0x5C:
+            return 5;
+        case 0x30:
+        case 0x9B:
+        case 0x32:
+            return 2;
+        case 0x7B:
+            return 2;
         case 0x5A:
             return 5;
         case 0xCA:
@@ -8984,6 +9080,15 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xA2:
+        case 0x9B:
+        case 0x6E:            
+        case 0x63:
+        case 0x62:
+        case 0x5F:
+            return 2;
+        case 0x30:
+        case 0x32:
         case 0xCA:
             return 2;
         case 0x59:
@@ -9036,11 +9141,21 @@ function calcSprX(spr: Sprite) {
         x = spr.yPosition;
     }
 
-    if (spr.extra !== 0) {
+    if (spr.extra !== 0 && spr.spriteID !== 0x7B) {
         return x;
     }  
 
     switch (spr.spriteID) {
+        case 0xA2:
+        case 0x6E:
+            return x - 1;
+        case 0x63:
+        case 0x62:
+            return x - 2;
+        case 0x30:
+        case 0x32:
+        case 0x7B:
+            return x - 1;
         case 0x6C:
             return x - 3;
         case 0x5A:
@@ -9067,11 +9182,23 @@ function calcSprY(spr: Sprite) {
     }
 
     switch (spr.spriteID) {
+        case 0xA2:
+            return y - 1;
+        case 0x9B:
+            return y - 2;
+        case 0x6E:
+            return y - 1;
+        case 0x63:
+        case 0x62:
+            return y - 1;
         case 0x59:
             return y - 2;
+        
         case 0xCA:
             return y + 1;
         case 0x4B:
+        case 0x30:
+        case 0x32:
         case 0xC3:
             return y - 1;
         case 0xA8:
@@ -9082,6 +9209,7 @@ function calcSprY(spr: Sprite) {
         case 0x04:
         case 0x05:
         case 0x06:
+        case 0x1F:
         case 0x07:
             return y - 1;
         default:
@@ -9091,16 +9219,27 @@ function calcSprY(spr: Sprite) {
 }
 
 function getSprRealX(x: number, spr: Sprite) {
-    if (spr.extra !== 0) {
+    if (spr.extra !== 0 && spr.spriteID !== 0x7B) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0xA2:
+        case 0x6E:
+            return x + 1;
+        case 0x63:
+        case 0x62:
+            return x + 2;
+        case 0x7B:
+            return x + 1;
         case 0x6C:
             return x + 3;
         case 0x5A:
             return x + 2; 
         case 0x34:
         case 0xC3:
+            return x + 1;
+        case 0x30:
+        case 0x32:
             return x + 1;
         default:
             break;
@@ -9113,6 +9252,15 @@ function getSprRealY(y: number, spr: Sprite) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xA2:
+            return y + 1;
+        case 0x9B:
+            return y + 2;
+        case 0x6E:
+            return y + 1;
+        case 0x63:
+        case 0x62:
+            return y + 1;
         case 0x59:
             return y + 2;
         case 0xCA:
@@ -9125,6 +9273,8 @@ function getSprRealY(y: number, spr: Sprite) {
         case 0xA8:
         case 0x1F:
         case 0xAB:
+        case 0x30:
+        case 0x32:
         case 0x04:
         case 0x05:
         case 0x06:
