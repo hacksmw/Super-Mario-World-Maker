@@ -5477,6 +5477,27 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x90:
+            return getSprImgFreesize([
+                [0x180, 0x181, 0x182, 0x183, 0x184, 0x185, 0x186, 0x187],
+                [0x190, 0x191, 0x192, 0x193, 0x194, 0x195, 0x196, 0x197],
+                [0x1A0, 0x1A1, 0x1A2, 0x1A3, 0x1A4, 0x1A5, 0x1A6, 0x1A7],
+                [0x1B0, 0x1B1, 0x1B2, 0x1B3, 0x1B4, 0x1B5, 0x1B6, 0x1B7],
+                [0x1B0, 0x1B1, 0x1B2, 0x1B3, 0x1B4, 0x1B5, 0x1B6, 0x1B7],
+                [0x1A0, 0x1A1, 0x1A2, 0x1A3, 0x1A4, 0x1A5, 0x1A6, 0x1A7],
+                [0x190, 0x191, 0x192, 0x193, 0x194, 0x195, 0x196, 0x197],
+                [0x180, 0x181, 0x182, 0x183, 0x184, 0x185, 0x186, 0x187],
+            ], 0xD, false, false, null, [
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+            ]);
+            break;
         case 0x8D:
             // ghost house exit
             return getSprImgFreesize([
@@ -8377,6 +8398,8 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x90:
+            return 4;
         case 0x8D:
             return 4;
         case 0x8B:
@@ -8470,6 +8493,8 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x90:
+            return 4;
         case 0x8D:
             return 6;
         case 0x54:
