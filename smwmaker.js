@@ -5477,6 +5477,24 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xA6:
+            // hot head
+            return getSprImgFreesize([
+                [null, null, null, null, null, null],
+                [null, 0x10C, 0x10D, 0x10E, 0x10F, null],
+                [null, 0x11C, 0x11D, 0x11E, 0x11F, null],
+                [null, 0x11C, 0x11D, 0x11E, 0x11F, null],
+                [null, 0x10C, 0x10D, 0x10E, 0x10F, null],
+                [null, null, null, null, null, null]
+            ], 0xA, false, false, null, [
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 2, 2, 2, 2, 0],
+                [0, 2, 2, 2, 2, 0],
+                [0, 0, 0, 0, 0, 0],
+            ]);
+            break;
         case 0x3A:
         case 0x3B:
         case 0x3C:
@@ -6261,7 +6279,10 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0xA5:
             // fuzzball
-            return getSprImg4x4([0x1C8, 0x1C9, 0x1D8, 0x1D9], 0xA, true);
+            if (sprGFX === 2) {
+                return getSprImg4x4([0x1C8, 0x1C9, 0x1D8, 0x1D9], 0xA, true);
+            }
+            return getSprImg4x4([0x10A, 0x10B, 0x11A, 0x11B], 0xA, true);
             break;
         case 0x87:
             // lakitu's cloud
@@ -8619,6 +8640,7 @@ function getSprWidth(sprNum, extra = 0) {
         case 0xA3:
         case 0xA1:
         case 0x9E:
+        case 0xA6:
             return 3;
         case 0x3A:
         case 0x3B:
@@ -8731,6 +8753,7 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xA6:
         case 0xA4:
         case 0xA3:
         case 0xA1:
@@ -8850,6 +8873,7 @@ function calcSprX(spr) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0xA6:
         case 0xA3:
         case 0xA1:
         case 0x9E:
@@ -8913,6 +8937,7 @@ function calcSprY(spr) {
         case 0xA3:
         case 0x9E:
             return y + 1;
+        case 0xA6:
         case 0xB4:
         case 0x67:
         case 0xD4:
@@ -8984,6 +9009,7 @@ function getSprRealX(x, spr) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0xA6:
         case 0xA3:
         case 0xA1:
         case 0x9E:
@@ -9040,6 +9066,7 @@ function getSprRealY(y, spr) {
     switch (spr.spriteID) {
         case 0x8D:
             return 18;
+        case 0xA6:
         case 0xD4:
         case 0x9D:
         case 0xB4:
