@@ -6716,6 +6716,21 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x56:
+        case 0x58:
+            // flying rock
+            return getSprImgFreesize([
+                [0x185, 0x186, 0x187, 0x186, 0x186, 0x185],
+                [0x195, 0x196, 0x197, 0x196, 0x196, 0x195],
+                [null, 0x188, 0x189, 0x189, 0x188, null],
+                [null, 0x198, 0x199, 0x199, 0x198, null],
+            ], 0x9, false, false, null, [
+                [0, 0, 0, 1, 1, 1],
+                [0, 0, 1, 1, 1, 1],
+                [0, 0, 0, 1, 1, 0],
+                [0, 0, 0, 1, 1, 0],
+            ]);
+            break;
         case 0x7A:
             // firework
             return getSprImgFreesize([
@@ -9746,6 +9761,8 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x56:
+        case 0x58:
         case 0xC0:
         case 0xA4:
         case 0xA3:
@@ -9873,6 +9890,8 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         case 0x9F:
         case 0x9E:
             return 4;
+        case 0x56:
+        case 0x58:
         case 0x3A:
         case 0x3B:
         case 0x3C:
