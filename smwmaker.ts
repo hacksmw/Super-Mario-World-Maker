@@ -6716,6 +6716,27 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x9E:
+            // ball and chain
+            return getSprImgFreesize([
+                [null, null, 0x1E8, 0x1E9, null, null],
+                [null, null, 0x1F8, 0x1F9, null, null],
+                [null, null, 0x1E8, 0x1E9, null, null],
+                [null, null, 0x1F8, 0x1F9, null, null],
+                [null, 0x1EA, 0x1EB, 0x1EB, 0x1EA, null],
+                [null, 0x1FA, 0x1FB, 0x1FB, 0x1FA, null],
+                [null, 0x1FA, 0x1FB, 0x1FB, 0x1FA, null],
+                [null, 0x1EA, 0x1EB, 0x1EB, 0x1EA, null],
+            ], 0x9, false, false, null, [
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1, 0],
+                [0, 0, 0, 1, 1, 0],
+                [0, 2, 2, 3, 3, 0],
+                [0, 2, 2, 3, 3, 0],
+            ]);
         case 0xD4:
             // bubble gen
             return getSprImgFreesize([
@@ -9547,6 +9568,8 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x9E:
+            return 3;
         case 0xD4:
         case 0x9D:
         case 0x9A:
@@ -9649,6 +9672,8 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x9E:
+            return 4;
         case 0xD4:
         case 0x9D:
         case 0x9A:
@@ -9759,6 +9784,7 @@ function calcSprX(spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0x9E:
         case 0xD4:
         case 0x9D:
         case 0x9A:
@@ -9820,6 +9846,8 @@ function calcSprY(spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 18;
+        case 0x9E:
+            return y + 1;
         case 0x67:
 
         case 0xD4:
@@ -9893,6 +9921,7 @@ function getSprRealX(x: number, spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0x9E:
         case 0xD4:
         case 0x9D:
         case 0x99:
@@ -9969,6 +9998,7 @@ function getSprRealY(y: number, spr: Sprite) {
         case 0x50:
         case 0x64:
             return y + 1;
+        case 0x9E:
         case 0x2A:
         case 0xBF:
             return y - 1;
