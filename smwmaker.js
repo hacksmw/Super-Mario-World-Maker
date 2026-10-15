@@ -5467,7 +5467,30 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xC4:
+            return getSprImgFreesize([
+                [0x160, 0x161, 0x161, 0x162, 0x161, 0x162, 0x162, 0x163],
+                [0x170, 0x171, 0x171, 0x172, 0x171, 0x172, 0x172, 0x173],
+            ], 0x9);
+            break;
+        case 0xBF:
+            // megamole
+            return getSprImgFreesize([
+                [0x1C6, 0x1C7, 0x1C8, 0x1C9],
+                [0x1D6, 0x1D7, 0x1D8, 0x1D9],
+                [0x1E6, 0x1E7, 0x1E8, 0x1E9],
+                [0x1F6, 0x1F7, 0x1F8, 0x1F9],
+            ], 0x8);
+        case 0xBC:
+            // bowser statue
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [null, 0x130, 0x131, null],
+                [null, 0x140, 0x141, 0x142],
+                [null, null, 0x151, 0x152],
+            ], 0x8);
         case 0xAC:
+            // spike
             return getSprImgFreesize([
                 [0x14A, 0x14B],
                 [0x15A, 0x15B],
@@ -5481,6 +5504,7 @@ function getSprImg(sprNum = 0, extra = 0) {
                 [0x17A, 0x17B],
             ], 0x8, false, true);
         case 0xAD:
+            // spike
             return getSprImgFreesize([
                 [0x14A, 0x14B],
                 [0x15A, 0x15B],
@@ -5494,6 +5518,7 @@ function getSprImg(sprNum = 0, extra = 0) {
                 [0x17A, 0x17B],
             ], 0x8);
         case 0xBB:
+            // gray moving castle block
             return getSprImgFreesize([
                 [0x1CC, 0x1CD, 0x1CE, 0x1CF],
                 [0x1DC, 0x1DD, 0x1DE, 0x1DF],
@@ -5502,6 +5527,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             ], 0x9);
             break;
         case 0xB8:
+            // carrot lift
             return getSprImgFreesize([
                 [null, null, 0x1E4, 0x1E5],
                 [null, null, 0x1F4, 0x1F5],
@@ -5509,6 +5535,7 @@ function getSprImg(sprNum = 0, extra = 0) {
                 [0x1F0, 0x1F1, 0x1F2, 0x1F3],
             ], 0xD, true);
         case 0xB7:
+            // carrot lift
             return getSprImgFreesize([
                 [null, null, 0x1E4, 0x1E5],
                 [null, null, 0x1F4, 0x1F5],
@@ -5697,7 +5724,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0xB6:
             // reflecting fireball
-            return getSprImg4x4([0x1AC, 0x1AD, 0x1BC, 0x1BD], 0xA);
+            return getSprImg4x4([0x1AC, 0x1AD, 0x1BC, 0x1BD], 0xA, true);
             break;
         case 0xB3:
             // bowser statue fireball
@@ -5705,7 +5732,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0xB2:
             // falling spike
-            return getSprImg4x4([0x1E0, 0x1E1, 0x1D0, 0x1D1], 0x8);
+            return getSprImg4x4([0x1E0, 0x1E1, 0x1F0, 0x1F1], 0x8);
             break;
         case 0xAF:
             // boo block
@@ -5994,7 +6021,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0x78:
             // green mushroom
-            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xD);
+            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xD, true);
             break;
         case 0x77:
             // feather
@@ -6010,7 +6037,7 @@ function getSprImg(sprNum = 0, extra = 0) {
             break;
         case 0x74:
             // mushroom
-            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC);
+            return getSprImg4x4([0x24, 0x25, 0x34, 0x35], 0xC, true);
             break;
         case 0x6D:
             // invisible brown block
@@ -7996,6 +8023,11 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xC4:
+            return 4;
+        case 0xBF:
+        case 0xBC:
+            return 2;
         case 0xBB:
         case 0xB8:
         case 0xB7:
@@ -8052,6 +8084,9 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xBF:
+        case 0xBC:
+            return 2;
         case 0xAC:
         case 0xAD:
             return 5;
@@ -8120,6 +8155,8 @@ function calcSprX(spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0xBC:
+            return x - 1;
         case 0xA2:
         case 0x6E:
             return x - 1;
@@ -8152,6 +8189,10 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xBF:
+            return y - 1;
+        case 0xBC:
+            return y - 1;
         case 0xAC:
             return y - 4;
         case 0xA2:
@@ -8193,6 +8234,8 @@ function getSprRealX(x, spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0xBC:
+            return x + 1;
         case 0xA2:
         case 0x6E:
             return x + 1;
@@ -8221,6 +8264,10 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xBF:
+            return y + 1;
+        case 0xBC:
+            return y + 1;
         case 0xAC:
             return y + 4;
         case 0xA2:
