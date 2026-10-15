@@ -6704,7 +6704,11 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0xB0:
+            // boos
+            return getSprImgFreesize([[0x18E,0x18F],[0x19E,0x19F]], 0x9);
         case 0xC4:
+            // falling platform
             return getSprImgFreesize([
                 [0x160, 0x161, 0x161, 0x162, 0x161, 0x162, 0x162, 0x163],
                 [0x170, 0x171, 0x171, 0x172, 0x171, 0x172, 0x172, 0x173],
