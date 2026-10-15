@@ -5477,6 +5477,15 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x52:
+            // hole
+            return getSprImgFreesize([
+                [null, 0x1EC, 0x1EA, 0x1EB, 0x1EA, 0x1EB, 0x1EC, null],
+                [null, 0x1FC, 0x1FA, 0x1FB, 0x1FA, 0x1FB, 0x1FC, null],
+            ], 0x8, false, false, null, [
+                [null, 1, null, null, null, null, null, null],
+                [null, 1, null, null, null, null, null, null],
+            ]);
         case 0x83:
         case 0x84:
             // flying question block
@@ -8226,6 +8235,8 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x52:
+            return 4;
         case 0x83:
         case 0x84:
             return 3;
@@ -8395,6 +8406,8 @@ function calcSprX(spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x52:
+            return x - 1;
         case 0x83:
         case 0x84:
         case 0x3F:
@@ -8499,6 +8512,8 @@ function getSprRealX(x, spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x52:
+            return x + 1;
         case 0x83:
         case 0x84:
         case 0x3F:
