@@ -6716,6 +6716,23 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0xA4:
+            // floating ball
+            return getSprImgFreesize([
+                [null, null, null, null, null, null],
+                [null, 0x1AC, 0x1AD, 0x1AD, 0x1AC, null],
+                [null, 0x1BC, 0x1BD, 0x1BD, 0x1BC, null],
+                [null, 0x1BC, 0x1BD, 0x1BD, 0x1BC, null],
+                [null, 0x1AC, 0x1AD, 0x1AD, 0x1AC, null],
+                [null, null, null, null, null, null],
+            ],  0x8, false, false, null, [
+                [null, null, null, null, null, null],
+                [null, 0, 0, 1, 1, null],
+                [null, 0, 0, 1, 1, null],
+                [null, 2, 2, 3, 3, null],
+                [null, 2, 2, 3, 3, null],
+                [null, null, null, null, null, null],
+            ]);
         case 0xA3:
             // gray flatform
             return getSprImgFreesize([
@@ -9613,6 +9630,7 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xA4:
         case 0xA3:
         case 0xA1:
         case 0x9E:
@@ -9720,6 +9738,7 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xA4:
         case 0xA3:
         case 0xA1:
             return 3;
@@ -9880,6 +9899,8 @@ function calcSprX(spr: Sprite) {
         case 0xC3:
             return x - 1;
             break;
+        case 0xA4:
+            return x - 1;
         default:
             break;
     }
@@ -9939,9 +9960,11 @@ function calcSprY(spr: Sprite) {
             return y - 2;
         case 0x6E:
             return y - 1;
+        case 0xA4:
         case 0x63:
         case 0x62:
             return y - 1;
+        
         case 0x59:
             return y - 2;
         
@@ -10004,6 +10027,7 @@ function getSprRealX(x: number, spr: Sprite) {
         case 0xBC:
             return x + 1;
         case 0xA2:
+        case 0xA4:
         case 0x6E:
             return x + 1;
         case 0x63:
@@ -10064,6 +10088,7 @@ function getSprRealY(y: number, spr: Sprite) {
             return y + 1;
         case 0xAC:
             return y + 4;
+        case 0xA4:
         case 0xA2:
             return y + 1;
         case 0xA1:
