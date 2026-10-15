@@ -6716,6 +6716,12 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x7A:
+            // firework
+            return getSprImgFreesize([
+                [0x1EC, null],
+                [null, null],
+            ], 0xC);
         case 0xA6:
             // hot head
             return getSprImgFreesize([
