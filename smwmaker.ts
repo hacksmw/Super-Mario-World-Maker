@@ -6704,6 +6704,61 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x64:
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [null, 0x1C0, 0x1C1, null],
+                [null, 0x1D0, 0x1D1, null],
+                [null, 0x1CE, 0x1CF, null],
+                [null, 0x1DE, 0x1DF, null],
+                [null, 0x1CE, 0x1CF, null],
+                [null, 0x1DE, 0x1DF, null],
+                [null, 0x1CE, 0x1CF, null],
+                [null, 0x1DE, 0x1DF, null],
+                [null, 0x1CE, 0x1CF, null],
+                [null, 0x1EE, 0x1EF, null],
+
+            ], 0x0B, false, false, [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],
+                [null, 0x8, 0x8, null],             
+            ])
+            break
+        case 0x2E:
+            // spike top
+            return getSprImgFreesize([
+                [0x1EC, 0x1ED],
+                [0x1FC, 0x1FD],
+            ], 0xC);
+        case 0x2A:
+            // down plant
+            return getSprImgFreesize([
+                [null, 0xAE, 0xAF, null],
+                [null, 0xBE, 0xBF, null],
+                [null, 0x1CE, 0x1CF, null],
+                [null, 0x1DE, 0x1DF, null],
+            ], 0xC , false, true, [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, 0xD, 0xD, null],
+                [null, 0xD, 0xD, null],
+            ]);
         case 0xB0:
             // boos
             return getSprImgFreesize([[0x18E,0x18F],[0x19E,0x19F]], 0x9);
@@ -9110,6 +9165,9 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x64:
+        case 0x2A:
+            return 2;
         case 0xC4:
             return 4;
         case 0xBF:
@@ -9172,6 +9230,10 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x64:
+            return 6;
+        case 0x2A:
+            return 2;
         case 0xBF:
         case 0xBC:
             return 2;
@@ -9247,6 +9309,7 @@ function calcSprX(spr: Sprite) {
     }  
 
     switch (spr.spriteID) {
+        case 0x64:
         case 0xBC:
             return x - 1;
         case 0xA2:
@@ -9285,6 +9348,10 @@ function calcSprY(spr: Sprite) {
     }
 
     switch (spr.spriteID) {
+        case 0x64:
+            return y - 1;
+        case 0x2A:
+            return y + 1;
         case 0xBF:
             return y - 1;
         case 0xBC:
@@ -9332,6 +9399,8 @@ function getSprRealX(x: number, spr: Sprite) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0x64:
+            return x + 1;
         case 0xBC:
             return x + 1;
         case 0xA2:
@@ -9363,8 +9432,11 @@ function getSprRealY(y: number, spr: Sprite) {
         return y;
     }
     switch (spr.spriteID) {
-        case 0xBF:
+        case 0x64:
             return y + 1;
+        case 0x2A:
+        case 0xBF:
+            return y - 1;
         case 0xBC:
             return y + 1;
         case 0xAC:
