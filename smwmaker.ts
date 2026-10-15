@@ -6716,6 +6716,19 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x60:
+            // green switch
+            return getSprImgFreesize([
+                [0x100, 0x101, 0x101, 0x100],
+                [0x110, 0x111, 0x111, 0x110],
+            ], 0xD, false, false, [
+                [null, null, null, null],
+                [0x8, 0x8, 0x8, 0x8],
+            ], [
+                [0, 0, 1, 1],
+                [0, 0, 1, 1],
+            ]);
+            break;
         case 0x54:
             // net
             return getSprImgFreesize([
@@ -9384,6 +9397,8 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x60:
+            return 2;
         case 0x52:
         case 0x54:
             return 4;
