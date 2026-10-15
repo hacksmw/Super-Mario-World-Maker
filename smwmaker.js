@@ -5477,6 +5477,34 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x3A:
+        case 0x3B:
+        case 0x3C:
+            //urchin
+            return getSprImgFreesize([
+                [0x1C6, 0x1C7, 0x1C7, 0x1C6],
+                [0x1D6, 0x1D7, 0x1D7, 0x1D6],
+                [0x1D6, 0x1D7, 0x1D7, 0x1D6],
+                [0x1C6, 0x1C7, 0x1C7, 0x1C6],
+            ], 0xB, false, false, null, [
+                [0, 0, 1, 1],
+                [0, 0, 1, 1],
+                [2, 2, 3, 3],
+                [2, 2, 3, 3],
+            ]);
+        case 0x26:
+            // thowomp
+            return getSprImgFreesize([
+                [0x18E, 0x18F, 0x18E, null],
+                [0x19E, 0x19F, 0x19E, null],
+                [0x1AE, 0x1AF, 0x1AE, null],
+                [0x1BE, 0x1BF, 0x1BE, null],
+            ], 0x9, false, false, null, [
+                [0, 0, 1, 0],
+                [0, 0, 1, 0],
+                [0, 0, 1, 0],
+                [0, 0, 1, 0],
+            ]);
         case 0xC5:
         case 0x28:
             // big boo
@@ -8592,6 +8620,10 @@ function getSprWidth(sprNum, extra = 0) {
         case 0xA1:
         case 0x9E:
             return 3;
+        case 0x3A:
+        case 0x3B:
+        case 0x3C:
+        case 0x26:
         case 0xBA:
         case 0xAA:
         case 0xD4:
@@ -8706,6 +8738,10 @@ function getSprHeight(sprNum, extra = 0) {
         case 0x9F:
         case 0x9E:
             return 4;
+        case 0x3A:
+        case 0x3B:
+        case 0x3C:
+        case 0x26:
         case 0xD4:
         case 0x9D:
         case 0x9A:
