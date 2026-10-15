@@ -7105,7 +7105,9 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             break;
         case 0x2D:
             // baby green yoshi            
-            return getSprImg4x4([0x100, 0x101, 0x110, 0x111], 0xD);
+            {
+                return getSprImgFreesize([[0x280, 0x281], [0x290, 0x291]], 0xD, true);
+            }
             break;
         case 0x7D:
             // ballen
@@ -7716,12 +7718,21 @@ function getSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, fli
         case 4:
             gfx = anibmp;
             break;
+        case 5:
+        case 6:
+        case 7:
+            gfx = anibmp;
+            break;
         default:
             throw new Error();
             break;
     }
   
-    const i = index % 128;
+    let i: number = index % 128;
+
+    if (gfx === anibmp) {
+        i = index - 0x200;
+    }
 
     const bitmap = gfx[i];
 
