@@ -6716,6 +6716,19 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0x5D:
+            // floating platform
+            return getSprImgFreesize([
+                [0x1CB, 0x1CC, 0x1CD, 0x1CC, 0x1CC, 0x1CB],
+                [0x1DB, 0x1DC, 0x1DD, 0x1DC, 0x1DC, 0x1DB],
+                [null, 0x1E4, 0x1E5, 0x1E5, 0x1E4, null],
+                [null, 0x1F4, 0x1F5, 0x1F5, 0x1F4, null],
+            ], 0xD, false, false, null, [
+                [null, null, 1, 1, 1, 1],
+                [null, null, 1, 1, 1, 1],
+                [null, null, null, 1, 1, null],
+                [null, null, null, 1, 1, null],
+            ])
         case 0x56:
         case 0x58:
             // flying rock
@@ -9761,6 +9774,7 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x5D:
         case 0x56:
         case 0x58:
         case 0xC0:
@@ -9890,6 +9904,7 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         case 0x9F:
         case 0x9E:
             return 4;
+        case 0x5D:
         case 0x56:
         case 0x58:
         case 0x3A:
