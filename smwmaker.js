@@ -196,6 +196,9 @@ let disableCustomLevelAni;
 let levelAnis;
 let globalAnis;
 let ani2;
+let exgfx60, exgfx61, exgfx62, exgfx63;
+let exgfx60bmp, exgfx61bmp, exgfx62bmp, exgfx63bmp;
+let alternateGFX;
 let offset;
 let slippery;
 let water;
@@ -3215,11 +3218,12 @@ function convertDestAddr2index(index, aniType = 0) {
 function loadExAnimation(pointer, anis) {
     const tbl = read3(pointer);
     const highestUsedAniSlot = read1(tbl + 0) - 1;
-    const alternateGFX = read1(tbl + 1);
+    const alterGFX = read1(tbl + 1);
     const whichCustomTriggersStartUninitialized = read2(tbl + 2);
     const InitialStatesForEachCustomTriggerWhenInitialized = read2(tbl + 4);
     const whichManualTriggersAreInitialized = read2(tbl + 6);
     let count = 0;
+    alternateGFX = alterGFX;
     for (let i = 0; i < 16; i++) {
         const bit = (whichManualTriggersAreInitialized >> i) & 1;
         if (bit === 1) {
@@ -3903,6 +3907,7 @@ function loadGraphics() {
     let sp1gfx, sp2gfx, sp3gfx, sp4gfx;
     let bg2gfx, bg3gfx;
     let anigfx, ani2gfx;
+    let exgfx60gfx, exgfx61gfx, exgfx62gfx, exgfx63gfx;
     let mariogfx;
     // get tileset
     if ((fgbgGFX >= tilesetList.length)) {
@@ -3917,6 +3922,10 @@ function loadGraphics() {
     bg2 = 0x7f;
     bg3 = 0x7f;
     ani2 = 0x7f;
+    exgfx60 = 0x7f;
+    exgfx61 = 0x7f;
+    exgfx62 = 0x7f;
+    exgfx63 = 0x7f;
     sp1 = read1((spriteGfxTable) + (4 * sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4 * sprGFX + 1));
     sp3 = read1((spriteGfxTable) + (4 * sprGFX + 2));
@@ -9684,10 +9693,8 @@ function fileOpen() {
                 loadROM(levelNum, fileData);
             }
             catch (e) {
-                debugger;
-                //throw e;
-                //alert(e.message)
-                //unload();
+                alert(e.message);
+                unload();
             }
             btnOpen.disabled = true;
             btnPalette.disabled = false;
