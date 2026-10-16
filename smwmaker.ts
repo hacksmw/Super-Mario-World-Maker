@@ -3476,6 +3476,7 @@ function renderExAnimation() {
             const ani: ExAni = anis[j];
             const type: number = ani.type;
             const used: number = ani.used;
+            let dest: number = ani.vramDest;
 
             
 
@@ -3485,8 +3486,7 @@ function renderExAnimation() {
 
             if (type < 0x13) {
                 
-                if (ani.vramDest >= 0x1C00) {
-                    console.log("vramDest: ", ani.vramDest.toString(16));
+                if (dest >= 0x1C00) {
                     continue;
                     
                 }
@@ -3519,9 +3519,9 @@ function renderExAnimation() {
                         count = type;
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
-                            const toIndex = index2index(ani.vramDest + i);
+                            const toIndex = index2index(dest + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
-                            const destGfx = index2page(ani.vramDest + i);    
+                            const destGfx = index2page(dest + i);    
 
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
@@ -3536,9 +3536,9 @@ function renderExAnimation() {
                         count = 8 + (4 * (type - 8));
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
-                            const toIndex = index2index(ani.vramDest + i);
+                            const toIndex = index2index(dest + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
-                            const destGfx = index2page(ani.vramDest + i);    
+                            const destGfx = index2page(dest + i);    
 
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
@@ -3550,8 +3550,8 @@ function renderExAnimation() {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
 
-                            const toIndex = index2index(ani.vramDest + (i*16));
-                            const destGfx = index2page(ani.vramDest + (i*16));    
+                            const toIndex = index2index(dest + (i*16));
+                            const destGfx = index2page(dest + (i*16));    
 
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
@@ -3562,8 +3562,8 @@ function renderExAnimation() {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
 
-                            const toIndex = index2index(ani.vramDest + (i % 2) + (intdiv(i, 2)*16));
-                            const destGfx = index2page(ani.vramDest + (i % 2) + (intdiv(i, 2)*16));    
+                            const toIndex = index2index(dest + (i % 2) + (intdiv(i, 2)*16));
+                            const destGfx = index2page(dest + (i % 2) + (intdiv(i, 2)*16));    
 
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
@@ -3574,8 +3574,8 @@ function renderExAnimation() {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
 
-                            const toIndex = index2index(ani.vramDest + (i % 4) + (intdiv(i, 4)*16));
-                            const destGfx = index2page(ani.vramDest + (i % 4) + (intdiv(i, 4)*16));    
+                            const toIndex = index2index(dest + (i % 4) + (intdiv(i, 4)*16));
+                            const destGfx = index2page(dest + (i % 4) + (intdiv(i, 4)*16));    
 
                             destGfx[toIndex] = srcGfx[fromIndex];
                         }
@@ -3812,7 +3812,7 @@ function convertAddr2index(index: number, aniType: number = 0): number {
     return index;        
 }
 
-function convertDestAddr2index(index: number, aniType: number = 0): number {
+function convertDestAddr2index(index: number, aniType: number = 0, useAlternativeGFX: number = 0): number {
     if (aniType < 0x13) {
         if (0x0000 <= index && index <= 0x2FFF) {
             const n = (index - 0x0000) / 0x10;
@@ -3823,6 +3823,27 @@ function convertDestAddr2index(index: number, aniType: number = 0): number {
         } else if (0x4000 <= index && index <= 0x4FFF) {
             const n = (index - 0x4000) / 0x8;
             return n + 0x1C00;
+        } else if (0x8000 <= index && index <= 0x9FF0) {
+            if (useAlternativeGFX) {
+                const n = (index - 0x8000) / 0x10;
+                return n;
+            } else {
+                return index;
+            }
+        } else if (0xA000 <= index && index <= 0xAFF0) { 
+            if (useAlternativeGFX) {
+                const n = (index - 0xA000) / 0x10;
+                return n + 0x200;
+            } else {
+                return index;
+            }
+        } else if (0xE000 <= index && index <= 0xFFF0) { 
+            if (useAlternativeGFX) {
+                const n = (index - 0xE000) / 0x10;
+                return n + 0x400;
+            } else {
+                return index;
+            }
         } else {
             return index;
         }
@@ -3861,10 +3882,10 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
             const vramDest = read2(pointer+3);
             const palDest = read1(pointer+3);
             const numColor = read1(pointer+4);
-            const useLevelsAlterGFX = frames >>> 7;
+            const useLevelsAlterGFX = vramDest >>> 15;
             const frameData: number[] = [];
 
-            const dest = convertDestAddr2index(vramDest, aniType);
+            const dest = convertDestAddr2index(vramDest, aniType, useLevelsAlterGFX);
 
             for (let j = 0; j < frames; j++) {
                 const data = read2(pointer+5+(j*2));
