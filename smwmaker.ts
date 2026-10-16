@@ -3400,6 +3400,7 @@ function index2page(index: number): number[][] {
         case 14:
             return anibmp;
         case 17:
+        case 18:
             return ani2bmp;
         
     }
@@ -3410,9 +3411,6 @@ function exAniIndex2div(index: number) {
     if (0x600 <= index && index <= 0x77F) {
         return index - 0x600;
     } else if (0x780 <= index && index <= 0x857) {
-        if (index >= 0x800) {
-            throw new Error("undefined");
-        }
         const value = index - 0x780;
         return value;
     } else if (0x900 <= index && index <= 0xBE7) {
@@ -3427,9 +3425,7 @@ function exAniIndex2gfx(index: number) {
     if (0x600 <= index && index <= 0x77F) {
         return anibmp;
     } else if (0x780 <= index && index <= 0x857) {
-        if (index < 0x800)
-            return ani2bmp;
-        throw new Error("undefined");
+        return ani2bmp;
     } else if (0x900 <= index && index <= 0xBE7) {
         return mariobmp;
     } else {
@@ -8440,6 +8436,7 @@ function getSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, fli
         case 5:
         case 6:
         case 7:
+        case 8:
             gfx = anibmp;
             break;
         default:
