@@ -3165,7 +3165,7 @@ function loadExAnimations() {
         else {
             console.log("Global ExAnimation is disabled");
         }
-        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0 /*&& read1(lvlAnisPointer + 1) !== 0*/) {
+        if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0 && read1(lvlAnisPointer + 1) !== 0) {
             console.log("Level ExAnimation is enabled");
             loadExAnimation(lvlAnisPointer, levelAnis);
             console.log("levelAnis.length = " + levelAnis.length);
@@ -3248,6 +3248,7 @@ function loadExAnimation(pointer, anis) {
                 const index = convertAddr2index(data, aniType);
                 frameData.push(index);
             }
+            debugger;
             const ani = new ExAni();
             ani.used = 1;
             ani.type = aniType;
