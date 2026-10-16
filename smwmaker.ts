@@ -6746,11 +6746,11 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
             ]);
             break;
         case 0x10:
-            // flying question block
+            // wing goomba
             return getSprImgFreesize([
                 [null, null, null, null, null, null],
-                [0xC7, 0xC6, null, null, 0xC6, 0xC7],
-                [0xD7, 0xD6, 0xA8, 0xA9, 0xD6, 0xD7],
+                [null, null, null, null, null, null],
+                [null, 0x5D, 0xA8, 0xA9, 0x5D, null],
                 [null, null, 0xB8, 0xB9, null, null],
             ], 0xA, false, false, [
                 [null, null, null, null, null, null],
