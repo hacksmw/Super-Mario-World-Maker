@@ -3249,13 +3249,8 @@ function loadExAnimation(pointer, anis) {
                 frameData.push(index);
             }
             const ani = new ExAni();
-            if (ani.type !== 0) {
-                ani.used = 1;
-                ani.type = aniType;
-            }
-            else {
-                continue;
-            }
+            ani.used = 1;
+            ani.type = aniType;
             ani.trigger = trigger;
             ani.frames = frames;
             ani.palDest = palDest;

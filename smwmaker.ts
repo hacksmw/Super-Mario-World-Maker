@@ -3458,6 +3458,8 @@ function renderExAnimation() {
             const type: number = ani.type;
             const used: number = ani.used;
 
+            
+
             if ((!used) || type === 0) {
                 continue;
             }
@@ -3647,7 +3649,7 @@ function loadExAnimations() {
                             throw new Error("not valid trigger type.");
                             break;
                         
-                    }            
+                    }       
 
                     a.frameData = [];
 
@@ -3655,7 +3657,7 @@ function loadExAnimations() {
                         for (let j = 0; j < 16; j++) {
                             const frameData = framesData[j];
                             const frame = convertAddr2index(frameData);
-
+                            
                             a.frameData.push(frame); 
                             
                         }
@@ -3827,19 +3829,15 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
             for (let j = 0; j < frames; j++) {
                 const data = read2(pointer+5+(j*2));
                 const index = convertAddr2index(data, aniType);
-                
+
                 frameData.push(index);
             }
 
             const ani = new ExAni();
+
+            ani.used = 1;
+            ani.type = aniType;
             
-            if (ani.type !== 0) {
-                
-                ani.used = 1;
-                ani.type = aniType;
-            } else {
-                continue;
-            }
             ani.trigger = trigger;
             ani.frames = frames;
             ani.palDest = palDest;
