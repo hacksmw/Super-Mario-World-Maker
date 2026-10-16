@@ -5477,6 +5477,15 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x73:
+            // super koopa
+            return getSprImgFreesize([
+                [0xE0, 0xE1, 0X1F4, 0x1F5],
+                [0xF0, 0xF1, null, null]
+            ], 0xB, false, false, [
+                [null, null, 0xA, 0xA],
+                [null, null, null, null],
+            ]);
         case 0x72:
             // super koopa
             return getSprImgFreesize([
@@ -8802,6 +8811,7 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x73:
         case 0xD3:
         case 0x71:
         case 0x72:
