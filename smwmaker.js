@@ -5699,6 +5699,7 @@ function getSprImg(sprNum = 0, extra = 0) {
                 [null, 2, 2, 3, 3, null],
                 [null, null, null, null, null, null],
             ]);
+        case 0xE0:
         case 0xA3:
             // gray flatform
             return getSprImgFreesize([
@@ -8761,6 +8762,7 @@ function getSprWidth(sprNum, extra = 0) {
         case 0x58:
         case 0xC0:
         case 0xA4:
+        case 0xE0:
         case 0xA3:
         case 0xA1:
         case 0x9E:
@@ -8886,6 +8888,7 @@ function getSprHeight(sprNum, extra = 0) {
             return 4;
         case 0xA6:
         case 0xA4:
+        case 0xE0:
         case 0xA3:
         case 0xA1:
             return 3;
@@ -9011,6 +9014,7 @@ function calcSprX(spr) {
         case 0x8D:
             return 0;
         case 0xA6:
+        case 0xE0:
         case 0xA3:
         case 0xA1:
         case 0x9E:
@@ -9076,6 +9080,7 @@ function calcSprY(spr) {
             return y - 3;
         case 0x8D:
             return 18;
+        case 0xE0:
         case 0xA3:
         case 0x9E:
             return y + 1;
@@ -9152,6 +9157,7 @@ function getSprRealX(x, spr) {
         case 0x8D:
             return 0;
         case 0xA6:
+        case 0xE0:
         case 0xA3:
         case 0xA1:
         case 0x9E:
@@ -9235,6 +9241,7 @@ function getSprRealY(y, spr) {
         case 0x50:
         case 0x64:
             return y + 1;
+        case 0xE0:
         case 0xA3:
         case 0x9E:
         case 0x2A:
