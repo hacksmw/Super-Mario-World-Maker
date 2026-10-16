@@ -3422,8 +3422,16 @@ function exAniIndex2div(index: number) {
         return value;
     } else if (0x900 <= index && index <= 0xBE7) {
         return index - 0x900;
+    } else if (0xC00 <= index && index <= 0xFFF) { 
+        return index - 0xC00;
+    } else if (0x1000 <= index && index <= 0x13FF) { 
+        return index - 0x1000;
+    } else if (0x1400 <= index && index <= 0x17FF) { 
+        return index - 0x1400;
+    } else if (0x1800 <= index && index <= 0x1BFF) { 
+        return index - 0x1800;
     } else {
-        throw new Error();
+        throw new Error("at exAniIndex2div");
     }
 }
 
@@ -3434,8 +3442,16 @@ function exAniIndex2gfx(index: number) {
         return ani2bmp;
     } else if (0x900 <= index && index <= 0xBE7) {
         return mariobmp;
+    } else if (0xC00 <= index && index <= 0xFFF) {
+        return exgfx60bmp;
+    } else if (0x1000 <= index && index <= 0x13FF) {
+        return exgfx61bmp;
+    } else if (0x1400 <= index && index <= 0x17FF) {
+        return exgfx62bmp;
+    } else if (0x1800 <= index && index <= 0x1BFF) {
+        return exgfx63bmp;
     } else {
-        throw new Error();
+        throw new Error("at exAniIndex2gfx");
     }
 }
 
@@ -3468,8 +3484,11 @@ function renderExAnimation() {
             }
 
             if (type < 0x13) {
+                
                 if (ani.vramDest >= 0x1C00) {
+                    console.log("vramDest: ", ani.vramDest.toString(16));
                     continue;
+                    
                 }
 
                 if (ani.frameData[0] >= 0x10000) {
@@ -3481,6 +3500,8 @@ function renderExAnimation() {
                     continue;
                 }
                 */
+
+                
 
                 let count: number;
                 
@@ -3770,13 +3791,17 @@ function convertAddr2index(index: number, aniType: number = 0): number {
             return 0x900 + n;
         } else if (0x0000 <= index && index <= 0x7FFF) {
             if (alternateGFX === 0) {
-                
+                const n = (index) / 0x20;
+                return n + 0xC00;
             } else if (alternateGFX === 1) {
-
+                const n = (index) / 0x20;
+                return n + 0x1000;
             } else if (alternateGFX === 2) {
-
+                const n = (index) / 0x20;
+                return n + 0x1400;
             } else if (alternateGFX === 3) {
-
+                const n = (index) / 0x20;
+                return n + 0x1800;
             } else {
                 return index;
             }
