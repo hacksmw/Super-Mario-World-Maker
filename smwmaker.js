@@ -1019,7 +1019,13 @@ function spr_ondblclick(e) {
     sprites[index].extra = val & 0b11;
     this.title = hex(sprites[index].spriteID) + "\n" + hex(val);
     const spr = sprites[index];
-    const img = getSprImg(spr.spriteID, spr.extra);
+    let img;
+    if (!isVertical) {
+        img = getSprImg(spr.spriteID, spr.extra, spr.xPosition, spr.yPosition);
+    }
+    else {
+        img = getSprImg(spr.spriteID, spr.extra, spr.yPosition, spr.xPosition);
+    }
     if (img) {
         this.style.border = "";
         this.style.backgroundColor = '';
@@ -2297,7 +2303,12 @@ function create_object_view(obj, index, type = "layer1") {
         const spr = obj;
         num = spr.spriteID;
         data = spr.extra;
-        img = getSprImg(num, data);
+        if (!isVertical) {
+            img = getSprImg(num, data, spr.xPosition, spr.yPosition);
+        }
+        else {
+            img = getSprImg(num, data, spr.yPosition, spr.xPosition);
+        }
         screen = spr.screenNum;
         x = getSprX(spr);
         y = getSprY(spr);
@@ -5471,7 +5482,7 @@ function getSprImgFreesize(tiles, color, flipx = false, flipy = false, colorMap 
     }
     return canvas.toDataURL('image/png');
 }
-function getSprImg(sprNum = 0, extra = 0) {
+function getSprImg(sprNum = 0, extra = 0, xpos = 0, ypos = 0) {
     const canvas = document.createElement("canvas");
     if (extra !== 0 && sprNum !== 0x7B) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);

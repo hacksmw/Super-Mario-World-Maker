@@ -1182,7 +1182,14 @@ function spr_ondblclick(this: any, e: MouseEvent): void {
 
     const spr = sprites[index];
 
-    const img = getSprImg(spr.spriteID, spr.extra);
+    let img;
+
+    if (!isVertical) {
+        img = getSprImg(spr.spriteID, spr.extra, spr.xPosition, spr.yPosition);
+    } else {
+        img = getSprImg(spr.spriteID, spr.extra, spr.yPosition, spr.xPosition);
+    }
+    
 
     if (img) {
         this.style.border = "";
@@ -2686,7 +2693,13 @@ function create_object_view(obj: any, index: number, type: string = "layer1") {
         num = spr.spriteID;
         data = spr.extra;
 
-        img = getSprImg(num, data);      
+        if (!isVertical) {
+            img = getSprImg(num, data, spr.xPosition, spr.yPosition);      
+        } else {
+            img = getSprImg(num, data, spr.yPosition, spr.xPosition);      
+        }
+
+        
 
         screen = spr.screenNum;
 
@@ -6708,7 +6721,7 @@ function getSprImgFreesize(tiles: any, color: number, flipx: boolean = false, fl
     return canvas.toDataURL('image/png');
 }
 
-function getSprImg(sprNum: number = 0, extra: number = 0) {
+function getSprImg(sprNum: number = 0, extra: number = 0, xpos: number = 0, ypos: number = 0) {
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 
     if (extra !== 0 && sprNum !== 0x7B) {
