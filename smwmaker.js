@@ -5488,6 +5488,18 @@ function getSprImg(sprNum = 0, extra = 0, xpos = 0, ypos = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xE3:
+            // clock boos
+            return getSprImgFreesize([
+                [0x1AE, 0x1AF],
+                [0x1BE, 0x1BF],
+            ], 0x9);
+        case 0xE2:
+            // clock boos
+            return getSprImgFreesize([
+                [0x1AA, 0x1AB],
+                [0x1BA, 0x1BB],
+            ], 0x9);
         case 0x8F:
             // mushroom
             if (xpos % 2 === 1) {

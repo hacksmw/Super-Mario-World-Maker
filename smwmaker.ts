@@ -6729,6 +6729,18 @@ function getSprImg(sprNum: number = 0, extra: number = 0, xpos: number = 0, ypos
     }
 
     switch (sprNum) {
+        case 0xE3:
+            // clock boos
+            return getSprImgFreesize([
+                [0x1AE, 0x1AF],
+                [0x1BE, 0x1BF],
+            ], 0x9);
+        case 0xE2:
+            // clock boos
+            return getSprImgFreesize([
+                [0x1AA, 0x1AB],
+                [0x1BA, 0x1BB],
+            ], 0x9);
         case 0x8F:
             // mushroom
             if (xpos % 2 === 1) {
