@@ -2887,7 +2887,6 @@ function exAniIndex2div(index) {
         return index - 0x900;
     }
     else {
-        debugger;
         throw new Error();
     }
 }
@@ -3248,7 +3247,6 @@ function loadExAnimation(pointer, anis) {
                 const index = convertAddr2index(data, aniType);
                 frameData.push(index);
             }
-            debugger;
             const ani = new ExAni();
             ani.used = 1;
             ani.type = aniType;

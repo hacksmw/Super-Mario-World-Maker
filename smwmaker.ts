@@ -3419,7 +3419,6 @@ function exAniIndex2div(index: number) {
     } else if (0x900 <= index && index <= 0xBE7) {
         return index - 0x900;
     } else {
-        debugger;
         throw new Error();
     }
 }
@@ -3832,8 +3831,6 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
 
                 frameData.push(index);
             }
-
-            debugger;
 
             const ani = new ExAni();
 
