@@ -2867,6 +2867,7 @@ function index2page(index) {
         case 14:
             return anibmp;
         case 17:
+        case 18:
             return ani2bmp;
     }
     throw new Error("index is not valid: " + index.toString(16) + ", " + div.toString(16));
@@ -2876,9 +2877,6 @@ function exAniIndex2div(index) {
         return index - 0x600;
     }
     else if (0x780 <= index && index <= 0x857) {
-        if (index >= 0x800) {
-            throw new Error("undefined");
-        }
         const value = index - 0x780;
         return value;
     }
@@ -2895,9 +2893,7 @@ function exAniIndex2gfx(index) {
         return anibmp;
     }
     else if (0x780 <= index && index <= 0x857) {
-        if (index < 0x800)
-            return ani2bmp;
-        throw new Error("undefined");
+        return ani2bmp;
     }
     else if (0x900 <= index && index <= 0xBE7) {
         return mariobmp;
@@ -7134,6 +7130,7 @@ function getSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
         case 5:
         case 6:
         case 7:
+        case 8:
             gfx = anibmp;
             break;
         default:
