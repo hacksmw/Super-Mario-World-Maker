@@ -215,7 +215,7 @@ let levelAnis: ExAni[];
 let globalAnis: ExAni[];
 let ani2: number;
 let exgfx60: number, exgfx61: number, exgfx62: number, exgfx63: number;
-let exgfx60bmp: number, exgfx61bmp: number, exgfx62bmp: number, exgfx63bmp: number;
+let exgfx60bmp: number[][], exgfx61bmp: number[][], exgfx62bmp: number[][], exgfx63bmp: number[][];
 let alternateGFX: number;
 
 let offset: number;
@@ -1415,12 +1415,16 @@ function btn8x8_onclick () {
 
     canvas = document.createElement("canvas");
     canvas.id = "cnv8x8";
+
+    const limit: number = 1;
     
     canvas.style.border = "1px solid black";
     canvas.width = dotSize * 8 * 16;
-    canvas.height = dotSize * (8 * 16 * 3 + 8 * 16 * 2);
+    canvas.height = dotSize * (8 * 16 * 3 + 8 * 16 * 2) * limit;
 
     let ctx = canvas.getContext("2d");
+
+    console.log("exgfx60bmp", exgfx60bmp);
     
     const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
 
@@ -3764,6 +3768,18 @@ function convertAddr2index(index: number, aniType: number = 0): number {
         } else if (0x2000 <= index && index <= 0x7CFF) {
             const n = ((index - 0x2000)) / 0x20;
             return 0x900 + n;
+        } else if (0x0000 <= index && index <= 0x7FFF) {
+            if (alternateGFX === 0) {
+                
+            } else if (alternateGFX === 1) {
+
+            } else if (alternateGFX === 2) {
+
+            } else if (alternateGFX === 3) {
+
+            } else {
+                return index;
+            }
         } else {
             return index;
         }
@@ -4808,6 +4824,31 @@ function loadGraphics() {
         */
     }
 
+    if (lmVer >= 1.70) {
+        const addressTable = 0x03BCC0;
+        
+        const gfx60Addr = read3(addressTable + (3 * 0));
+        const gfx61Addr = read3(addressTable + (3 * 1));
+        const gfx62Addr = read3(addressTable + (3 * 2));
+        const gfx63Addr = read3(addressTable + (3 * 3));
+
+        console.log("gfx60addr", gfx60Addr.toString(16));
+
+        exgfx60gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx60Addr), snes2pc(gfx60Addr + 32768));
+        exgfx61gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx61Addr), snes2pc(gfx61Addr + 32768));
+        exgfx62gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx62Addr), snes2pc(gfx62Addr + 32768));
+        exgfx63gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx63Addr), snes2pc(gfx63Addr + 32768));
+
+        console.log("exgfx60gfx: ", exgfx60gfx);
+
+        console.log("ExGFX60-63 is Loaded");
+    } else {
+        exgfx60gfx = [];
+        exgfx61gfx = [];
+        exgfx62gfx = [];
+        exgfx63gfx = [];
+    }
+
     // Animation graphics
 
     let gfx33Pointer: number = 0x8bfc0;
@@ -4871,6 +4912,13 @@ function loadGraphics() {
     orgSp2bmp = structuredClone(sp2bmp);
     orgSp3bmp = structuredClone(sp3bmp);
     orgSp4bmp = structuredClone(sp4bmp);
+
+    if (lmVer >= 1.70) {
+        exgfx60bmp = convertGraphics(exgfx60gfx!, is4bpp);
+        exgfx61bmp = convertGraphics(exgfx61gfx!, is4bpp);
+        exgfx62bmp = convertGraphics(exgfx62gfx!, is4bpp);
+        exgfx63bmp = convertGraphics(exgfx63gfx!, is4bpp);
+    }
 
     if (!disableOrgLevelAni) {
         original_animation();
