@@ -214,6 +214,9 @@ let disableCustomLevelAni: number;
 let levelAnis: ExAni[];
 let globalAnis: ExAni[];
 let ani2: number;
+let exgfx60: number, exgfx61: number, exgfx62: number, exgfx63: number;
+let exgfx60bmp: number, exgfx61bmp: number, exgfx62bmp: number, exgfx63bmp: number;
+let alternateGFX: number;
 
 let offset: number;
 let slippery: number;
@@ -3789,12 +3792,14 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
     const tbl = read3(pointer);
 
     const highestUsedAniSlot = read1(tbl + 0) - 1; 
-    const alternateGFX = read1(tbl+1);
+    const alterGFX = read1(tbl+1);
     const whichCustomTriggersStartUninitialized = read2(tbl+2);
     const InitialStatesForEachCustomTriggerWhenInitialized = read2(tbl+4);
     const whichManualTriggersAreInitialized = read2(tbl+6);
 
     let count: number = 0;
+
+    alternateGFX = alterGFX;
 
     for (let i = 0; i < 16; i++) {
         const bit = (whichManualTriggersAreInitialized >> i) & 1;
@@ -4620,8 +4625,8 @@ function loadGraphics() {
     let sp1gfx: number[], sp2gfx: number[], sp3gfx: number[], sp4gfx: number[];
     let bg2gfx: number[], bg3gfx: number[];
     let anigfx: number[], ani2gfx: number[];
+    let exgfx60gfx: number[], exgfx61gfx: number[], exgfx62gfx: number[], exgfx63gfx: number[];
     let mariogfx: number[];
-
 
     // get tileset
 
@@ -4642,6 +4647,11 @@ function loadGraphics() {
     bg3 = 0x7f;
     ani2 = 0x7f;
 
+    exgfx60 = 0x7f;
+    exgfx61 = 0x7f;
+    exgfx62 = 0x7f;
+    exgfx63 = 0x7f;
+    
     sp1 = read1((spriteGfxTable) + (4*sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4*sprGFX + 1));
     sp3 = read1((spriteGfxTable) + (4*sprGFX + 2));
@@ -10849,10 +10859,8 @@ function fileOpen(): void {
             try {
                 loadROM(levelNum, fileData);
             } catch (e: any) {
-                debugger;
-                //throw e;
-                //alert(e.message)
-                //unload();
+                alert(e.message)
+                unload();
             }
 
 
