@@ -5477,6 +5477,33 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x72:
+            // super koopa
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [0x1E0, 0x1F4, 0x1F5, null],
+                [0x1F0, 0x1F1, 0x1F2, null],
+                [null, null, null, null]
+            ], 0xC, false, false, [
+                [null, null, null, null],
+                [null, 0xA, 0xA, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ]);
+        case 0xD3:
+        case 0x71:
+            // super koopa
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [0x1E0, 0x1F4, 0x1F5, null],
+                [0x1F0, 0x1F1, 0x1F2, null],
+                [null, null, null, null],
+            ], 0xD, false, false, [
+                [null, null, null, null],
+                [null, 0xC, 0xC, null],
+                [null, null, null, null],
+                [null, null, null, null],
+            ]);
         case 0x46:
         case 0x91:
         case 0x92:
@@ -8775,6 +8802,10 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xD3:
+        case 0x71:
+        case 0x72:
+            return 2;
         case 0x46:
         case 0x91:
         case 0x92:
@@ -8911,6 +8942,10 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xD3:
+        case 0x71:
+        case 0x72:
+            return 2;
         case 0xDE:
             return 3;
         case 0x66:
@@ -9119,6 +9154,10 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xD3:
+        case 0x71:
+        case 0x72:
+            return y;
         case 0x46:
         case 0x91:
         case 0x92:
@@ -9275,6 +9314,10 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xD3:
+        case 0x71:
+        case 0x72:
+            return y;
         case 0x8D:
             return 18;
         case 0xDE:
