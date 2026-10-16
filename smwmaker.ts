@@ -6716,6 +6716,16 @@ function getSprImg(sprNum: number = 0, extra: number = 0) {
     }
 
     switch (sprNum) {
+        case 0xDE:
+            // eeries
+            return getSprImgFreesize([
+                [null, null, 0x16A, 0x16B, null, null, 0x16A, 0x16B, null, null],
+                [null, null, 0x17A, 0x17B, null, null, 0x17A, 0x17B, null, null],
+                [null, null, null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null, null, null],
+                [0x16A, 0x16B, null, null, 0x16A, 0x16B, null, null, 0x16A, 0x16B],
+                [0x17A, 0x17B, null, null, 0x17A, 0x17B, null, null, 0x17A, 0x17B],
+            ], 0xE);
         case 0x66:
             // chainsaw
             return getSprImgFreesize([
@@ -9846,6 +9856,7 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xDE:
         case 0x5E:
             return 5;
         case 0x5D:
@@ -9972,6 +9983,8 @@ function getSprHeight(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0xDE:
+            return 3;
         case 0x66:
         case 0x65:
             return 4;
@@ -10102,6 +10115,8 @@ function calcSprX(spr: Sprite) {
     }  
 
     switch (spr.spriteID) {
+        case 0xDE:
+            return x - 2;
         case 0x8D:
             return 0;
         case 0xA6:
@@ -10169,6 +10184,7 @@ function calcSprY(spr: Sprite) {
     }
 
     switch (spr.spriteID) {
+        case 0xDE:
         case 0x66:
             return y - 1;
         case 0x65:
@@ -10287,6 +10303,7 @@ function getSprRealX(x: number, spr: Sprite) {
         case 0xA4:
         case 0x6E:
             return x + 1;
+        case 0xDE:
         case 0x63:
         case 0x62:
             return x + 2;
@@ -10315,6 +10332,7 @@ function getSprRealY(y: number, spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 18;
+        case 0xDE:
         case 0x66:
             return y + 1;
         case 0x65:

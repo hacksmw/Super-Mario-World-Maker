@@ -5477,6 +5477,16 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xDE:
+            // eeries
+            return getSprImgFreesize([
+                [null, null, 0x16A, 0x16B, null, null, 0x16A, 0x16B, null, null],
+                [null, null, 0x17A, 0x17B, null, null, 0x17A, 0x17B, null, null],
+                [null, null, null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null, null, null],
+                [0x16A, 0x16B, null, null, 0x16A, 0x16B, null, null, 0x16A, 0x16B],
+                [0x17A, 0x17B, null, null, 0x17A, 0x17B, null, null, 0x17A, 0x17B],
+            ], 0xE);
         case 0x66:
             // chainsaw
             return getSprImgFreesize([
@@ -8743,6 +8753,7 @@ function getSprWidth(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xDE:
         case 0x5E:
             return 5;
         case 0x5D:
@@ -8868,6 +8879,8 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0xDE:
+            return 3;
         case 0x66:
         case 0x65:
             return 4;
@@ -8993,6 +9006,8 @@ function calcSprX(spr) {
         return x;
     }
     switch (spr.spriteID) {
+        case 0xDE:
+            return x - 2;
         case 0x8D:
             return 0;
         case 0xA6:
@@ -9054,6 +9069,7 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0xDE:
         case 0x66:
             return y - 1;
         case 0x65:
@@ -9165,6 +9181,7 @@ function getSprRealX(x, spr) {
         case 0xA4:
         case 0x6E:
             return x + 1;
+        case 0xDE:
         case 0x63:
         case 0x62:
             return x + 2;
@@ -9192,6 +9209,7 @@ function getSprRealY(y, spr) {
     switch (spr.spriteID) {
         case 0x8D:
             return 18;
+        case 0xDE:
         case 0x66:
             return y + 1;
         case 0x65:
