@@ -5477,6 +5477,35 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0xC:
+            // wing yellow koopa
+            return getSprImgFreesize([[0x82, 0x83], [0x92, 0x93], [0xA2, 0x5D], [0xB2, 0xB3]], 0xA, false, false, [
+                [null, null],
+                [null, null],
+                [null, 0xB],
+                [null, null],
+            ]);
+            break;
+        case 0xA:
+        case 0xB:
+            // wing red koopa
+            return getSprImgFreesize([[0x82, 0x83], [0x92, 0x93], [0xA2, 0x5D], [0xB2, 0xB3]], 0xC, false, false, [
+                [null, null],
+                [null, null],
+                [null, 0xB],
+                [null, null],
+            ]);
+            break;
+        case 0x08:
+        case 0x09:
+            // wing green koopa
+            return getSprImgFreesize([[0x82, 0x83], [0x92, 0x93], [0xA2, 0x5D], [0xB2, 0xB3]], 0xD, false, false, [
+                [null, null],
+                [null, null],
+                [null, 0xB],
+                [null, null],
+            ]);
+            break;
         case 0x10:
             // flying question block
             return getSprImgFreesize([
@@ -8971,6 +9000,11 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x8:
+        case 0x9:
+        case 0xA:
+        case 0xB:
+        case 0xC:
         case 0x10:
         case 0xD3:
         case 0x71:
@@ -9185,6 +9219,12 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x8:
+        case 0x9:
+        case 0xA:
+        case 0xB:
+        case 0xC:
+            return y - 1;
         case 0xD3:
         case 0x71:
         case 0x72:
@@ -9347,6 +9387,12 @@ function getSprRealY(y, spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x8:
+        case 0x9:
+        case 0xA:
+        case 0xB:
+        case 0xC:
+            return y + 1;
         case 0xD3:
         case 0x71:
         case 0x72:
