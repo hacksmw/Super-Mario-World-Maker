@@ -6729,6 +6729,27 @@ function getSprImg(sprNum: number = 0, extra: number = 0, xpos: number = 0, ypos
     }
 
     switch (sprNum) {
+        case 0x8F:
+            // mushroom
+            if (xpos % 2 === 1) {
+               return getSprImgFreesize([
+                    [null, 0x180, 0x181, 0x181, 0x180, null, null, null, null, 0x180, 0x181, 0x181, 0x180, null, null, null, null, null, null, null, null, null],
+                    [null, 0x190, 0x191, 0x191, 0x190, null, null, null, null, 0x190, 0x191, 0x191, 0x190, null, null, null, null, null, null, null, null, null],
+                ], 0xD, false, false, null, [
+                    [null, null, null, 1, 1, null, null, null, null, null, null, 1, 1, null, null, null, null, null, null, null, null, null],
+                    [null, null, null, 1, 1, null, null, null, null, null, null, 1, 1, null, null, null, null, null, null, null, null, null],
+                ]);
+            } else {
+                return getSprImgFreesize([
+                    [null, 0x180, 0x181, 0x181, 0x180, null, null, null, null, null, null, null, null, null, null, null, null, 0x180, 0x181, 0x181, 0x180, null],
+                    [null, 0x190, 0x191, 0x191, 0x190, null, null, null, null, null, null, null, null, null, null, null, null, 0x190, 0x191, 0x191, 0x190, null],
+                ], 0xD, false, false, null, [
+                    [null, null, null, null, 1, 1, null, null, null, null, null, null, null, null, null, null, null, null, null, 1, 1, null],
+                    [null, null, null, null, 1, 1, null, null, null, null, null, null, null, null, null, null, null, null, null, 1, 1, null],
+
+                ]);
+            }
+            break;
         case 0xC:
             // wing yellow koopa
             return getSprImgFreesize([[0x82,0x83],[0x92,0x93],[0xA2,0x5D],[0xB2,0xB3]], 0xA, false, false, [
@@ -8311,6 +8332,7 @@ function getSprImg(sprNum: number = 0, extra: number = 0, xpos: number = 0, ypos
             }
             break;
     }
+    return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
 }
 
 function getFg8x8Img(index: number = 0, palette: number = 0) {
@@ -9974,6 +9996,8 @@ function getSprWidth(sprNum: number, extra: number = 0): number {
         return 1;
     }
     switch (sprNum) {
+        case 0x8F:
+            return 11;
         case 0x73:
         case 0xD3:
         case 0x71:
@@ -10269,6 +10293,8 @@ function calcSprX(spr: Sprite) {
     }  
 
     switch (spr.spriteID) {
+        case 0x8F:
+            return x - 1;
         case 0xDE:
             return x - 2;
         case 0x8D:
@@ -10455,6 +10481,7 @@ function getSprRealX(x: number, spr: Sprite) {
     switch (spr.spriteID) {
         case 0x8D:
             return 0;
+        case 0x8F:
         case 0x46:
         case 0x91:
         case 0x92:
