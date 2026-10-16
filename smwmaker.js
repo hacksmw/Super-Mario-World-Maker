@@ -5477,6 +5477,27 @@ function getSprImg(sprNum = 0, extra = 0) {
         return getSprImg4x4([0x0, 0x1, 0x10, 0x11], 0x9);
     }
     switch (sprNum) {
+        case 0x65:
+            // chainsaw
+            return getSprImgFreesize([
+                [null, null, null, null],
+                [null, 0x18E, 0x18F, null],
+                [null, 0x19E, 0x19F, null],
+                [null, 0x1AE, 0x1AF, null],
+                [null, 0x1BE, 0x1BF, null],
+                [null, 0x1C0, 0x1C1, null],
+                [null, 0x1D0, 0x1D1, null],
+                [null, null, null, null],
+            ], 0x9, false, false, [
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, null, null, null],
+                [null, 0xB, 0xB, null],
+                [null, 0xB, 0xB, null],
+                [null, null, null, null],
+            ]);
         case 0x5E:
             // floating platform
             return getSprImgFreesize([
@@ -8704,6 +8725,7 @@ function getSprWidth(sprNum, extra = 0) {
         case 0x9E:
         case 0xA6:
             return 3;
+        case 0x65:
         case 0x3A:
         case 0x3B:
         case 0x3C:
@@ -8815,6 +8837,8 @@ function getSprHeight(sprNum, extra = 0) {
         return 1;
     }
     switch (sprNum) {
+        case 0x65:
+            return 4;
         case 0xA6:
         case 0xA4:
         case 0xA3:
@@ -8998,6 +9022,8 @@ function calcSprY(spr) {
         return y;
     }
     switch (spr.spriteID) {
+        case 0x65:
+            return y - 3;
         case 0x8D:
             return 18;
         case 0xA3:
@@ -9132,6 +9158,8 @@ function getSprRealY(y, spr) {
     switch (spr.spriteID) {
         case 0x8D:
             return 18;
+        case 0x65:
+            return y + 3;
         case 0xA6:
         case 0xD4:
         case 0x9D:
