@@ -3392,9 +3392,9 @@ function index2page(index: number): number[][] {
         case 5:
             return bg3bmp;
         case 6:
-            throw new Error();
+            throw new Error("Undefined");
         case 7:
-            throw new Error();
+            throw new Error("Undefined");
         case 8:
             return sp1bmp;
         case 9:
@@ -3407,10 +3407,26 @@ function index2page(index: number): number[][] {
         case 13:
         case 14:
             return anibmp;
-        case 17:
-        case 18:
+        case 15:
+        case 16:
             return ani2bmp;
-        
+        case 17:
+            throw new Error("Undefined")
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        case 22:
+        case 23:
+            return mariobmp;
+        case 56:
+            return lg1bmp;
+        case 57:
+            return lg2bmp;
+        case 58:
+            return lg3bmp;
+        case 59:
+            return lg4bmp;
     }
     throw new Error("index is not valid: " + index.toString(16) + ", " + div.toString(16));
 }
@@ -3488,7 +3504,8 @@ function renderExAnimation() {
             if (type < 0x13) {
                 
                 if (dest >= 0x1C00) {
-                    continue;
+                    // layer 3 animation
+                    //continue;
                     
                 }
 
@@ -3509,6 +3526,7 @@ function renderExAnimation() {
                 switch (type) {
                     case 0:
                         break;
+                    case 15:    
                     case 1:
                     case 2:
                     case 3:
@@ -3517,7 +3535,11 @@ function renderExAnimation() {
                     case 6:
                     case 7:
                     case 8:
-                        count = type;
+                        if (type !== 15) {
+                            count = type;
+                        } else {
+                            count = 1;
+                        }
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const toIndex = index2index(dest + i);
