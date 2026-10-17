@@ -220,6 +220,7 @@ let lt3: number;
 let alternateGFX: number;
 let lg1: number, lg2: number, lg3: number, lg4: number;
 let lg1bmp: number[][], lg2bmp: number[][], lg3bmp: number[][], lg4bmp: number[][];
+let lt3bmp: number[][];
 
 let offset: number;
 let slippery: number;
@@ -3494,6 +3495,7 @@ function renderExAnimation() {
             const type: number = ani.type;
             const used: number = ani.used;
             let dest: number = ani.vramDest;
+            let use2bpp: boolean = false;
 
             
 
@@ -3505,8 +3507,7 @@ function renderExAnimation() {
                 
                 if (dest >= 0x1C00) {
                     // layer 3 animation
-                    //continue;
-                    
+                    use2bpp = true;
                 }
 
                 if (ani.frameData[0] >= 0x10000) {
@@ -3537,6 +3538,7 @@ function renderExAnimation() {
                     case 8:
                         if (type !== 15) {
                             count = type;
+                            if (use2bpp) count *= 2;
                         } else {
                             count = 1;
                         }
@@ -3557,6 +3559,7 @@ function renderExAnimation() {
                     case 13:
                     case 14:
                         count = 8 + (4 * (type - 8));
+                        if (use2bpp) count *= 2;
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const toIndex = index2index(dest + i);
@@ -3569,6 +3572,7 @@ function renderExAnimation() {
                         break;
                     case 16:
                         count = 2;
+                        if (use2bpp) count *= 2;
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
@@ -3581,6 +3585,7 @@ function renderExAnimation() {
                         break;
                     case 17:
                         count = 4;
+                        if (use2bpp) count *= 2;
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
@@ -3593,6 +3598,7 @@ function renderExAnimation() {
                         break;
                     case 18:
                         count = 8;
+                        if (use2bpp) count *= 2;
                         for (let i = 0; i < count; i++) {
                             const fromIndex = exAniIndex2div(ani.frameData[0] + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
@@ -4710,6 +4716,7 @@ function loadGraphics() {
     let exgfx60gfx: number[], exgfx61gfx: number[], exgfx62gfx: number[], exgfx63gfx: number[];
     let mariogfx: number[];
     let lg1gfx: number[], lg2gfx: number[], lg3gfx: number[], lg4gfx: number[];
+    let lt3gfx: number[];
 
     // get tileset
 
@@ -4793,6 +4800,8 @@ function loadGraphics() {
             lg3 = read2(pointer + (2 * 13)) & 0b1111_1111_1111;
             lg4 = read2(pointer + (2 * 12)) & 0b1111_1111_1111;
 
+            lt3 = read2(pointer + (2 * 1)) & 0b1111_1111_1111;
+
 
         } else if (superGFXBypass && lmVer >= 1.61) {
             fg1 = read2(pointer + (2 * 4)) & 0b1111_1111_1111;
@@ -4815,6 +4824,8 @@ function loadGraphics() {
     lg2gfx = [];
     lg3gfx = [];
     lg4gfx = [];
+    lt3gfx = [];
+    lt3gfx = [];
 
     if (superGFXBypass) {
         
@@ -4836,6 +4847,8 @@ function loadGraphics() {
             lg2gfx = getUncompressedGFX(lg2);
             lg3gfx = getUncompressedGFX(lg3);
             lg4gfx = getUncompressedGFX(lg4);
+
+            lt3gfx = getUncompressedGFX(lt3);
             
         } catch (e) {
             log("custom gfx error");
@@ -4931,11 +4944,13 @@ function loadGraphics() {
         lg2bmp = convertGraphics2bpp(lg2gfx);
         lg3bmp = convertGraphics2bpp(lg3gfx);
         lg4bmp = convertGraphics2bpp(lg4gfx);
+        lt3bmp = convertGraphics2bpp(lt3gfx);
     } else {
         lg1bmp = [];
         lg2bmp = [];
         lg3bmp = [];
         lg4bmp = [];
+        lt3bmp = [];
     }
     
     if (lmVer >= 1.70) {
