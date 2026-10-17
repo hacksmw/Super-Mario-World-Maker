@@ -216,7 +216,10 @@ let globalAnis: ExAni[];
 let ani2: number;
 let exgfx60: number, exgfx61: number, exgfx62: number, exgfx63: number;
 let exgfx60bmp: number[][], exgfx61bmp: number[][], exgfx62bmp: number[][], exgfx63bmp: number[][];
+let lt3: number;
 let alternateGFX: number;
+let lg1: number, lg2: number, lg3: number, lg4: number;
+let lg1bmp: number[][], lg2bmp: number[][], lg3bmp: number[][], lg4bmp: number[][];
 
 let offset: number;
 let slippery: number;
@@ -4686,6 +4689,7 @@ function loadGraphics() {
     let anigfx: number[], ani2gfx: number[];
     let exgfx60gfx: number[], exgfx61gfx: number[], exgfx62gfx: number[], exgfx63gfx: number[];
     let mariogfx: number[];
+    let lg1gfx: number[], lg2gfx: number[], lg3gfx: number[], lg4gfx: number[];
 
     // get tileset
 
@@ -4710,6 +4714,12 @@ function loadGraphics() {
     exgfx61 = 0x7f;
     exgfx62 = 0x7f;
     exgfx63 = 0x7f;
+
+    lg1 = 0x7f;
+    lg2 = 0x7f;
+    lg3 = 0x7f;
+    lg4 = 0x7f;
+    lt3 = 0x7f;
     
     sp1 = read1((spriteGfxTable) + (4*sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4*sprGFX + 1));
@@ -4757,6 +4767,13 @@ function loadGraphics() {
             sp2 = read2(pointer + (2 * 10)) & 0b1111_1111_1111;
             sp3 = read2(pointer + (2 * 9)) & 0b1111_1111_1111;
             sp4 = read2(pointer + (2 * 8)) & 0b1111_1111_1111;
+
+            lg1 = read2(pointer + (2 * 15)) & 0b1111_1111_1111;
+            lg2 = read2(pointer + (2 * 14)) & 0b1111_1111_1111;
+            lg3 = read2(pointer + (2 * 13)) & 0b1111_1111_1111;
+            lg4 = read2(pointer + (2 * 12)) & 0b1111_1111_1111;
+
+
         } else if (superGFXBypass && lmVer >= 1.61) {
             fg1 = read2(pointer + (2 * 4)) & 0b1111_1111_1111;
             fg2 = read2(pointer + (2 * 3)) & 0b1111_1111_1111;
@@ -4801,6 +4818,12 @@ function loadGraphics() {
             bg2gfx  = getUncompressedGFX(bg2);
             bg3gfx  = getUncompressedGFX(bg3);
             ani2gfx = getUncompressedGFX(ani2);
+
+            lg1gfx = getUncompressedGFX(lg1);
+            lg2gfx = getUncompressedGFX(lg2);
+            lg3gfx = getUncompressedGFX(lg3);
+            lg4gfx = getUncompressedGFX(lg4);
+            
         } catch (e) {
             log("custom gfx error");
         }

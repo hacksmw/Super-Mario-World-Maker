@@ -198,7 +198,10 @@ let globalAnis;
 let ani2;
 let exgfx60, exgfx61, exgfx62, exgfx63;
 let exgfx60bmp, exgfx61bmp, exgfx62bmp, exgfx63bmp;
+let lt3;
 let alternateGFX;
+let lg1, lg2, lg3, lg4;
+let lg1bmp, lg2bmp, lg3bmp, lg4bmp;
 let offset;
 let slippery;
 let water;
@@ -3978,6 +3981,7 @@ function loadGraphics() {
     let anigfx, ani2gfx;
     let exgfx60gfx, exgfx61gfx, exgfx62gfx, exgfx63gfx;
     let mariogfx;
+    let lg1gfx, lg2gfx, lg3gfx, lg4gfx;
     // get tileset
     if ((fgbgGFX >= tilesetList.length)) {
         throw new Error();
@@ -3995,6 +3999,11 @@ function loadGraphics() {
     exgfx61 = 0x7f;
     exgfx62 = 0x7f;
     exgfx63 = 0x7f;
+    lg1 = 0x7f;
+    lg2 = 0x7f;
+    lg3 = 0x7f;
+    lg4 = 0x7f;
+    lt3 = 0x7f;
     sp1 = read1((spriteGfxTable) + (4 * sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4 * sprGFX + 1));
     sp3 = read1((spriteGfxTable) + (4 * sprGFX + 2));
@@ -4029,6 +4038,10 @@ function loadGraphics() {
             sp2 = read2(pointer + (2 * 10)) & 4095;
             sp3 = read2(pointer + (2 * 9)) & 4095;
             sp4 = read2(pointer + (2 * 8)) & 4095;
+            lg1 = read2(pointer + (2 * 15)) & 4095;
+            lg2 = read2(pointer + (2 * 14)) & 4095;
+            lg3 = read2(pointer + (2 * 13)) & 4095;
+            lg4 = read2(pointer + (2 * 12)) & 4095;
         }
         else if (superGFXBypass && lmVer >= 1.61) {
             fg1 = read2(pointer + (2 * 4)) & 4095;
@@ -4068,6 +4081,10 @@ function loadGraphics() {
             bg2gfx = getUncompressedGFX(bg2);
             bg3gfx = getUncompressedGFX(bg3);
             ani2gfx = getUncompressedGFX(ani2);
+            lg1gfx = getUncompressedGFX(lg1);
+            lg2gfx = getUncompressedGFX(lg2);
+            lg3gfx = getUncompressedGFX(lg3);
+            lg4gfx = getUncompressedGFX(lg4);
         }
         catch (e) {
             log("custom gfx error");
