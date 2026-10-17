@@ -1427,8 +1427,6 @@ function btn8x8_onclick () {
 
     let ctx = canvas.getContext("2d");
 
-    console.log("exgfx60bmp", exgfx60bmp);
-    
     const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
 
     for (let i = 0; i < bitmaps.length; i++) {
@@ -4786,22 +4784,15 @@ function loadGraphics() {
             sp2 = read2(pointer + (2 * 7)) & 0b1111_1111_1111;
             sp3 = read2(pointer + (2 * 6)) & 0b1111_1111_1111;
             sp4 = read2(pointer + (2 * 5)) & 0b1111_1111_1111;
-
-            console.log("fg1 = " + fg1.toString(16));
-            console.log("fg2 = " + fg2.toString(16));
-            console.log("bg = "  + bg.toString(16));
-            console.log("fg3 = " + fg3.toString(16));
-
-            console.log("sp1 = " + sp1.toString(16));
-            console.log("sp2 = " + sp2.toString(16));
-            console.log("sp3 = " + sp3.toString(16));
-            console.log("sp4 = " + sp4.toString(16));
-
-            console.log("an2 = " + ani2.toString(16));
         }
     } else {
         superGFXBypass = false;
     }
+
+    lg1gfx = [];
+    lg2gfx = [];
+    lg3gfx = [];
+    lg4gfx = [];
 
     if (superGFXBypass) {
         
@@ -4827,70 +4818,6 @@ function loadGraphics() {
         } catch (e) {
             log("custom gfx error");
         }
-
-        /*
-        try {
-            fg2gfx = getUncompressedGFX(fg2)
-        } catch (e) {
-            log("fg2 gfx error");
-        }
-
-        try {
-            bggfx  = getUncompressedGFX(bg)
-        } catch (e) {
-            log("bg1 gfx error");
-        }
-
-        try {
-            fg3gfx = getUncompressedGFX(fg3);  
-        } catch (e) {
-            log("fg3 gfx error")
-        }
-
-        // Sprite Graphics
-
-        try {
-            sp1gfx = getUncompressedGFX(sp1);
-        } catch (e) {
-            log("sp1 gfx error")
-        }
-
-        try {
-            sp2gfx = getUncompressedGFX(sp2);
-        } catch (e) {
-            log("sp2 gfx error");
-        }
-
-        try {
-            sp3gfx = getUncompressedGFX(sp3);
-        } catch (e) {
-            log("sp3 gfx error");
-        }
-
-        try {
-            sp4gfx = getUncompressedGFX(sp4);
-        } catch (e) {
-            log("sp4 gfx error");
-        }
-
-        try {
-            bg2gfx  = getUncompressedGFX(bg2);
-        } catch (e) {
-            log("bg2 gfx error");
-        }
-        
-        try {
-            bg3gfx  = getUncompressedGFX(bg3);
-        } catch (e) {
-            log("bg3 gfx error");
-        }
-
-        try {
-            ani2gfx = getUncompressedGFX(ani2);
-        } catch (e) {
-            log("an2 gfx error");
-        }
-        */
     }
 
     if (lmVer >= 1.70) {
@@ -4901,16 +4828,11 @@ function loadGraphics() {
         const gfx62Addr = read3(addressTable + (3 * 2));
         const gfx63Addr = read3(addressTable + (3 * 3));
 
-        console.log("gfx60addr", gfx60Addr.toString(16));
-
         exgfx60gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx60Addr), snes2pc(gfx60Addr + 32768));
         exgfx61gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx61Addr), snes2pc(gfx61Addr + 32768));
         exgfx62gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx62Addr), snes2pc(gfx62Addr + 32768));
         exgfx63gfx = Array.prototype.slice.call((fileData as any), snes2pc(gfx63Addr), snes2pc(gfx63Addr + 32768));
 
-        console.log("exgfx60gfx: ", exgfx60gfx);
-
-        console.log("ExGFX60-63 is Loaded");
     } else {
         exgfx60gfx = [];
         exgfx61gfx = [];
@@ -4982,6 +4904,18 @@ function loadGraphics() {
     orgSp3bmp = structuredClone(sp3bmp);
     orgSp4bmp = structuredClone(sp4bmp);
 
+    if (lmVer >= 1.70) {
+        lg1bmp = convertGraphics2bpp(lg1gfx);
+        lg2bmp = convertGraphics2bpp(lg2gfx);
+        lg3bmp = convertGraphics2bpp(lg3gfx);
+        lg4bmp = convertGraphics2bpp(lg4gfx);
+    } else {
+        lg1bmp = [];
+        lg2bmp = [];
+        lg3bmp = [];
+        lg4bmp = [];
+    }
+    
     if (lmVer >= 1.70) {
         exgfx60bmp = convertGraphics(exgfx60gfx!, is4bpp);
         exgfx61bmp = convertGraphics(exgfx61gfx!, is4bpp);
@@ -10933,6 +10867,29 @@ function convertGraphics4bpp(org: number[]) {
             for (let k = 0; k < 8; k++) {
                 bitmap[8*c+k] |= ((org[(i*32)+16+2*c+1] >>> (7-k)) & 1) << 3;    
             }
+        }
+
+        bitmapTiles[i] = bitmap;
+    }        
+    return bitmapTiles;
+}
+
+function convertGraphics2bpp(org: number[]) {
+    let bitmapTiles: number[][] = new Array(16 * 8);
+    const limit: number = 768;
+    for (let i = 0; i < limit; i++) {
+        let bitmap: number[] = new Array(64);
+
+        for (let c = 0; c < 8; c++) {
+            for (let k = 0; k < 8; k++) {
+                bitmap[8*c+k] = ((org[(i*16)+2*c+0] >>> (7-k)) & 1) << 0;    
+            }
+            
+            
+            for (let k = 0; k < 8; k++) {
+                bitmap[8*c+k] |= ((org[(i*16)+2*c+1] >>> (7-k)) & 1) << 1;    
+            }
+            
         }
 
         bitmapTiles[i] = bitmap;
