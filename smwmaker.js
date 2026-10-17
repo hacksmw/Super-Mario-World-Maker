@@ -2837,6 +2837,7 @@ function loadLevel(lvlNum) {
     loadSprites();
     /* Render */
     render();
+    log("Level 0x" + lvlNum.toString(16) + " is loaded.");
     return true;
 }
 function index2index(index) {
@@ -4035,10 +4036,10 @@ function loadGraphics() {
     exgfx61 = 0x7f;
     exgfx62 = 0x7f;
     exgfx63 = 0x7f;
-    lg1 = 0x7f;
-    lg2 = 0x7f;
-    lg3 = 0x7f;
-    lg4 = 0x7f;
+    lg1 = 0x28;
+    lg2 = 0x29;
+    lg3 = 0x2A;
+    lg4 = 0x2B;
     lt3 = 0x7f;
     sp1 = read1((spriteGfxTable) + (4 * sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4 * sprGFX + 1));
@@ -4057,6 +4058,10 @@ function loadGraphics() {
     bg2gfx = getUncompressedGFX(bg2);
     bg3gfx = getUncompressedGFX(bg3);
     ani2gfx = getUncompressedGFX(ani2);
+    lg1gfx = getUncompressedGFX(lg1);
+    lg2gfx = getUncompressedGFX(lg2);
+    lg3gfx = getUncompressedGFX(lg3);
+    lg4gfx = getUncompressedGFX(lg4);
     superGFXBypass = false;
     if (isLMModified && lmVer >= 1.61) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
@@ -4099,7 +4104,6 @@ function loadGraphics() {
     lg2gfx = [];
     lg3gfx = [];
     lg4gfx = [];
-    lt3gfx = [];
     lt3gfx = [];
     if (superGFXBypass) {
         // FG/BG GFX
@@ -4187,18 +4191,14 @@ function loadGraphics() {
     orgSp2bmp = structuredClone(sp2bmp);
     orgSp3bmp = structuredClone(sp3bmp);
     orgSp4bmp = structuredClone(sp4bmp);
+    lg1bmp = convertGraphics2bpp(lg1gfx);
+    lg2bmp = convertGraphics2bpp(lg2gfx);
+    lg3bmp = convertGraphics2bpp(lg3gfx);
+    lg4bmp = convertGraphics2bpp(lg4gfx);
     if (lmVer >= 1.70) {
-        lg1bmp = convertGraphics2bpp(lg1gfx);
-        lg2bmp = convertGraphics2bpp(lg2gfx);
-        lg3bmp = convertGraphics2bpp(lg3gfx);
-        lg4bmp = convertGraphics2bpp(lg4gfx);
         lt3bmp = convertGraphics2bpp(lt3gfx);
     }
     else {
-        lg1bmp = [];
-        lg2bmp = [];
-        lg3bmp = [];
-        lg4bmp = [];
         lt3bmp = [];
     }
     if (lmVer >= 1.70) {
