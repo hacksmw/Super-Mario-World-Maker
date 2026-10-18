@@ -3254,15 +3254,18 @@ function loadExAnimations() {
         if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae) + 0x5B) !== 0) {
             console.log("Global ExAnimation is enabled");
             loadExAnimation(globalAnisPointer, globalAnis);
-            console.log("globalAnis.length = " + globalAnis.length);
         }
         else {
             console.log("Global ExAnimation is disabled");
         }
         if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF) !== 0 && read1(lvlAnisPointer + 1) !== 0) {
             console.log("Level ExAnimation is enabled");
-            loadExAnimation(lvlAnisPointer, levelAnis);
-            console.log("levelAnis.length = " + levelAnis.length);
+            try {
+                loadExAnimation(lvlAnisPointer, levelAnis);
+            }
+            catch (e) {
+                console.log("Can't load ExAnimations");
+            }
         }
         else {
             console.log("Level ExAnimation is disabled");
@@ -4237,7 +4240,7 @@ function loadGraphics() {
     }
     else {
         lt3tiles = [];
-        //lt3tiles = stripe(fileData.slice(snes2pc(0x0595DE)));
+        lt3tiles = stripe(fileData.slice(snes2pc(0x0595DE)));
     }
     if (lmVer >= 1.70) {
         exgfx60bmp = convertGraphics(exgfx60gfx, is4bpp);
