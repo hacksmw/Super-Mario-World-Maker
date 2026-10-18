@@ -138,6 +138,14 @@ class SecondExit {
     event: number = 0;
 }
 
+class LT3Tile {
+    index: number = 0;
+    pal: number = 0;
+    priority: number = 0;
+    flipx: number = 0;
+    flipy: number = 0;
+}
+
 let layer1Data: Obj[], layer2Data: Obj[];
 let exits: Exit[];
 let sprites: Sprite[];
@@ -221,6 +229,7 @@ let alternateGFX: number;
 let lg1: number, lg2: number, lg3: number, lg4: number;
 let lg1bmp: number[][], lg2bmp: number[][], lg3bmp: number[][], lg4bmp: number[][];
 let lt3bmp: number[][];
+let lt3tiles: LT3Tile[];
 
 let offset: number;
 let slippery: number;
@@ -4952,9 +4961,9 @@ function loadGraphics() {
     lg4bmp = convertGraphics2bpp(lg4gfx);
     
     if (lmVer >= 1.70) {
-        lt3bmp = convertGraphics2bpp(lt3gfx);
+        lt3tiles = convertLT3(lt3gfx);
     } else {
-        lt3bmp = [];
+        lt3tiles = [];
     }
     
     if (lmVer >= 1.70) {
@@ -4968,6 +4977,45 @@ function loadGraphics() {
         original_animation();
         original_animation2();
     }
+}
+
+function convertLT3(lt3gfx: number[]): any {
+    const raw: LT3Tile[] = new Array();
+    
+    for (let i = 0; i < lt3gfx.length; i+=2) {
+        const tile = new LT3Tile();
+
+        const index = ((lt3gfx[i+1] & 0b11) << 8) | (lt3gfx[i] & 0xFF);
+        const pal = (lt3gfx[i+1] >>> 2) & 0b111;
+        const priority = (lt3gfx[i+1] >>> 5) & 0b1;
+        const flipx = (lt3gfx[i+1] >>> 6) & 0b1;
+        const flipy = (lt3gfx[i+1] >>> 7) & 0b1;
+
+        tile.index =  index;
+        tile.pal = pal;
+        tile.priority = priority; 
+        tile.flipx = flipx;
+        tile.flipy = flipy;
+
+        raw.push(tile);
+        
+    }
+    
+    const result: LT3Tile[] = new Array(4096);
+
+    for (let i = 0; i < result.length; i++) {
+        if (intdiv(i, 1024) === 0) {
+            result[(0+32*intdiv(i, 32))+i] = raw[i];        
+        } else if (intdiv(i, 1024) === 1) {
+            result[0+32+(32*(intdiv(i-1024, 32)))+(i-1024)] = raw[i];
+        } else if (intdiv(i, 1024) === 2) {
+            result[2048+(32*(intdiv(i-2048, 32)))+(i-2048)] = raw[i];
+        } else if (intdiv(i, 1024) === 3) {
+            result[2048+32+(32*(intdiv(i-3072, 32)))+(i-3072)] = raw[i];
+        }
+        
+    }
+    return result;
 }
 
 function original_animation() {
