@@ -287,6 +287,7 @@ let btnEnter: HTMLButtonElement;
 let btnSwitchBG: HTMLButtonElement;
 let btnBGCancel: HTMLButtonElement;
 let btnBGOK: HTMLButtonElement;
+let btnLayer3Tilemap: HTMLButtonElement;
 let btnEnterOK: HTMLButtonElement;
 let btnEnterCancel: HTMLButtonElement;
 let btnSprHeaderOK: HTMLButtonElement;
@@ -1269,6 +1270,7 @@ function window_onload(): void {
     btn2ndOK = (document.getElementById("btn2ndOK") as HTMLButtonElement)
     btn2ndCancel = (document.getElementById("btn2ndCancel") as HTMLButtonElement)
     btnSave = (document.getElementById("btnSave") as HTMLButtonElement)
+    btnLayer3Tilemap = (document.getElementById("btnLayer3Tilemap") as HTMLButtonElement);
     
     document.getElementById("paletteView")!.onclick = paletteView_onclick;
 
@@ -1311,9 +1313,33 @@ function window_onload(): void {
     btn2ndOK.onclick = btn2ndOK_onclick;
     btn2ndCancel.onclick = btn2ndCancel_onclick;
     btnSave.onclick = btnSave_onclick;
+    btnLayer3Tilemap.onclick = btnLayer3Tilemap_onclick;
 }
 
 window.onload = window_onload;
+
+function btnLayer3Tilemap_onclick() {
+    let dialogLayer3Tilemap = document.getElementById("dialogLayer3Tilemap");
+    if (dialogLayer3Tilemap?.classList.contains("hidden")) {
+        dialogLayer3Tilemap.classList.remove("hidden");
+    } else {
+        dialogLayer3Tilemap!.classList.add("hidden");
+        return;
+    }
+
+    const canvas = (document.getElementById("layer3TilemapView") as HTMLCanvasElement);
+
+    const data = getLayer3Tilemap(lt3tiles);
+
+    canvas.width = 64 * 8;
+    canvas.height = 64 * 8;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx!.putImageData(data!, 0, 0);
+
+
+}
 
 function btnSave_onclick() {
     save();
@@ -11115,6 +11141,7 @@ function fileOpen(): void {
             btnSwitchBG.disabled = false;
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
+            btnLayer3Tilemap.disabled = false;
             //btnSave.disabled = false;
         }
 
@@ -11299,7 +11326,7 @@ function getBG(bgData: Nullable<number[]>, bgPage: number) {
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-function getLayer3(layer3Data: LT3Tile[]) {
+function getLayer3Tilemap(layer3Data: LT3Tile[]) {
     if (layer3Data === null) {
         return null;        
     }

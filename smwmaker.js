@@ -262,6 +262,7 @@ let btnEnter;
 let btnSwitchBG;
 let btnBGCancel;
 let btnBGOK;
+let btnLayer3Tilemap;
 let btnEnterOK;
 let btnEnterCancel;
 let btnSprHeaderOK;
@@ -1100,6 +1101,7 @@ function window_onload() {
     btn2ndOK = document.getElementById("btn2ndOK");
     btn2ndCancel = document.getElementById("btn2ndCancel");
     btnSave = document.getElementById("btnSave");
+    btnLayer3Tilemap = document.getElementById("btnLayer3Tilemap");
     document.getElementById("paletteView").onclick = paletteView_onclick;
     btnPalette.onclick = btnPalette_onclick;
     btnOpen.onclick = btnOpen_onclick;
@@ -1140,8 +1142,25 @@ function window_onload() {
     btn2ndOK.onclick = btn2ndOK_onclick;
     btn2ndCancel.onclick = btn2ndCancel_onclick;
     btnSave.onclick = btnSave_onclick;
+    btnLayer3Tilemap.onclick = btnLayer3Tilemap_onclick;
 }
 window.onload = window_onload;
+function btnLayer3Tilemap_onclick() {
+    let dialogLayer3Tilemap = document.getElementById("dialogLayer3Tilemap");
+    if (dialogLayer3Tilemap?.classList.contains("hidden")) {
+        dialogLayer3Tilemap.classList.remove("hidden");
+    }
+    else {
+        dialogLayer3Tilemap.classList.add("hidden");
+        return;
+    }
+    const canvas = document.getElementById("layer3TilemapView");
+    const data = getLayer3Tilemap(lt3tiles);
+    canvas.width = 64 * 8;
+    canvas.height = 64 * 8;
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(data, 0, 0);
+}
 function btnSave_onclick() {
     save();
     const buffer = (new Uint8Array(fileData)).buffer;
@@ -9918,6 +9937,7 @@ function fileOpen() {
             btnSwitchBG.disabled = false;
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
+            btnLayer3Tilemap.disabled = false;
             //btnSave.disabled = false;
         };
         fr.readAsArrayBuffer(this.files[0]);
@@ -10051,7 +10071,7 @@ function getBG(bgData, bgPage) {
     }
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
-function getLayer3(layer3Data) {
+function getLayer3Tilemap(layer3Data) {
     if (layer3Data === null) {
         return null;
     }
