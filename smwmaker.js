@@ -196,6 +196,8 @@ let mariobmp;
 let is4bpp;
 let bg2, bg3;
 let superGFXBypass;
+let layer3Bypass;
+let layer3TilemapBypass;
 let disableOrgLevelPalAni;
 let disableOrgLevelAni;
 let disableCustomGlobalAni;
@@ -4090,10 +4092,25 @@ function loadGraphics() {
     lg3gfx = getUncompressedGFX(lg3);
     lg4gfx = getUncompressedGFX(lg4);
     superGFXBypass = false;
+    layer3Bypass = false;
+    layer3TilemapBypass = false;
     if (isLMModified && lmVer >= 1.61) {
         const pointer = read3(0x0FF7FF) + (32 * (levelNum));
         superGFXBypass = !!(read2(pointer) >>> 15);
         console.log("superGFXBypass: " + superGFXBypass);
+        if (lmVer >= 1.70) {
+            layer3Bypass = !!(((read2(pointer) >>> 14) & 1));
+            layer3TilemapBypass = !!(((read2(pointer) >>> 13) & 1));
+            if (layer3Bypass) {
+                lg1 = read2(pointer + (2 * 15)) & 4095;
+                lg2 = read2(pointer + (2 * 14)) & 4095;
+                lg3 = read2(pointer + (2 * 13)) & 4095;
+                lg4 = read2(pointer + (2 * 12)) & 4095;
+            }
+            if (layer3TilemapBypass) {
+                lt3 = read2(pointer + (2 * 1)) & 4095;
+            }
+        }
         if (superGFXBypass && lmVer >= 1.70) {
             fg1 = read2(pointer + (2 * 7)) & 4095;
             fg2 = read2(pointer + (2 * 6)) & 4095;
@@ -4106,11 +4123,6 @@ function loadGraphics() {
             sp2 = read2(pointer + (2 * 10)) & 4095;
             sp3 = read2(pointer + (2 * 9)) & 4095;
             sp4 = read2(pointer + (2 * 8)) & 4095;
-            lg1 = read2(pointer + (2 * 15)) & 4095;
-            lg2 = read2(pointer + (2 * 14)) & 4095;
-            lg3 = read2(pointer + (2 * 13)) & 4095;
-            lg4 = read2(pointer + (2 * 12)) & 4095;
-            lt3 = read2(pointer + (2 * 1)) & 4095;
         }
         else if (superGFXBypass && lmVer >= 1.61) {
             fg1 = read2(pointer + (2 * 4)) & 4095;
@@ -4127,11 +4139,8 @@ function loadGraphics() {
     else {
         superGFXBypass = false;
     }
-    lg1gfx = [];
-    lg2gfx = [];
-    lg3gfx = [];
-    lg4gfx = [];
     lt3gfx = [];
+    lt3gfx = getUncompressedGFX(lt3);
     if (superGFXBypass) {
         // FG/BG GFX
         try {
@@ -4146,15 +4155,16 @@ function loadGraphics() {
             bg2gfx = getUncompressedGFX(bg2);
             bg3gfx = getUncompressedGFX(bg3);
             ani2gfx = getUncompressedGFX(ani2);
-            lg1gfx = getUncompressedGFX(lg1);
-            lg2gfx = getUncompressedGFX(lg2);
-            lg3gfx = getUncompressedGFX(lg3);
-            lg4gfx = getUncompressedGFX(lg4);
-            lt3gfx = getUncompressedGFX(lt3);
         }
         catch (e) {
             log("custom gfx error");
         }
+    }
+    if (lmVer >= 1.70 && layer3Bypass) {
+        lg1gfx = getUncompressedGFX(lg1);
+        lg2gfx = getUncompressedGFX(lg2);
+        lg3gfx = getUncompressedGFX(lg3);
+        lg4gfx = getUncompressedGFX(lg4);
     }
     if (lmVer >= 1.70) {
         const addressTable = 0x03BCC0;
@@ -4222,7 +4232,7 @@ function loadGraphics() {
     lg2bmp = convertGraphics2bpp(lg2gfx);
     lg3bmp = convertGraphics2bpp(lg3gfx);
     lg4bmp = convertGraphics2bpp(lg4gfx);
-    if (lmVer >= 1.70) {
+    if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
     }
     else {
