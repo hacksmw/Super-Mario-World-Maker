@@ -4237,6 +4237,7 @@ function loadGraphics() {
     }
     else {
         lt3tiles = [];
+        //lt3tiles = stripe(fileData.slice(snes2pc(0x0595DE)));
     }
     if (lmVer >= 1.70) {
         exgfx60bmp = convertGraphics(exgfx60gfx, is4bpp);
@@ -9931,6 +9932,7 @@ function fileOpen() {
                 loadROM(levelNum, fileData);
             }
             catch (e) {
+                throw e;
                 alert(e.message);
                 unload();
             }
@@ -10091,7 +10093,7 @@ function getLayer3Tilemap(layer3Data) {
     const ctx = canvas.getContext("2d");
     for (let i = 0; i < layer3Data.length; i++) {
         const value = layer3Data[i];
-        const tile = getLayer38x8Img(value.index, value.pal);
+        const tile = getLayer38x8Img(value.index, value.pal, !!(value.flipx), !!(value.flipy));
         const x = i % 64;
         const y = Math.floor(i / 64);
         ctx.putImageData(tile, x * 8, y * 8);
@@ -12637,4 +12639,130 @@ function checkRomFileSize(fileData, header = true) {
             return false;
             break;
     }
+}
+function stripe(data) {
+    const result = new Array(64 * 64);
+    let pointer = 0;
+    for (let i = 0; i < result.length; i++) {
+        result[i] = null;
+    }
+    while (true) {
+        if ((data[pointer] >>> 7) === 1) {
+            break;
+        }
+        else {
+            const dest = (((data[pointer + 0] >>> 4) & 0b111));
+            const xPos = ((((data[pointer + 0] >>> 2) & 1) << 5) | (data[pointer + 1] & 0b11111));
+            const yPos = ((((data[pointer + 0] >>> 3) & 0b1) << 5) | ((data[pointer + 0] & 0b11) << 3) | ((data[pointer + 1] >>> 5) & 0b111));
+            const direct = data[pointer + 2] >>> 7;
+            const rle = (data[pointer + 2] >>> 6) & 1;
+            const length = ((data[pointer + 2] & 0b111111) << 8) | data[pointer + 3];
+            if (!rle) {
+                const realLength = length + 1;
+                let x = xPos, y = yPos;
+                for (let i = 0; i < realLength; i += 2) {
+                    const firstByte = data[pointer + 4 + i + 0];
+                    const secondByte = data[pointer + 4 + i + 1];
+                    const flipy = secondByte >>> 7;
+                    const flipx = (secondByte >>> 6) & 1;
+                    const priority = (secondByte >>> 5) & 1;
+                    const pal = (secondByte >>> 2) & 0b111;
+                    const page = (secondByte >>> 0) & 0b11;
+                    const tileNum = ((page << 8) | (firstByte));
+                    const tile = new LT3Tile();
+                    tile.index = tileNum;
+                    tile.pal = pal;
+                    tile.priority = priority;
+                    tile.flipx = flipx;
+                    tile.flipy = flipy;
+                    if (dest === 0b101) {
+                        const index = (64 * y) + x;
+                        result[index] = tile;
+                    }
+                    if (direct === 0) {
+                        x++;
+                        if (x === 64) {
+                            x = 0;
+                            y++;
+                            if (y === 64) {
+                                y = 0;
+                                x++;
+                            }
+                        }
+                    }
+                    else {
+                        y++;
+                        if (y === 64) {
+                            throw new Error("y overflow!!");
+                            y = 0;
+                            x++;
+                            if (x === 64) {
+                                x = 0;
+                                y++;
+                            }
+                        }
+                    }
+                }
+                pointer += 4 + realLength;
+                continue;
+            }
+            else {
+                const count = length;
+                let x = xPos, y = yPos;
+                const firstByte = data[pointer + 4 + 0];
+                const secondByte = data[pointer + 4 + 1];
+                const flipy = secondByte >>> 7;
+                const flipx = (secondByte >>> 6) & 1;
+                const priority = (secondByte >>> 5) & 1;
+                const pal = (secondByte >>> 2) & 0b111;
+                const page = (secondByte >>> 0) & 0b11;
+                const tileNum = ((page << 8) | (firstByte));
+                for (let i = 0; i < count; i++) {
+                    const tile = new LT3Tile();
+                    tile.index = tileNum;
+                    tile.pal = pal;
+                    tile.priority = priority;
+                    tile.flipx = flipx;
+                    tile.flipy = flipy;
+                    if (dest === 0b101) {
+                        const index = (64 * y) + x;
+                        result[index] = tile;
+                    }
+                    if (direct === 0) {
+                        x++;
+                        if (x === 64) {
+                            x = 0;
+                            y++;
+                            if (y === 64) {
+                                y = 0;
+                                x++;
+                            }
+                        }
+                    }
+                    else {
+                        y++;
+                        if (y === 64) {
+                            throw new Error("y overflow!!");
+                            y = 0;
+                            x++;
+                            if (x === 64) {
+                                x = 0;
+                                y++;
+                            }
+                        }
+                    }
+                }
+                pointer += 4 + 2;
+                continue;
+            }
+        }
+    }
+    for (let i = 0; i < result.length; i++) {
+        if (result[i] === null) {
+            const empty = new LT3Tile();
+            empty.index = 0xFC;
+            result[i] = empty;
+        }
+    }
+    return result;
 }
