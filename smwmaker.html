@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <script src="./html2canvas.js"></script>
 <script src="./smwmaker.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-sha1@0.7.0/src/sha1.min.js"></script>
 <style>
     #main {
         width: 100%;
@@ -46,6 +47,7 @@
 <button id="btn8x8" disabled>8x8</button>
 <button id="btn16x16" disabled>16x16</button>
 <button id="btnSwitchBG" disabled>BG</button>
+<button id="btnLayer3Tilemap" disabled>L3</button>
 <button id="btnPalette" disabled>Palette</button>
 <button id="btnExit" disabled>Exits</button>
 <button id="btnEnter" disabled>Entrance</button>
@@ -477,6 +479,10 @@ Force Layer 3 above all other layers and sprites
 </td>
 </tr>
 </table>
+</div>
+
+<div id="dialogLayer3Tilemap" class="hidden">
+    <canvas id="layer3TilemapView"></canvas>
 </div>
 
 <div id="dialogPalette" class="hidden">
