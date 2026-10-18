@@ -5001,9 +5001,9 @@ function convertLT3(lt3gfx: number[]): any {
         
     }
     
-    const result: LT3Tile[] = new Array(4096);
+    const result: LT3Tile[] = new Array(raw.length);
 
-    for (let i = 0; i < result.length; i++) {
+    for (let i = 0; i < raw.length; i++) {
         if (intdiv(i, 1024) === 0) {
             result[(0+32*intdiv(i, 32))+i] = raw[i];        
         } else if (intdiv(i, 1024) === 1) {

@@ -4236,8 +4236,8 @@ function convertLT3(lt3gfx) {
         tile.flipy = flipy;
         raw.push(tile);
     }
-    const result = new Array(4096);
-    for (let i = 0; i < result.length; i++) {
+    const result = new Array(raw.length);
+    for (let i = 0; i < raw.length; i++) {
         if (intdiv(i, 1024) === 0) {
             result[(0 + 32 * intdiv(i, 32)) + i] = raw[i];
         }
