@@ -3375,7 +3375,7 @@ label:
     loadSprites();
 
     /* Render */
-    render();  
+    render();
 
     log("Level 0x" + lvlNum.toString(16) + " is loaded.")
 
@@ -8550,6 +8550,84 @@ function getFg8x8Img(index: number = 0, palette: number = 0) {
     return ctx!.getImageData(0, 0, 8, 8);
 }
 
+function getLayer38x8Img(index: number = 0, palette: number = 0, flipx = false, flipy = false) {
+    index = index % 0x1C00;
+
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+
+    canvas.width = 8;
+    canvas.height = 8;
+
+    const ctx = canvas.getContext("2d");
+
+    const page = intdiv(index, 128);
+    
+    let gfx;
+
+    switch (page) {
+        case 0:
+            gfx = lg1bmp;
+            break;
+        case 1:
+            gfx = lg2bmp;
+            break;
+        case 2:
+            gfx = lg3bmp;
+            break;
+        case 3:
+            gfx = lg4bmp;
+            break;
+        default:
+            throw new Error('Undefined');
+            break;
+    }
+  
+    let i: number = index % 128;
+
+    const bitmap = gfx[i];
+        
+    for (let j = 0; j < 64; j++) {
+        let color: RGB;            
+        let r: number, g: number, b: number;
+
+        let pixel = bitmap[j] % 4;
+
+        let p = pal[0].concat(pal[1]);
+
+        color = p[4*palette + pixel];
+
+
+
+
+
+            
+        r = color.r
+        g = color.g
+        b = color.b
+
+        let alpha = 1.0;
+
+        if (pixel == 0) {
+            alpha = 0.0;
+        }
+        
+        ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+        if (flipx === true && flipy === false) {
+            ctx!.fillRect(7-(j % 8), intdiv(j, 8), 1, 1);
+        } else if (flipx === false && flipy === true) {
+            ctx!.fillRect((j % 8), 7-intdiv(j, 8), 1, 1);
+        } else if (flipx === true && flipy === true) {
+            ctx!.fillRect(7-(j % 8), 7-intdiv(j, 8), 1, 1);
+        } else {
+            ctx!.fillRect((j % 8), intdiv(j, 8), 1, 1);
+        }
+        
+    }  
+
+    return ctx!.getImageData(0, 0, 8, 8);
+}
+
 function getSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, flipy = false) {
     index = index % 0x300;
 
@@ -11215,6 +11293,32 @@ function getBG(bgData: Nullable<number[]>, bgPage: number) {
         const y = Math.floor(i / 32);
 
         ctx!.putImageData(tile, x * 16, y * 16);
+        
+    }
+
+    return ctx!.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function getLayer3(layer3Data: LT3Tile[]) {
+    if (layer3Data === null) {
+        return null;        
+    }
+
+    const canvas = document.createElement("canvas");
+    
+    canvas.width = 64 * 8;
+    canvas.height = 64 * 8;  
+    
+    const ctx = canvas.getContext("2d");
+
+    for (let i = 0; i < layer3Data.length; i++) {
+        const value = layer3Data[i];
+        const tile = getLayer38x8Img(value.index, value.pal);
+
+        const x = i % 64;
+        const y = Math.floor(i / 64);
+
+        ctx!.putImageData(tile, x * 8, y * 8);
         
     }
 
