@@ -4146,6 +4146,7 @@ function loadGraphics() {
                 lg4 = read2(pointer + (2 * 12)) & 4095;
             }
             if (layer3TilemapBypass) {
+                console.log("Layer 3 Tile Bypass");
                 lt3 = read2(pointer + (2 * 1)) & 4095;
             }
         }
