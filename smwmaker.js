@@ -12655,12 +12655,13 @@ function stripe(data) {
         }
         else {
             const dest = (((data[pointer + 0] >>> 4) & 0b111));
-            const xPos = ((((data[pointer + 0] >>> 2) & 1) << 5) | (data[pointer + 1] & 0b11111));
-            const yPos = ((((data[pointer + 0] >>> 3) & 0b1) << 5) | ((data[pointer + 0] & 0b11) << 3) | ((data[pointer + 1] >>> 5) & 0b111));
+            let xPos = ((((data[pointer + 0] >>> 2) & 1) << 5) | (data[pointer + 1] & 0b11111));
+            let yPos = ((((data[pointer + 0] >>> 3) & 0b1) << 5) | ((data[pointer + 0] & 0b11) << 3) | ((data[pointer + 1] >>> 5) & 0b111));
             const direct = data[pointer + 2] >>> 7;
             const rle = (data[pointer + 2] >>> 6) & 1;
             const length = ((data[pointer + 2] & 0b111111) << 8) | data[pointer + 3];
             if (!rle) {
+                console.log("Non-RLE");
                 const realLength = length + 1;
                 let x = xPos, y = yPos;
                 for (let i = 0; i < realLength; i += 2) {
@@ -12682,12 +12683,14 @@ function stripe(data) {
                         const index = (64 * y) + x;
                         result[index] = tile;
                     }
+                    console.log("tilenum: ", tileNum.toString(16));
                     if (direct === 0) {
                         x++;
                         if (x === 64) {
                             x = 0;
                             y++;
                             if (y === 64) {
+                                throw new Error("overflow");
                                 y = 0;
                                 x++;
                             }
@@ -12696,13 +12699,8 @@ function stripe(data) {
                     else {
                         y++;
                         if (y === 64) {
-                            throw new Error("y overflow!!");
+                            throw new Error("overflow");
                             y = 0;
-                            x++;
-                            if (x === 64) {
-                                x = 0;
-                                y++;
-                            }
                         }
                     }
                 }
@@ -12710,7 +12708,8 @@ function stripe(data) {
                 continue;
             }
             else {
-                const count = length;
+                console.log("RLE");
+                const count = Math.floor(length / 2);
                 let x = xPos, y = yPos;
                 const firstByte = data[pointer + 4 + 0];
                 const secondByte = data[pointer + 4 + 1];
@@ -12731,12 +12730,14 @@ function stripe(data) {
                         const index = (64 * y) + x;
                         result[index] = tile;
                     }
+                    console.log("tilenum: ", tileNum.toString(16));
                     if (direct === 0) {
                         x++;
                         if (x === 64) {
                             x = 0;
                             y++;
                             if (y === 64) {
+                                throw new Error("overflow");
                                 y = 0;
                                 x++;
                             }
@@ -12745,13 +12746,8 @@ function stripe(data) {
                     else {
                         y++;
                         if (y === 64) {
-                            throw new Error("y overflow!!");
+                            throw new Error("overflow");
                             y = 0;
-                            x++;
-                            if (x === 64) {
-                                x = 0;
-                                y++;
-                            }
                         }
                     }
                 }
