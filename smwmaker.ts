@@ -3586,8 +3586,14 @@ function renderExAnimation() {
                             const toIndex = index2index(dest + i);
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
                             const destGfx = index2page(dest + i);    
-
-                            destGfx[toIndex] = srcGfx[fromIndex];
+                            if (!use2bpp) {
+                                destGfx[toIndex] = srcGfx[fromIndex];
+                            } else {
+                                for (let j = 0; j < 64; j++) {
+                                    destGfx[toIndex][j] = srcGfx[fromIndex][j] % 4;
+                                }
+                            }
+                            
                         }
                         
                         break;
@@ -3605,7 +3611,13 @@ function renderExAnimation() {
                             const srcGfx = exAniIndex2gfx(ani.frameData[0] + i);
                             const destGfx = index2page(dest + i);    
 
-                            destGfx[toIndex] = srcGfx[fromIndex];
+                            if (!use2bpp) {
+                                destGfx[toIndex] = srcGfx[fromIndex];
+                            } else {
+                                for (let j = 0; j < 64; j++) {
+                                    destGfx[toIndex][j] = srcGfx[fromIndex][j] % 4;
+                                }
+                            }
                         }
 
                         break;
@@ -3619,7 +3631,13 @@ function renderExAnimation() {
                             const toIndex = index2index(dest + (i*16));
                             const destGfx = index2page(dest + (i*16));    
 
-                            destGfx[toIndex] = srcGfx[fromIndex];
+                            if (!use2bpp) {
+                                destGfx[toIndex] = srcGfx[fromIndex];
+                            } else {
+                                for (let j = 0; j < 64; j++) {
+                                    destGfx[toIndex][j] = srcGfx[fromIndex][j] % 4;
+                                }
+                            }
                         }
                         break;
                     case 17:
@@ -3632,7 +3650,13 @@ function renderExAnimation() {
                             const toIndex = index2index(dest + (i % 2) + (intdiv(i, 2)*16));
                             const destGfx = index2page(dest + (i % 2) + (intdiv(i, 2)*16));    
 
-                            destGfx[toIndex] = srcGfx[fromIndex];
+                            if (!use2bpp) {
+                                destGfx[toIndex] = srcGfx[fromIndex];
+                            } else {
+                                for (let j = 0; j < 64; j++) {
+                                    destGfx[toIndex][j] = srcGfx[fromIndex][j] % 4;
+                                }
+                            }
                         }
                         break;
                     case 18:
@@ -3645,7 +3669,13 @@ function renderExAnimation() {
                             const toIndex = index2index(dest + (i % 4) + (intdiv(i, 4)*16));
                             const destGfx = index2page(dest + (i % 4) + (intdiv(i, 4)*16));    
 
-                            destGfx[toIndex] = srcGfx[fromIndex];
+                            if (!use2bpp) {
+                                destGfx[toIndex] = srcGfx[fromIndex];
+                            } else {
+                                for (let j = 0; j < 64; j++) {
+                                    destGfx[toIndex][j] = srcGfx[fromIndex][j] % 4;
+                                }
+                            }
                         }
                         break;
                     default:
