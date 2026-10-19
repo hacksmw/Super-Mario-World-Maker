@@ -4140,46 +4140,66 @@ function loadGraphics() {
             layer3Bypass = !!(((read2(pointer) >>> 14) & 1));
             layer3TilemapBypass = !!(((read2(pointer) >>> 13) & 1));
             if (layer3Bypass) {
-                lg1 = read2(pointer + (2 * 15)) & 4095;
-                lg2 = read2(pointer + (2 * 14)) & 4095;
-                lg3 = read2(pointer + (2 * 13)) & 4095;
-                lg4 = read2(pointer + (2 * 12)) & 4095;
+                try {
+                    lg1 = read2(pointer + (2 * 15)) & 4095;
+                    lg2 = read2(pointer + (2 * 14)) & 4095;
+                    lg3 = read2(pointer + (2 * 13)) & 4095;
+                    lg4 = read2(pointer + (2 * 12)) & 4095;
+                }
+                catch (e) {
+                }
             }
             if (layer3TilemapBypass) {
-                console.log("Layer 3 Tile Bypass");
-                lt3 = read2(pointer + (2 * 1)) & 4095;
+                try {
+                    lt3 = read2(pointer + (2 * 1)) & 4095;
+                }
+                catch (e) {
+                }
             }
         }
         if (superGFXBypass && lmVer >= 1.70) {
-            fg1 = read2(pointer + (2 * 7)) & 4095;
-            fg2 = read2(pointer + (2 * 6)) & 4095;
-            bg = read2(pointer + (2 * 5)) & 4095;
-            fg3 = read2(pointer + (2 * 4)) & 4095;
-            bg2 = read2(pointer + (2 * 3)) & 4095;
-            bg3 = read2(pointer + (2 * 2)) & 4095;
-            ani2 = read2(pointer + (2 * 0)) & 4095;
-            sp1 = read2(pointer + (2 * 11)) & 4095;
-            sp2 = read2(pointer + (2 * 10)) & 4095;
-            sp3 = read2(pointer + (2 * 9)) & 4095;
-            sp4 = read2(pointer + (2 * 8)) & 4095;
+            try {
+                fg1 = read2(pointer + (2 * 7)) & 4095;
+                fg2 = read2(pointer + (2 * 6)) & 4095;
+                bg = read2(pointer + (2 * 5)) & 4095;
+                fg3 = read2(pointer + (2 * 4)) & 4095;
+                bg2 = read2(pointer + (2 * 3)) & 4095;
+                bg3 = read2(pointer + (2 * 2)) & 4095;
+                ani2 = read2(pointer + (2 * 0)) & 4095;
+                sp1 = read2(pointer + (2 * 11)) & 4095;
+                sp2 = read2(pointer + (2 * 10)) & 4095;
+                sp3 = read2(pointer + (2 * 9)) & 4095;
+                sp4 = read2(pointer + (2 * 8)) & 4095;
+            }
+            catch (e) {
+            }
         }
         else if (superGFXBypass && lmVer >= 1.61) {
-            fg1 = read2(pointer + (2 * 4)) & 4095;
-            fg2 = read2(pointer + (2 * 3)) & 4095;
-            bg = read2(pointer + (2 * 2)) & 4095;
-            fg3 = read2(pointer + (2 * 1)) & 4095;
-            ani2 = read2(pointer + (2 * 9)) & 4095;
-            sp1 = read2(pointer + (2 * 8)) & 4095;
-            sp2 = read2(pointer + (2 * 7)) & 4095;
-            sp3 = read2(pointer + (2 * 6)) & 4095;
-            sp4 = read2(pointer + (2 * 5)) & 4095;
+            try {
+                fg1 = read2(pointer + (2 * 4)) & 4095;
+                fg2 = read2(pointer + (2 * 3)) & 4095;
+                bg = read2(pointer + (2 * 2)) & 4095;
+                fg3 = read2(pointer + (2 * 1)) & 4095;
+                ani2 = read2(pointer + (2 * 9)) & 4095;
+                sp1 = read2(pointer + (2 * 8)) & 4095;
+                sp2 = read2(pointer + (2 * 7)) & 4095;
+                sp3 = read2(pointer + (2 * 6)) & 4095;
+                sp4 = read2(pointer + (2 * 5)) & 4095;
+            }
+            catch (e) {
+            }
         }
     }
     else {
         superGFXBypass = false;
     }
     lt3gfx = [];
-    lt3gfx = getUncompressedGFX(lt3);
+    try {
+        lt3gfx = getUncompressedGFX(lt3);
+    }
+    catch (e) {
+        console.log("Cannot load lt3.");
+    }
     if (superGFXBypass) {
         // FG/BG GFX
         try {
@@ -4200,21 +4220,29 @@ function loadGraphics() {
         }
     }
     if (lmVer >= 1.70 && layer3Bypass) {
-        lg1gfx = getUncompressedGFX(lg1);
-        lg2gfx = getUncompressedGFX(lg2);
-        lg3gfx = getUncompressedGFX(lg3);
-        lg4gfx = getUncompressedGFX(lg4);
+        try {
+            lg1gfx = getUncompressedGFX(lg1);
+            lg2gfx = getUncompressedGFX(lg2);
+            lg3gfx = getUncompressedGFX(lg3);
+            lg4gfx = getUncompressedGFX(lg4);
+        }
+        catch (e) {
+        }
     }
     if (lmVer >= 1.70) {
-        const addressTable = 0x03BCC0;
-        const gfx60Addr = read3(addressTable + (3 * 0));
-        const gfx61Addr = read3(addressTable + (3 * 1));
-        const gfx62Addr = read3(addressTable + (3 * 2));
-        const gfx63Addr = read3(addressTable + (3 * 3));
-        exgfx60gfx = Array.prototype.slice.call(fileData, snes2pc(gfx60Addr), snes2pc(gfx60Addr + 32768));
-        exgfx61gfx = Array.prototype.slice.call(fileData, snes2pc(gfx61Addr), snes2pc(gfx61Addr + 32768));
-        exgfx62gfx = Array.prototype.slice.call(fileData, snes2pc(gfx62Addr), snes2pc(gfx62Addr + 32768));
-        exgfx63gfx = Array.prototype.slice.call(fileData, snes2pc(gfx63Addr), snes2pc(gfx63Addr + 32768));
+        try {
+            const addressTable = 0x03BCC0;
+            const gfx60Addr = read3(addressTable + (3 * 0));
+            const gfx61Addr = read3(addressTable + (3 * 1));
+            const gfx62Addr = read3(addressTable + (3 * 2));
+            const gfx63Addr = read3(addressTable + (3 * 3));
+            exgfx60gfx = Array.prototype.slice.call(fileData, snes2pc(gfx60Addr), snes2pc(gfx60Addr + 32768));
+            exgfx61gfx = Array.prototype.slice.call(fileData, snes2pc(gfx61Addr), snes2pc(gfx61Addr + 32768));
+            exgfx62gfx = Array.prototype.slice.call(fileData, snes2pc(gfx62Addr), snes2pc(gfx62Addr + 32768));
+            exgfx63gfx = Array.prototype.slice.call(fileData, snes2pc(gfx63Addr), snes2pc(gfx63Addr + 32768));
+        }
+        catch (e) {
+        }
     }
     else {
         exgfx60gfx = [];
@@ -4227,12 +4255,22 @@ function loadGraphics() {
     if (isLMModified) {
         gfx33Pointer = (((read1(0x00B890) << 16) | read2(0x00B88B)));
     }
-    anigfx = getUncompressedGFX(gfx33Pointer, true);
+    try {
+        anigfx = getUncompressedGFX(gfx33Pointer, true);
+    }
+    catch (e) {
+        anigfx = [];
+    }
     let gfx32Pointer = 0x88000;
     if (isLMModified) {
         gfx32Pointer = (((read1(0x00B890) << 16) | read2(0x00B8D8)));
     }
-    mariogfx = getUncompressedGFX(gfx32Pointer, true);
+    try {
+        mariogfx = getUncompressedGFX(gfx32Pointer, true);
+    }
+    catch (e) {
+        mariogfx = [];
+    }
     // check bpp
     is4bpp = false;
     if (read1(0x0480D0) === 96) {
