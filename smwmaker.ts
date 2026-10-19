@@ -5004,8 +5004,12 @@ function loadGraphics() {
     if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
     } else {
-        lt3tiles = [];
-        //lt3tiles = stripe(fileData.slice(snes2pc(0x05A221)));
+        if (layer3Setting !== 0) {           
+            const layer3 = read3(0x059000 + (fgbgGFX*9) + ((layer3Setting-1)*3));
+            lt3tiles = stripe(fileData.slice(snes2pc(layer3)));
+        } else {
+            lt3tiles = [];
+        }
     }
     
     if (lmVer >= 1.70) {
