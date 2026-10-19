@@ -5005,7 +5005,7 @@ function loadGraphics() {
         lt3tiles = convertLT3(lt3gfx);
     } else {
         lt3tiles = [];
-        lt3tiles = stripe(fileData.slice(snes2pc(0x0595DE)));
+        //lt3tiles = stripe(fileData.slice(snes2pc(0x05A221)));
     }
     
     if (lmVer >= 1.70) {
@@ -14008,9 +14008,7 @@ function stripe(data: any) {
 			const length = ((data[pointer+2] & 0b111111) << 8) | data[pointer+3];
 
 			if (!rle) {
-                console.log("Non-RLE");
-
-				const realLength = length + 1;
+                const realLength = length + 1;
 				
 				let x = xPos, y = yPos;
 				
@@ -14037,10 +14035,7 @@ function stripe(data: any) {
                     if (dest === 0b101) {
                         const index = (64 * y) + x;
 					    result[index] = tile;
-                    }
-
-
-                    console.log("tilenum: ", tileNum.toString(16));                   
+                    }                  
 					
 					if (direct === 0) {
 						x++;
@@ -14061,13 +14056,12 @@ function stripe(data: any) {
 						}
 					}
 				}
-				
+			
+
 				pointer += 4 + realLength;
 				continue;
 			} else {
-                console.log("RLE");
-
-                const count = Math.floor(length / 2);
+                const count = (Math.floor(length / 2)) + 1;
 
                 let x = xPos, y = yPos;
 
@@ -14096,9 +14090,6 @@ function stripe(data: any) {
                         const index = (64 * y) + x;
 					    result[index] = tile;
                     }
-
-                    
-                    console.log("tilenum: ", tileNum.toString(16));
 					
 					if (direct === 0) {
 						x++;
@@ -14119,6 +14110,8 @@ function stripe(data: any) {
 						}
 					}                
                 }
+
+                
 
                 pointer += 4 + 2;
                 continue;
