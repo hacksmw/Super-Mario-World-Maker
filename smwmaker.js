@@ -1152,21 +1152,6 @@ function window_onload() {
     btnLayer3Tilemap.onclick = btnLayer3Tilemap_onclick;
 }
 window.onload = window_onload;
-function btnOW_onclick() {
-    let dialogOW = document.getElementById("dialogOW");
-    if (dialogOW?.classList.contains("hidden")) {
-        dialogOW.classList.remove("hidden");
-    }
-    else {
-        dialogOW.classList.add("hidden");
-        return;
-    }
-    const canvas = document.getElementById("owView");
-    canvas.width = 160 * 8;
-    canvas.height = 168 * 8;
-    const ctx = canvas.getContext("2d");
-    const result = loadOW();
-}
 function btnLayer3Tilemap_onclick() {
     let dialogLayer3Tilemap = document.getElementById("dialogLayer3Tilemap");
     if (dialogLayer3Tilemap?.classList.contains("hidden")) {
@@ -12875,5 +12860,119 @@ function checkRomFileSize(fileData, header = true) {
             break;
     }
 }
+function getOW8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
+    index = index % 0x300;
+    const canvas = document.createElement("canvas");
+    canvas.width = 8;
+    canvas.height = 8;
+    const ctx = canvas.getContext("2d");
+    const page = intdiv(index, 128);
+    let gfx;
+    switch (page) {
+        case 0:
+            gfx = owfg1bmp;
+            break;
+        case 1:
+            gfx = owfg2bmp;
+            break;
+        case 2:
+            gfx = owfg3bmp;
+            break;
+        case 3:
+            gfx = owfg4bmp;
+            break;
+        default:
+            throw new Error("unimplemented");
+            break;
+    }
+    let i = index % 128;
+    const bitmap = gfx[i];
+    let r, g, b;
+    for (let j = 0; j < 64; j++) {
+        let color;
+        let r, g, b;
+        color = pal[palette][bitmap[j]];
+        r = color.r;
+        g = color.g;
+        b = color.b;
+        let alpha = 1.0;
+        if (bitmap[j] == 0) {
+            alpha = 0.0;
+        }
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        if (flipx === true && flipy === false) {
+            ctx.fillRect(7 - (j % 8), intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === false && flipy === true) {
+            ctx.fillRect((j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === true && flipy === true) {
+            ctx.fillRect(7 - (j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else {
+            ctx.fillRect((j % 8), intdiv(j, 8), 1, 1);
+        }
+    }
+    return ctx.getImageData(0, 0, 8, 8);
+}
+function btnOW_onclick() {
+    let dialogOW = document.getElementById("dialogOW");
+    if (dialogOW?.classList.contains("hidden")) {
+        dialogOW.classList.remove("hidden");
+    }
+    else {
+        dialogOW.classList.add("hidden");
+        return;
+    }
+    const canvas = document.getElementById("owView");
+    canvas.width = 160 * 8;
+    canvas.height = 168 * 8;
+    const ctx = canvas.getContext("2d");
+    const result = loadOW();
+    ctx.putImageData(result, 0, 0);
+}
 function loadOW() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 160 * 8;
+    canvas.height = 168 * 8;
+    const ctx = canvas.getContext("2d");
+    let tileNums;
+    let tileSettings;
+    tileNums = decompress_rle1(fileData.slice(snes2pc(0x04A533)));
+    tileSettings = decompress_rle1(fileData.slice(snes2pc(0x04C02B)));
+    let result = new Array(tileNums.length);
+    let result2 = new Array(tileNums.length);
+    for (let i = 0; i < tileNums.length; i++) {
+        if (intdiv(i, 1024) === 0) {
+            result[(0 + 32 * intdiv(i, 32)) + i] = tileNums[i];
+            result2[(0 + 32 * intdiv(i, 32)) + i] = tileSettings[i];
+        }
+        else if (intdiv(i, 1024) === 1) {
+            result[0 + 32 + (32 * (intdiv(i - 1024, 32))) + (i - 1024)] = tileNums[i];
+            result2[0 + 32 + (32 * (intdiv(i - 1024, 32))) + (i - 1024)] = tileSettings[i];
+        }
+        else if (intdiv(i, 1024) === 2) {
+            result[2048 + (32 * (intdiv(i - 2048, 32))) + (i - 2048)] = tileNums[i];
+            result2[2048 + (32 * (intdiv(i - 2048, 32))) + (i - 2048)] = tileSettings[i];
+        }
+        else if (intdiv(i, 1024) === 3) {
+            result[2048 + 32 + (32 * (intdiv(i - 3072, 32))) + (i - 3072)] = tileNums[i];
+            result2[2048 + 32 + (32 * (intdiv(i - 3072, 32))) + (i - 3072)] = tileSettings[i];
+        }
+    }
+    console.log("start...");
+    for (let i = 0; i < result.length; i++) {
+        let tileNum = result[i];
+        let tileSetting = result2[i];
+        let flipX = (tileSetting >>> 6) & 1;
+        let flipY = (tileSetting >>> 7) & 1;
+        let priority = (tileSetting >>> 5) & 1;
+        let pal = (tileSetting >>> 2) & 0b111;
+        let page = (tileSetting >>> 0) & 0b11;
+        let realTileNum = (tileNum);
+        let tileImg = getOW8x8Img(realTileNum, pal, !!flipX, !!flipY);
+        ctx.putImageData(tileImg, (i % 64) * 8, intdiv(i, 64) * 8);
+    }
+    console.log("end...");
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
