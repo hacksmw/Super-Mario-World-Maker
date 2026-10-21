@@ -232,6 +232,8 @@ let lg1: number, lg2: number, lg3: number, lg4: number;
 let lg1bmp: number[][], lg2bmp: number[][], lg3bmp: number[][], lg4bmp: number[][];
 let lt3bmp: number[][];
 let lt3tiles: LT3Tile[];
+let owfg1: number, owfg2: number, owfg3: number, owfg4: number;
+let owfg1bmp: number[][], owfg2bmp: number[][], owfg3bmp: number[][], owfg4bmp: number[][];
 
 let offset: number;
 let slippery: number;
@@ -1337,6 +1339,8 @@ function btnOW_onclick() {
     canvas.height = 168 * 8;
 
     const ctx = canvas.getContext("2d");
+
+    const result = loadOW();
 }
 
 function btnLayer3Tilemap_onclick() {
@@ -1484,7 +1488,7 @@ function btn8x8_onclick () {
 
     let ctx = canvas.getContext("2d");
 
-    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
+    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp, owfg1bmp];
 
     for (let i = 0; i < bitmaps.length; i++) {
         const bitmap = bitmaps[i];
@@ -4807,6 +4811,7 @@ function loadGraphics() {
     let mariogfx: number[];
     let lg1gfx: number[], lg2gfx: number[], lg3gfx: number[], lg4gfx: number[];
     let lt3gfx: number[];
+    let owfg1gfx: number[], owfg2gfx: number[], owfg3gfx: number[], owfg4gfx: number[];
 
     // get tileset
 
@@ -4838,6 +4843,11 @@ function loadGraphics() {
     lg4 = 0x2B;
     
     lt3 = 0x7f;
+
+    owfg1 = 0x1C;
+    owfg2 = 0x1D;
+    owfg3 = 0x8;
+    owfg4 = 0x1E;
     
     sp1 = read1((spriteGfxTable) + (4*sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4*sprGFX + 1));
@@ -4866,6 +4876,13 @@ function loadGraphics() {
     lg2gfx = getUncompressedGFX(lg2);
     lg3gfx = getUncompressedGFX(lg3);
     lg4gfx = getUncompressedGFX(lg4);
+
+    // OW graphics
+
+    owfg1gfx = getUncompressedGFX(owfg1);
+    owfg2gfx = getUncompressedGFX(owfg2);
+    owfg3gfx = getUncompressedGFX(owfg3);
+    owfg4gfx = getUncompressedGFX(owfg4);
 
     superGFXBypass = false;
     layer3Bypass = false;
@@ -5090,6 +5107,11 @@ function loadGraphics() {
     lg2bmp = convertGraphics2bpp(lg2gfx);
     lg3bmp = convertGraphics2bpp(lg3gfx);
     lg4bmp = convertGraphics2bpp(lg4gfx);
+
+    owfg1bmp = convertGraphics(owfg1gfx, is4bpp);
+    owfg2bmp = convertGraphics(owfg2gfx, is4bpp);
+    owfg3bmp = convertGraphics(owfg3gfx, is4bpp);
+    owfg4bmp = convertGraphics(owfg4gfx, is4bpp);
     
     if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
@@ -14226,3 +14248,6 @@ function checkRomFileSize(fileData: any, header: boolean = true): boolean {
     }
 }
 
+function loadOW() {
+
+}

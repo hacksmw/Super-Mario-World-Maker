@@ -213,6 +213,8 @@ let lg1, lg2, lg3, lg4;
 let lg1bmp, lg2bmp, lg3bmp, lg4bmp;
 let lt3bmp;
 let lt3tiles;
+let owfg1, owfg2, owfg3, owfg4;
+let owfg1bmp, owfg2bmp, owfg3bmp, owfg4bmp;
 let offset;
 let slippery;
 let water;
@@ -1163,6 +1165,7 @@ function btnOW_onclick() {
     canvas.width = 160 * 8;
     canvas.height = 168 * 8;
     const ctx = canvas.getContext("2d");
+    const result = loadOW();
 }
 function btnLayer3Tilemap_onclick() {
     let dialogLayer3Tilemap = document.getElementById("dialogLayer3Tilemap");
@@ -1269,7 +1272,7 @@ function btn8x8_onclick() {
     canvas.width = dotSize * 8 * 16;
     canvas.height = dotSize * (8 * 16 * 3 + 8 * 16 * 2) * limit;
     let ctx = canvas.getContext("2d");
-    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
+    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp, owfg1bmp];
     for (let i = 0; i < bitmaps.length; i++) {
         const bitmap = bitmaps[i];
         for (let j = 0; j < bitmap.length; j++) {
@@ -4103,6 +4106,7 @@ function loadGraphics() {
     let mariogfx;
     let lg1gfx, lg2gfx, lg3gfx, lg4gfx;
     let lt3gfx;
+    let owfg1gfx, owfg2gfx, owfg3gfx, owfg4gfx;
     // get tileset
     if ((fgbgGFX >= tilesetList.length)) {
         throw new Error();
@@ -4125,6 +4129,10 @@ function loadGraphics() {
     lg3 = 0x2A;
     lg4 = 0x2B;
     lt3 = 0x7f;
+    owfg1 = 0x1C;
+    owfg2 = 0x1D;
+    owfg3 = 0x8;
+    owfg4 = 0x1E;
     sp1 = read1((spriteGfxTable) + (4 * sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4 * sprGFX + 1));
     sp3 = read1((spriteGfxTable) + (4 * sprGFX + 2));
@@ -4146,6 +4154,11 @@ function loadGraphics() {
     lg2gfx = getUncompressedGFX(lg2);
     lg3gfx = getUncompressedGFX(lg3);
     lg4gfx = getUncompressedGFX(lg4);
+    // OW graphics
+    owfg1gfx = getUncompressedGFX(owfg1);
+    owfg2gfx = getUncompressedGFX(owfg2);
+    owfg3gfx = getUncompressedGFX(owfg3);
+    owfg4gfx = getUncompressedGFX(owfg4);
     superGFXBypass = false;
     layer3Bypass = false;
     layer3TilemapBypass = false;
@@ -4326,6 +4339,10 @@ function loadGraphics() {
     lg2bmp = convertGraphics2bpp(lg2gfx);
     lg3bmp = convertGraphics2bpp(lg3gfx);
     lg4bmp = convertGraphics2bpp(lg4gfx);
+    owfg1bmp = convertGraphics(owfg1gfx, is4bpp);
+    owfg2bmp = convertGraphics(owfg2gfx, is4bpp);
+    owfg3bmp = convertGraphics(owfg3gfx, is4bpp);
+    owfg4bmp = convertGraphics(owfg4gfx, is4bpp);
     if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
     }
@@ -12857,4 +12874,6 @@ function checkRomFileSize(fileData, header = true) {
             return false;
             break;
     }
+}
+function loadOW() {
 }
