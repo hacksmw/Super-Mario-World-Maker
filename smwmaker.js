@@ -293,6 +293,7 @@ let sel2ndEnter;
 let btn2ndOK;
 let btn2ndCancel;
 let btnSave;
+let btnOW;
 let prevObjLeft, prevObjTop;
 let isPress;
 let prevPosX, prevPosY;
@@ -1104,7 +1105,9 @@ function window_onload() {
     btn2ndCancel = document.getElementById("btn2ndCancel");
     btnSave = document.getElementById("btnSave");
     btnLayer3Tilemap = document.getElementById("btnLayer3Tilemap");
+    btnOW = document.getElementById("btnOW");
     document.getElementById("paletteView").onclick = paletteView_onclick;
+    btnOW.onclick = btnOW_onclick;
     btnPalette.onclick = btnPalette_onclick;
     btnOpen.onclick = btnOpen_onclick;
     btn8x8.onclick = btn8x8_onclick;
@@ -1147,6 +1150,20 @@ function window_onload() {
     btnLayer3Tilemap.onclick = btnLayer3Tilemap_onclick;
 }
 window.onload = window_onload;
+function btnOW_onclick() {
+    let dialogOW = document.getElementById("dialogOW");
+    if (dialogOW?.classList.contains("hidden")) {
+        dialogOW.classList.remove("hidden");
+    }
+    else {
+        dialogOW.classList.add("hidden");
+        return;
+    }
+    const canvas = document.getElementById("owView");
+    canvas.width = 160 * 8;
+    canvas.height = 168 * 8;
+    const ctx = canvas.getContext("2d");
+}
 function btnLayer3Tilemap_onclick() {
     let dialogLayer3Tilemap = document.getElementById("dialogLayer3Tilemap");
     if (dialogLayer3Tilemap?.classList.contains("hidden")) {
@@ -10150,6 +10167,7 @@ function fileOpen() {
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
             btnLayer3Tilemap.disabled = false;
+            btnOW.disabled = false;
             //btnSave.disabled = false;
         };
         fr.readAsArrayBuffer(this.files[0]);

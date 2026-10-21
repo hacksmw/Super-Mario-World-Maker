@@ -56,10 +56,15 @@
 <button id="btnLevelHeader" disabled>Level Header</button>
 <button id="btnSprHeader" disabled>Sprite Header</button>
 <button id="btnOtherHeader" disabled>Other Header</button>
+<button id="btnOW" disabled>OW</button>
 <button id="btnLevelToImage" disabled>Screenshot</button>
 
 </div>
 <div id="main"></div>
+
+<div id="dialogOW" class="hidden">
+<canvas id="owView"></canvas>
+</div>
 
 <div id="dialogSprHeader" class="hidden">
 <table>
@@ -393,13 +398,13 @@ Force Layer 3 above all other layers and sprites
 <tr>
 <td>
 <input type="text" id="scrNum" value="0">
-<laber for="scrNum">Screen Number of Entrance (0-1F)</laber>
+<label for="scrNum">Screen Number of Entrance (0-1F)</label>
 </td>
 </tr>
 <tr>
 <td>
 <input type="text" id="midNum" value="0">
-<laber for="midNum">Screen Number of Midway Entrance (0-F)</laber>
+<label for="midNum">Screen Number of Midway Entrance (0-F)</label>
 </td>
 </tr>
 <tr>

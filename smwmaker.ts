@@ -318,6 +318,7 @@ let sel2ndEnter: HTMLSelectElement;
 let btn2ndOK: HTMLButtonElement;
 let btn2ndCancel: HTMLButtonElement;
 let btnSave: HTMLButtonElement;
+let btnOW: HTMLButtonElement;
 
 let prevObjLeft: number, prevObjTop: number;
 let isPress: boolean;
@@ -1273,9 +1274,11 @@ function window_onload(): void {
     btn2ndCancel = (document.getElementById("btn2ndCancel") as HTMLButtonElement)
     btnSave = (document.getElementById("btnSave") as HTMLButtonElement)
     btnLayer3Tilemap = (document.getElementById("btnLayer3Tilemap") as HTMLButtonElement);
+    btnOW = (document.getElementById("btnOW") as HTMLButtonElement);
     
     document.getElementById("paletteView")!.onclick = paletteView_onclick;
 
+    btnOW!.onclick = btnOW_onclick;
     btnPalette!.onclick = btnPalette_onclick;
     btnOpen!.onclick = btnOpen_onclick;
     btn8x8!.onclick = btn8x8_onclick;
@@ -1319,6 +1322,22 @@ function window_onload(): void {
 }
 
 window.onload = window_onload;
+
+function btnOW_onclick() {
+    let dialogOW = document.getElementById("dialogOW");
+    if (dialogOW?.classList.contains("hidden")) {
+        dialogOW.classList.remove("hidden");
+    } else {
+        dialogOW!.classList.add("hidden");
+        return;
+    }
+    const canvas = (document.getElementById("owView") as HTMLCanvasElement);
+
+    canvas.width = 160 * 8;
+    canvas.height = 168 * 8;
+
+    const ctx = canvas.getContext("2d");
+}
 
 function btnLayer3Tilemap_onclick() {
     let dialogLayer3Tilemap = document.getElementById("dialogLayer3Tilemap");
@@ -11361,7 +11380,7 @@ function fileOpen(): void {
                 loadROM(levelNum, fileData);
             } catch (e: any) {
                 throw e;
-                alert(e.message)
+                alert(e.message);
                 unload();
             }
 
@@ -11380,6 +11399,7 @@ function fileOpen(): void {
             btnExit.disabled = false;
             btn2ndExit.disabled = false;
             btnLayer3Tilemap.disabled = false;
+            btnOW.disabled = false;
             //btnSave.disabled = false;
         }
 
