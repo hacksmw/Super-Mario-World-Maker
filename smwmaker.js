@@ -12942,8 +12942,8 @@ function loadOW() {
     let tileSettings;
     tileNums = decompress_rle1(fileData.slice(snes2pc(0x04A533)));
     tileSettings = decompress_rle1(fileData.slice(snes2pc(0x04C02B)));
-    let result = new Array(tileNums.length);
-    let result2 = new Array(tileNums.length);
+    let result = new Array(64 * 128);
+    let result2 = new Array(64 * 128);
     for (let i = 0; i < tileNums.length; i++) {
         if (intdiv(i, 1024) === 0) {
             result[(0 + 32 * intdiv(i, 32)) + i] = tileNums[i];
@@ -12977,6 +12977,17 @@ function loadOW() {
             result[6144 + 32 + (32 * (intdiv(i - 7168, 32))) + (i - 7168)] = tileNums[i];
             result2[6144 + 32 + (32 * (intdiv(i - 7168, 32))) + (i - 7168)] = tileSettings[i];
         }
+    }
+    for (let i = 0; i < 64; i++) {
+        const l = result.length;
+        const t = result[l - 1];
+        const s = result2[l - 1];
+        for (let j = result.length - 1; j >= 4097; j--) {
+            result[j] = result[j - 1];
+            result2[j] = result2[j - 1];
+        }
+        result[4096] = t;
+        result2[4096] = s;
     }
     console.log("start...");
     for (let i = 0; i < result.length; i++) {
