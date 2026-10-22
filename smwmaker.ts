@@ -14385,7 +14385,31 @@ function loadOW() {
 
     }
 
-    console.log("start...");
+    
+    for (let i = 0; i < 64; i++) {
+        let t1, s1;
+        
+        t1 = result[4096 + i * 64 + 64 - 1];
+        s1 = result2[4096 + i * 64 + 64 - 1];
+        
+        for (let j = 1; j < 64; j++) {
+            result[4096 + i*64 + 64 - j] = result[4096 + i*64 + 64 - j - 1];
+            result2[4096 + i*64 + 64 - j] = result2[4096 + i*64 + 64 - j - 1];
+        }
+
+        result[4096 + i*64 + 0] = t1;
+        result2[4096 + i*64 + 0] = s1;
+
+        t1 = result[4096 + i * 64 + 64 - 1];
+        s1 = result2[4096 + i * 64 + 64 - 1];
+
+        for (let j = 1; j < 64; j++) {
+            result[4096 + i*64 + 64 - j] = result[4096 + i*64 + 64 - j - 1];
+            result2[4096 + i*64 + 64 - j] = result2[4096 + i*64 + 64 - j - 1];
+        }
+    }
+      
+    console.log("wait...");
 
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];
@@ -14405,7 +14429,7 @@ function loadOW() {
 
     }
 
-    console.log("end...");
+    console.log("done...");
     
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
