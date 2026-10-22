@@ -128,6 +128,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let owMap16;
 let layer1Data, layer2Data;
 let exits;
 let sprites;
@@ -1257,7 +1258,7 @@ function btn8x8_onclick() {
     canvas.width = dotSize * 8 * 16;
     canvas.height = dotSize * (8 * 16 * 3 + 8 * 16 * 2) * limit;
     let ctx = canvas.getContext("2d");
-    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp, owfg1bmp];
+    const bitmaps = [fg1bmp, fg2bmp, bgbmp, fg3bmp, bg2bmp, bg3bmp, sp1bmp, sp2bmp, sp3bmp, sp4bmp];
     for (let i = 0; i < bitmaps.length; i++) {
         const bitmap = bitmaps[i];
         for (let j = 0; j < bitmap.length; j++) {
@@ -13006,6 +13007,41 @@ function loadOW() {
             result2[4096 + i * 64 + 64 - j] = result2[4096 + i * 64 + 64 - j - 1];
         }
     }
+    owMap16 = [];
+    let layer1Tiles = 0x05D000;
+    for (let i = 0; i < 0xBF; i++) {
+        const tile = new Tile();
+        // YXPCCCTT
+        let upleft = read1(layer1Tiles + (8 * i) + 0);
+        let upleftSett = read1(layer1Tiles + (8 * i) + 1);
+        tile.upleft.gfx = ((upleftSett & 0b11) << 8) | upleft;
+        tile.upleft.yflip = upleftSett >>> 7;
+        tile.upleft.xflip = (upleftSett >>> 6) & 1;
+        tile.upleft.prior = (upleftSett >>> 5) & 1;
+        tile.upleft.pal = (upleftSett >>> 2) & 0b111;
+        let upright = read1(layer1Tiles + (8 * i) + 4);
+        let uprightSett = read1(layer1Tiles + (8 * i) + 5);
+        tile.upright.gfx = ((uprightSett & 0b11) << 8) | upright;
+        tile.upright.yflip = uprightSett >>> 7;
+        tile.upright.xflip = (uprightSett >>> 6) & 1;
+        tile.upright.prior = (uprightSett >>> 5) & 1;
+        tile.upright.pal = (uprightSett >>> 2) & 0b111;
+        let dnleft = read1(layer1Tiles + (8 * i) + 2);
+        let dnleftSett = read1(layer1Tiles + (8 * i) + 3);
+        tile.lowleft.gfx = ((dnleftSett & 0b11) << 8) | dnleft;
+        tile.lowleft.yflip = dnleftSett >>> 7;
+        tile.lowleft.xflip = (dnleftSett >>> 6) & 1;
+        tile.lowleft.prior = (dnleftSett >>> 5) & 1;
+        tile.lowleft.pal = (dnleftSett >>> 2) & 0b111;
+        let dnright = read1(layer1Tiles + (8 * i) + 6);
+        let dnrightSett = read1(layer1Tiles + (8 * i) + 7);
+        tile.lowright.gfx = ((dnrightSett & 0b11) << 8) | dnright;
+        tile.lowright.yflip = dnrightSett >>> 7;
+        tile.lowright.xflip = (dnrightSett >>> 6) & 1;
+        tile.lowright.prior = (dnrightSett >>> 5) & 1;
+        tile.lowright.pal = (dnrightSett >>> 2) & 0b111;
+        owMap16.push(tile);
+    }
     console.log("wait...");
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];
@@ -13018,6 +13054,16 @@ function loadOW() {
         let realTileNum = (tileNum);
         let tileImg = getOW8x8Img(realTileNum, pal, !!flipX, !!flipY);
         ctx.putImageData(tileImg, (i % 64) * 8, intdiv(i, 64) * 8);
+    }
+    for (let i = 0; i < 0xBF; i++) {
+        let upleft = getOW8x8Img(owMap16[i].upleft.gfx, owMap16[i].upleft.pal, !!(owMap16[i].upleft.xflip), !!(owMap16[i].upleft.yflip));
+        let upright = getOW8x8Img(owMap16[i].upright.gfx, owMap16[i].upright.pal, !!(owMap16[i].upright.xflip), !!(owMap16[i].upright.yflip));
+        let dnleft = getOW8x8Img(owMap16[i].lowleft.gfx, owMap16[i].lowleft.pal, !!(owMap16[i].lowleft.xflip), !!(owMap16[i].lowleft.yflip));
+        let dnright = getOW8x8Img(owMap16[i].lowright.gfx, owMap16[i].lowright.pal, !!(owMap16[i].lowright.xflip), !!(owMap16[i].lowright.yflip));
+        ctx.putImageData(upleft, (i % 16) * 16, 128 * 8 + intdiv(i, 16) * 16 + 0);
+        ctx.putImageData(upright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 0);
+        ctx.putImageData(dnleft, (i % 16) * 16, 128 * 8 + intdiv(i, 16) * 16 + 8);
+        ctx.putImageData(dnright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 8);
     }
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
