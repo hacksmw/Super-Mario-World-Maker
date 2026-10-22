@@ -14321,6 +14321,10 @@ function btnOW_onclick() {
     ctx!.putImageData(result, 0, 0);
 }
 
+function drawHorizontal() {
+
+}
+
 function loadOW() {
     const canvas = document.createElement("canvas");
 
@@ -14338,6 +14342,7 @@ function loadOW() {
     let result = new Array(tileNums.length);
     let result2 = new Array(tileNums.length);
     
+    
     for (let i = 0; i < tileNums.length; i++) {  
         if (intdiv(i, 1024) === 0) {
             result[(0+32*intdiv(i, 32))+i] = tileNums[i];  
@@ -14351,8 +14356,21 @@ function loadOW() {
         } else if (intdiv(i, 1024) === 3) {
             result[2048+32+(32*(intdiv(i-3072, 32)))+(i-3072)] = tileNums[i];
             result2[2048+32+(32*(intdiv(i-3072, 32)))+(i-3072)] = tileSettings[i];
-        }            
+        } else if (intdiv(i, 1024) === 4) {
+            result[4096+(32*(intdiv(i-4096, 32)))+(i-4096)] = tileNums[i];
+            result2[4096+(32*(intdiv(i-4096, 32)))+(i-4096)] = tileSettings[i];
+        } else if (intdiv(i, 1024) === 5) {
+            result[4096+32+(32*(intdiv(i-5120, 32)))+(i-5120)] = tileNums[i];
+            result2[4096+32+(32*(intdiv(i-5120, 32)))+(i-5120)] = tileSettings[i];
+        } else if (intdiv(i, 1024) === 6) {
+            result[6144+(32*(intdiv(i-6144, 32)))+(i-6144)] = tileNums[i];
+            result2[6144+(32*(intdiv(i-6144, 32)))+(i-6144)] = tileSettings[i];
+        } else if (intdiv(i, 1024) === 7) {
+            result[6144+32+(32*(intdiv(i-7168, 32)))+(i-7168)] = tileNums[i];
+            result2[6144+32+(32*(intdiv(i-7168, 32)))+(i-7168)] = tileSettings[i];
+        }
     }
+
     console.log("start...");
 
     for (let i = 0; i < result.length; i++) {
