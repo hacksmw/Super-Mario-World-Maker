@@ -14405,6 +14405,9 @@ function loadOW() {
             result[4096 + i*64 + 64 - j] = result[4096 + i*64 + 64 - j - 1];
             result2[4096 + i*64 + 64 - j] = result2[4096 + i*64 + 64 - j - 1];
         }
+
+        result[4096 + i*64 + 0] = t1;
+        result2[4096 + i*64 + 0] = s1;
     }     
 
     owMap16 = [];
@@ -14466,6 +14469,18 @@ function loadOW() {
         }
     }
 
+    
+    for (let i = 0; i < 32; i++) {
+        const t1 = owLayer1Tiles[1024 + i * 32 + 32 - 1];
+        
+        for (let j = 1; j < 32; j++) {
+            owLayer1Tiles[1024 + i*32 + 32 - j] = owLayer1Tiles[1024 + i*32 + 32 - j - 1];
+        }
+
+        owLayer1Tiles[1024 + i*32 + 0] = t1;
+
+    }   
+
     console.log("wait...");
 
     for (let i = 0; i < result.length; i++) {
@@ -14508,10 +14523,16 @@ function loadOW() {
         let dnleft = getOW8x8Img(owMap16[index].lowleft.gfx, owMap16[index].lowleft.pal, !!(owMap16[index].lowleft.xflip), !!(owMap16[index].lowleft.yflip));
         let dnright = getOW8x8Img(owMap16[index].lowright.gfx, owMap16[index].lowright.pal, !!(owMap16[index].lowright.xflip), !!(owMap16[index].lowright.yflip));
 
-        ctx!.putImageData(upleft, (i%32)*16, intdiv(i, 32)*16 + 0);
-        ctx!.putImageData(upright, (i%32)*16 + 8, intdiv(i, 32)*16 + 0);
-        ctx!.putImageData(dnleft, (i%32)*16, intdiv(i, 32)*16 + 8);
-        ctx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8);
+        let factor = 0;
+
+        if (i >= 1024) {
+            factor = 8;    
+        }
+
+        ctx!.putImageData(upleft, (i%32)*16, intdiv(i, 32)*16 + 0 + factor);
+        ctx!.putImageData(upright, (i%32)*16 + 8, intdiv(i, 32)*16 + 0 + factor);
+        ctx!.putImageData(dnleft, (i%32)*16, intdiv(i, 32)*16 + 8 + factor);
+        ctx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8 + factor);
     }
 
 
