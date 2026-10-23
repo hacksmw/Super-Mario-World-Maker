@@ -146,6 +146,9 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let eventsData: number[];
+let eventsIndex: number[];
+let eventNum: number, step: number;
 let eventTiles: number[], eventTilesSettings: number[];
 let owLayer2Tiles: number[];
 let owLayer2TilesSettings: number[];
@@ -14334,6 +14337,9 @@ function loadOW() {
 
     const ctx = canvas.getContext("2d");
 
+    eventNum = 0;
+    step = 0;
+
     let tileNums;
     let tileSettings;
     
@@ -14503,6 +14509,21 @@ function loadOW() {
         eventTilesSettings.push(tileSetting);
     }
 
+    eventsData = [];
+    eventsIndex = [];
+
+    for (let i = 0; i < 1484; i++) {
+        const eventData = read1(0x04DD8D + i);
+        eventsData.push(eventData);
+    }
+
+    for (let i = 0; i < 242; i++) {
+        const eventIndex = read1(0x04E359 + i);
+        eventsIndex.push(eventIndex);
+    }
+
+    // render
+
     console.log("wait...");
 
     for (let i = 0; i < result.length; i++) {
@@ -14535,6 +14556,17 @@ function loadOW() {
         ctx!.putImageData(dnright, (i%16)*16 + 8, 128*8+intdiv(i, 16)*16 + 8);
     }
 
+    eventNum = 1;
+
+    const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];  
+    const delta = ((eventsIndex[(eventNum+1) * 2 + 1] << 8) | eventsIndex[(eventNum+1) * 2]) - eventIndex;
+    const index = eventIndex * 4 + delta * 4;
+
+    for (let i = 0; i < index; i+=4) {
+        const from = (eventsData[i+1] << 8) | eventsData[i];
+        const to = (eventsData[i+3] << 8) | eventsData[i+2];
+    }
+
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
 
@@ -14556,8 +14588,44 @@ function loadOW() {
         ctx!.putImageData(dnleft, (i%32)*16, intdiv(i, 32)*16 + 8 + factor);
         ctx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8 + factor);
     }
-
+    
     console.log("done...");
     
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
+
+/*
+function convertVram2linear(vram: number): number {
+    let i: number = (vram) / 2;
+
+    let result: number;
+
+    if (intdiv(i, 1024) === 0) {
+        result = (0+32*intdiv(i, 32))+i;
+    } else if (intdiv(i, 1024) === 1) {
+        result = 0+32+(32*(intdiv(i-1024, 32)))+(i-1024);
+    } else if (intdiv(i, 1024) === 2) {
+        result = 2048+(32*(intdiv(i-2048, 32)))+(i-2048);
+    } else if (intdiv(i, 1024) === 3) {
+        result = 2048+32+(32*(intdiv(i-3072, 32)))+(i-3072)
+    } else if (intdiv(i, 1024) === 4) {
+        result = 4096+(32*(intdiv(i-4096, 32)))+(i-4096);
+    } else if (intdiv(i, 1024) === 5) {
+        result = 4096+32+(32*(intdiv(i-5120, 32)))+(i-5120);
+    } else if (intdiv(i, 1024) === 6) {
+        result = 6144+(32*(intdiv(i-6144, 32)))+(i-6144);
+    } else if (intdiv(i, 1024) === 7) {
+        result = 6144+32+(32*(intdiv(i-7168, 32)))+(i-7168);
+    } else {
+        throw new Error("Undefined: " + vram.toString(16));
+    }
+
+    if (i >= 4096) {
+        // submap
+        i += 64;
+        i += 2;
+    }
+
+    return result; 
+}
+*/

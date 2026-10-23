@@ -128,6 +128,9 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let eventsData;
+let eventsIndex;
+let eventNum, step;
 let eventTiles, eventTilesSettings;
 let owLayer2Tiles;
 let owLayer2TilesSettings;
@@ -12941,6 +12944,8 @@ function loadOW() {
     canvas.width = 160 * 8;
     canvas.height = 168 * 8;
     const ctx = canvas.getContext("2d");
+    eventNum = 0;
+    step = 0;
     let tileNums;
     let tileSettings;
     tileNums = decompress_rle1(fileData.slice(snes2pc(0x04A533)));
@@ -13074,6 +13079,17 @@ function loadOW() {
         eventTiles.push(realTileNum);
         eventTilesSettings.push(tileSetting);
     }
+    eventsData = [];
+    eventsIndex = [];
+    for (let i = 0; i < 1484; i++) {
+        const eventData = read1(0x04DD8D + i);
+        eventsData.push(eventData);
+    }
+    for (let i = 0; i < 242; i++) {
+        const eventIndex = read1(0x04E359 + i);
+        eventsIndex.push(eventIndex);
+    }
+    // render
     console.log("wait...");
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];
@@ -13096,6 +13112,14 @@ function loadOW() {
         ctx.putImageData(upright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 0);
         ctx.putImageData(dnleft, (i % 16) * 16, 128 * 8 + intdiv(i, 16) * 16 + 8);
         ctx.putImageData(dnright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 8);
+    }
+    eventNum = 1;
+    const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];
+    const delta = ((eventsIndex[(eventNum + 1) * 2 + 1] << 8) | eventsIndex[(eventNum + 1) * 2]) - eventIndex;
+    const index = eventIndex * 4 + delta * 4;
+    for (let i = 0; i < index; i += 4) {
+        const from = (eventsData[i + 1] << 8) | eventsData[i];
+        const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
     }
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
