@@ -13163,6 +13163,8 @@ function loadOW() {
     for (let i = 0; i < index; i += 4) {
         const from = (eventsData[i + 1] << 8) | eventsData[i];
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
+        console.log("from: ", from.toString(16));
+        console.log("to: ", to.toString(16));
     }
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
@@ -13183,4 +13185,40 @@ function loadOW() {
     }
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+function convertVram2linear(vram) {
+    let i = (vram) / 2;
+    let result;
+    if (intdiv(i, 1024) === 0) {
+        result = (0 + 32 * intdiv(i, 32)) + i;
+    }
+    else if (intdiv(i, 1024) === 1) {
+        result = 0 + 32 + (32 * (intdiv(i - 1024, 32))) + (i - 1024);
+    }
+    else if (intdiv(i, 1024) === 2) {
+        result = 2048 + (32 * (intdiv(i - 2048, 32))) + (i - 2048);
+    }
+    else if (intdiv(i, 1024) === 3) {
+        result = 2048 + 32 + (32 * (intdiv(i - 3072, 32))) + (i - 3072);
+    }
+    else if (intdiv(i, 1024) === 4) {
+        result = 4096 + (32 * (intdiv(i - 4096, 32))) + (i - 4096);
+    }
+    else if (intdiv(i, 1024) === 5) {
+        result = 4096 + 32 + (32 * (intdiv(i - 5120, 32))) + (i - 5120);
+    }
+    else if (intdiv(i, 1024) === 6) {
+        result = 6144 + (32 * (intdiv(i - 6144, 32))) + (i - 6144);
+    }
+    else if (intdiv(i, 1024) === 7) {
+        result = 6144 + 32 + (32 * (intdiv(i - 7168, 32))) + (i - 7168);
+    }
+    else {
+        throw new Error("Undefined: " + vram.toString(16));
+    }
+    if (i >= 4096) {
+        // submap
+        throw new Error("Unimplemented");
+    }
+    return result;
 }

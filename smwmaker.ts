@@ -14608,6 +14608,10 @@ function loadOW() {
     for (let i = 0; i < index; i+=4) {
         const from = (eventsData[i+1] << 8) | eventsData[i];
         const to = (eventsData[i+3] << 8) | eventsData[i+2];
+
+        console.log("from: ", from.toString(16));
+        console.log("to: ", to.toString(16));
+        
     }
 
     for (let i = 0; i < 2048; i++) {
@@ -14637,7 +14641,7 @@ function loadOW() {
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-/*
+
 function convertVram2linear(vram: number): number {
     let i: number = (vram) / 2;
 
@@ -14665,10 +14669,9 @@ function convertVram2linear(vram: number): number {
 
     if (i >= 4096) {
         // submap
-        i += 64;
-        i += 2;
+        throw new Error("Unimplemented");
     }
 
     return result; 
 }
-*/
+
