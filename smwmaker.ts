@@ -14481,6 +14481,22 @@ function loadOW() {
 
     }   
 
+    // load event tiles
+
+    let eventTiles = [];
+    let eventTilesSettings = [];
+
+    let settings = decompress_rle1(fileData.slice(snes2pc(0x0C8D00)));
+
+    for (let i = 0; i < 0x900 + 0x400; i+=1) {
+        const tileNum = read1(0x0C8000 + i);
+        const tileSetting = settings[i];
+        const realTileNum = ((tileSetting & 0b11) << 8) | tileNum;
+        
+        eventTiles.push(realTileNum);
+        eventTilesSettings.push(tileSetting);
+    }
+
     console.log("wait...");
 
     for (let i = 0; i < result.length; i++) {
@@ -14534,9 +14550,6 @@ function loadOW() {
         ctx!.putImageData(dnleft, (i%32)*16, intdiv(i, 32)*16 + 8 + factor);
         ctx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8 + factor);
     }
-
-
-    
 
     console.log("done...");
     
