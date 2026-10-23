@@ -13032,10 +13032,16 @@ function loadOW() {
     let layer1TilesHighByte;
     if (isLMModified) {
         layer1Tiles = (read1(0x04DCC1) << 16) | read2(0x04DCBC);
-        layer1TilesHighByte = decompress_lz2(fileData.slice((read1(0x04D827) << 16) | read2(0x04D821)));
+        try {
+            layer1TilesHighByte = decompress_lz2(fileData.slice(snes2pc((read1(0x04D827) << 16) | read2(0x04D821))));
+        }
+        catch (e) {
+            layer1TilesHighByte = null;
+        }
     }
     else {
         layer1Tiles = 0x05D000;
+        layer1TilesHighByte = null;
     }
     for (let i = 0; i < 0xBF; i++) {
         const tile = new Tile();
@@ -13075,7 +13081,11 @@ function loadOW() {
         for (let y = 0; y < 64; y++) {
             const index = (((y >>> 4) & 0b11) << 9) | (((x >>> 4) & 0b1) << 8) | ((y & 0b1111) << 4) | (x & 0b1111);
             const tile = read1(0x0CF7DF + index);
-            owLayer1Tiles[32 * y + x] = tile;
+            let highByte = 0;
+            if (layer1TilesHighByte !== null) {
+                highByte = (layer1TilesHighByte)[index];
+            }
+            owLayer1Tiles[32 * y + x] = (highByte << 8) | tile;
         }
     }
     for (let i = 0; i < 32; i++) {
