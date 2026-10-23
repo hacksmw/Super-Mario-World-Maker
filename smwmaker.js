@@ -13153,9 +13153,6 @@ function loadOW() {
     for (let i = 0; i < index; i += 4) {
         const from = (eventsData[i + 1] << 8) | eventsData[i];
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
-        const linearTo = convertVram2linear(to);
-        console.log("from: ", from.toString(16));
-        console.log("to: ", linearTo.toString(16));
     }
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
