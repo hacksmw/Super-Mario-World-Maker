@@ -146,6 +146,9 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let eventTiles: number[], eventTilesSettings: number[];
+let owLayer2Tiles: number[];
+let owLayer2TilesSettings: number[];
 let owLayer1Tiles: number[];
 let owMap16: Tile[];
 let layer1Data: Obj[], layer2Data: Obj[];
@@ -14339,6 +14342,9 @@ function loadOW() {
 
     let result = new Array(64 * 128);
     let result2 = new Array(64 * 128);
+    
+    owLayer2Tiles = result;
+    owLayer2TilesSettings = result2;
         
     for (let i = 0; i < tileNums.length; i++) {  
         if (intdiv(i, 1024) === 0) {
@@ -14483,8 +14489,8 @@ function loadOW() {
 
     // load event tiles
 
-    let eventTiles = [];
-    let eventTilesSettings = [];
+    eventTiles = [];
+    eventTilesSettings = [];
 
     let settings = decompress_rle1(fileData.slice(snes2pc(0x0C8D00)));
 

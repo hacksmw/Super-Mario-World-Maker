@@ -128,6 +128,9 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let eventTiles, eventTilesSettings;
+let owLayer2Tiles;
+let owLayer2TilesSettings;
 let owLayer1Tiles;
 let owMap16;
 let layer1Data, layer2Data;
@@ -12944,6 +12947,8 @@ function loadOW() {
     tileSettings = decompress_rle1(fileData.slice(snes2pc(0x04C02B)));
     let result = new Array(64 * 128);
     let result2 = new Array(64 * 128);
+    owLayer2Tiles = result;
+    owLayer2TilesSettings = result2;
     for (let i = 0; i < tileNums.length; i++) {
         if (intdiv(i, 1024) === 0) {
             result[(0 + 32 * intdiv(i, 32)) + i] = tileNums[i];
@@ -13059,8 +13064,8 @@ function loadOW() {
         owLayer1Tiles[1024 + i * 32 + 0] = t1;
     }
     // load event tiles
-    let eventTiles = [];
-    let eventTilesSettings = [];
+    eventTiles = [];
+    eventTilesSettings = [];
     let settings = decompress_rle1(fileData.slice(snes2pc(0x0C8D00)));
     for (let i = 0; i < 0x900 + 0x400; i += 1) {
         const tileNum = read1(0x0C8000 + i);
