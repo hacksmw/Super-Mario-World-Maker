@@ -12948,8 +12948,17 @@ function loadOW() {
     step = 0;
     let tileNums;
     let tileSettings;
-    tileNums = decompress_rle1(fileData.slice(snes2pc(0x04A533)));
-    tileSettings = decompress_rle1(fileData.slice(snes2pc(0x04C02B)));
+    let adr, adr2;
+    if (isLMModified) {
+        adr = (read1(0x04DC79) << 16) | read2(0x04DC72);
+        adr2 = (read1(0x04DC79) << 16) | read2(0x04DC8D);
+    }
+    else {
+        adr = 0x04A533;
+        adr2 = 0x04C02B;
+    }
+    tileNums = decompress_rle1(fileData.slice(snes2pc(adr)));
+    tileSettings = decompress_rle1(fileData.slice(snes2pc(adr2)));
     let result = new Array(64 * 128);
     let result2 = new Array(64 * 128);
     owLayer2Tiles = result;
@@ -13019,7 +13028,15 @@ function loadOW() {
         result2[4096 + i * 64 + 0] = s1;
     }
     owMap16 = [];
-    let layer1Tiles = 0x05D000;
+    let layer1Tiles;
+    let layer1TilesHighByte;
+    if (isLMModified) {
+        layer1Tiles = (read1(0x04DCC1) << 16) | read2(0x04DCBC);
+        layer1TilesHighByte = decompress_lz2(fileData.slice((read1(0x04D827) << 16) | read2(0x04D821)));
+    }
+    else {
+        layer1Tiles = 0x05D000;
+    }
     for (let i = 0; i < 0xBF; i++) {
         const tile = new Tile();
         // YXPCCCTT
@@ -13071,9 +13088,17 @@ function loadOW() {
     // load event tiles
     eventTiles = [];
     eventTilesSettings = [];
-    let settings = decompress_rle1(fileData.slice(snes2pc(0x0C8D00)));
+    if (isLMModified) {
+        adr = (read1(0x04DD4A) << 16) | read2(0x04DD45);
+        adr2 = read3(0x04EAF5);
+    }
+    else {
+        adr = 0x0C8D00;
+        adr2 = 0x0C8000;
+    }
+    let settings = decompress_rle1(fileData.slice(snes2pc(adr)));
     for (let i = 0; i < 0x900 + 0x400; i += 1) {
-        const tileNum = read1(0x0C8000 + i);
+        const tileNum = read1(adr2 + i);
         const tileSetting = settings[i];
         const realTileNum = ((tileSetting & 0b11) << 8) | tileNum;
         eventTiles.push(realTileNum);
@@ -13081,12 +13106,20 @@ function loadOW() {
     }
     eventsData = [];
     eventsIndex = [];
+    if (isLMModified) {
+        adr = read3(0x04E49F);
+        adr2 = read3(0x04E471);
+    }
+    else {
+        adr = 0x04DD8D;
+        adr2 = 0x04E359;
+    }
     for (let i = 0; i < 1484; i++) {
-        const eventData = read1(0x04DD8D + i);
+        const eventData = read1(adr + i);
         eventsData.push(eventData);
     }
     for (let i = 0; i < 242; i++) {
-        const eventIndex = read1(0x04E359 + i);
+        const eventIndex = read1(adr2 + i);
         eventsIndex.push(eventIndex);
     }
     // render
@@ -13120,6 +13153,9 @@ function loadOW() {
     for (let i = 0; i < index; i += 4) {
         const from = (eventsData[i + 1] << 8) | eventsData[i];
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
+        const linearTo = convertVram2linear(to);
+        console.log("from: ", from.toString(16));
+        console.log("to: ", linearTo.toString(16));
     }
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
