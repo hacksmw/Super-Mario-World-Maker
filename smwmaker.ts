@@ -146,6 +146,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let owLayer1Tiles: number[];
 let owMap16: Tile[];
 let layer1Data: Obj[], layer2Data: Obj[];
 let exits: Exit[];
@@ -14322,10 +14323,6 @@ function btnOW_onclick() {
     ctx!.putImageData(result, 0, 0);
 }
 
-function drawHorizontal() {
-
-}
-
 function loadOW() {
     const canvas = document.createElement("canvas");
 
@@ -14459,6 +14456,16 @@ function loadOW() {
         owMap16.push(tile);
     }
 
+    owLayer1Tiles = new Array(2048);
+
+    for (let x = 0; x < 32; x++) {
+        for (let y = 0; y < 64; y++) {
+            const index = (((y >>> 4) & 0b11) << 9) | (((x >>> 4) & 0b1) << 8) | ((y & 0b1111) << 4) | (x & 0b1111);
+            const tile = read1(0x0CF7DF + index);
+            owLayer1Tiles[32*y+x] = tile;
+        }
+    }
+
     console.log("wait...");
 
     for (let i = 0; i < result.length; i++) {
@@ -14490,6 +14497,24 @@ function loadOW() {
         ctx!.putImageData(dnleft, (i%16)*16, 128*8+intdiv(i, 16)*16 + 8);
         ctx!.putImageData(dnright, (i%16)*16 + 8, 128*8+intdiv(i, 16)*16 + 8);
     }
+
+    for (let i = 0; i < 2048; i++) {
+        let index = owLayer1Tiles[i];
+
+        if (index === 0) continue;
+
+        let upleft = getOW8x8Img(owMap16[index].upleft.gfx, owMap16[index].upleft.pal, !!(owMap16[index].upleft.xflip), !!(owMap16[index].upleft.yflip));
+        let upright = getOW8x8Img(owMap16[index].upright.gfx, owMap16[index].upright.pal, !!(owMap16[index].upright.xflip), !!(owMap16[index].upright.yflip));
+        let dnleft = getOW8x8Img(owMap16[index].lowleft.gfx, owMap16[index].lowleft.pal, !!(owMap16[index].lowleft.xflip), !!(owMap16[index].lowleft.yflip));
+        let dnright = getOW8x8Img(owMap16[index].lowright.gfx, owMap16[index].lowright.pal, !!(owMap16[index].lowright.xflip), !!(owMap16[index].lowright.yflip));
+
+        ctx!.putImageData(upleft, (i%32)*16, intdiv(i, 32)*16 + 0);
+        ctx!.putImageData(upright, (i%32)*16 + 8, intdiv(i, 32)*16 + 0);
+        ctx!.putImageData(dnleft, (i%32)*16, intdiv(i, 32)*16 + 8);
+        ctx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8);
+    }
+
+
     
 
     console.log("done...");
