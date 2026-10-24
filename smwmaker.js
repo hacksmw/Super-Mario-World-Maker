@@ -13163,8 +13163,10 @@ function loadOW() {
     for (let i = 0; i < index; i += 4) {
         const from = (eventsData[i + 1] << 8) | eventsData[i];
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
+        const linearTo = convertVram2linear(to);
         console.log("from: ", from.toString(16));
         console.log("to: ", to.toString(16));
+        console.log("linearTo: ", linearTo.toString(16));
     }
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
@@ -13218,7 +13220,8 @@ function convertVram2linear(vram) {
     }
     if (i >= 4096) {
         // submap
-        throw new Error("Unimplemented");
+        result += 64;
+        result += 2;
     }
     return result;
 }
