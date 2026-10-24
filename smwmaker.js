@@ -12939,6 +12939,49 @@ function btnOW_onclick() {
     const result = loadOW();
     ctx.putImageData(result, 0, 0);
 }
+function convertVram2linear(vram) {
+    let i = (vram) / 2;
+    let result;
+    if (intdiv(i, 1024) === 0) {
+        result = (0 + 32 * intdiv(i, 32)) + i;
+    }
+    else if (intdiv(i, 1024) === 1) {
+        result = 0 + 32 + (32 * (intdiv(i - 1024, 32))) + (i - 1024);
+    }
+    else if (intdiv(i, 1024) === 2) {
+        result = 2048 + (32 * (intdiv(i - 2048, 32))) + (i - 2048);
+    }
+    else if (intdiv(i, 1024) === 3) {
+        result = 2048 + 32 + (32 * (intdiv(i - 3072, 32))) + (i - 3072);
+    }
+    else if (intdiv(i, 1024) === 4) {
+        result = 4096 + (32 * (intdiv(i - 4096, 32))) + (i - 4096);
+    }
+    else if (intdiv(i, 1024) === 5) {
+        result = 4096 + 32 + (32 * (intdiv(i - 5120, 32))) + (i - 5120);
+    }
+    else if (intdiv(i, 1024) === 6) {
+        result = 6144 + (32 * (intdiv(i - 6144, 32))) + (i - 6144);
+    }
+    else if (intdiv(i, 1024) === 7) {
+        result = 6144 + 32 + (32 * (intdiv(i - 7168, 32))) + (i - 7168);
+    }
+    else {
+        throw new Error("Undefined: " + vram.toString(16));
+    }
+    if (i >= 4096) {
+        // submap
+        result += 64;
+        if (result >= 4096 + 4032) {
+            result -= 4032;
+        }
+        result += 2;
+        if ((result % 64) === 0 || (result % 64) === 1) {
+            result -= 64;
+        }
+    }
+    return result;
+}
 function loadOW() {
     const canvas = document.createElement("canvas");
     canvas.width = 160 * 8;
@@ -13156,7 +13199,6 @@ function loadOW() {
         ctx.putImageData(dnleft, (i % 16) * 16, 128 * 8 + intdiv(i, 16) * 16 + 8);
         ctx.putImageData(dnright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 8);
     }
-    eventNum = 1;
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];
     const delta = ((eventsIndex[(eventNum + 1) * 2 + 1] << 8) | eventsIndex[(eventNum + 1) * 2]) - eventIndex;
     const index = eventIndex * 4 + delta * 4;
@@ -13165,8 +13207,38 @@ function loadOW() {
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
         const linearTo = convertVram2linear(to);
         console.log("from: ", from.toString(16));
-        console.log("to: ", to.toString(16));
-        console.log("linearTo: ", linearTo.toString(16));
+        console.log("x: ", (linearTo % 64).toString(16));
+        console.log("y: ", (intdiv(linearTo, 64)).toString(16));
+        let x = (linearTo % 64);
+        let y = (intdiv(linearTo, 64));
+        if (from >= 0x900) {
+            for (let j = 0; j < 4; j++) {
+                const tile = eventTiles[from + j];
+                const sett = eventTilesSettings[from + j];
+                const flipy = sett >>> 7;
+                const flipx = (sett >>> 6) & 1;
+                const priority = (sett >>> 5) & 1;
+                const pal = (sett >>> 2) & 0b111;
+                const high = (sett >>> 0) & 0b11;
+                const realTile = (high << 8) | tile;
+                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy);
+                ctx.putImageData(img, ((x + (j % 2))) * 8, ((y + (intdiv(j, 2))) * 8));
+            }
+        }
+        else {
+            for (let j = 0; j < 36; j++) {
+                const tile = eventTiles[from + j];
+                const sett = eventTilesSettings[from + j];
+                const flipy = sett >>> 7;
+                const flipx = (sett >>> 6) & 1;
+                const priority = (sett >>> 5) & 1;
+                const pal = (sett >>> 2) & 0b111;
+                const high = (sett >>> 0) & 0b11;
+                const realTile = (high << 8) | tile;
+                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy);
+                ctx.putImageData(img, ((x + (j % 6))) * 8, ((y + (intdiv(j, 6))) * 8));
+            }
+        }
     }
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
@@ -13187,47 +13259,4 @@ function loadOW() {
     }
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-function convertVram2linear(vram) {
-    let i = (vram) / 2;
-    let result;
-    if (intdiv(i, 1024) === 0) {
-        result = (0 + 32 * intdiv(i, 32)) + i;
-    }
-    else if (intdiv(i, 1024) === 1) {
-        result = 0 + 32 + (32 * (intdiv(i - 1024, 32))) + (i - 1024);
-    }
-    else if (intdiv(i, 1024) === 2) {
-        result = 2048 + (32 * (intdiv(i - 2048, 32))) + (i - 2048);
-    }
-    else if (intdiv(i, 1024) === 3) {
-        result = 2048 + 32 + (32 * (intdiv(i - 3072, 32))) + (i - 3072);
-    }
-    else if (intdiv(i, 1024) === 4) {
-        result = 4096 + (32 * (intdiv(i - 4096, 32))) + (i - 4096);
-    }
-    else if (intdiv(i, 1024) === 5) {
-        result = 4096 + 32 + (32 * (intdiv(i - 5120, 32))) + (i - 5120);
-    }
-    else if (intdiv(i, 1024) === 6) {
-        result = 6144 + (32 * (intdiv(i - 6144, 32))) + (i - 6144);
-    }
-    else if (intdiv(i, 1024) === 7) {
-        result = 6144 + 32 + (32 * (intdiv(i - 7168, 32))) + (i - 7168);
-    }
-    else {
-        throw new Error("Undefined: " + vram.toString(16));
-    }
-    if (i >= 4096) {
-        // submap
-        result += 64;
-        if (result >= 4096 + 4032) {
-            result -= 4032;
-        }
-        result += 2;
-        if ((result % 64) === 0 || (result % 64) === 1) {
-            result -= 64;
-        }
-    }
-    return result;
 }
