@@ -14677,6 +14677,9 @@ function convertVram2linear(vram: number): number {
             result -= 4032;
         }
         result += 2;
+        if ((result % 64) === 0 || (result % 64) === 1) {
+            result -= 64;
+        }
     }
 
     return result; 
