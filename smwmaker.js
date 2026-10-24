@@ -79,6 +79,11 @@ class Layer1Event {
     y = 0;
     vramLoc = 0;
 }
+class OWEvent {
+    layer1Event = null;
+    layer2Event = null;
+    silentEvent = null;
+}
 class ExAni {
     used = 0;
     type = 0;
@@ -134,6 +139,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let owEvents;
 let beforeTiles, afterTiles;
 let vramLocThatReveals;
 let locOfL1tileThatReveals;
@@ -13167,6 +13173,10 @@ function loadOW() {
         eventTiles.push(realTileNum);
         eventTilesSettings.push(tileSetting);
     }
+    owEvents = new Array(0x78);
+    for (let i = 0; i < owEvents.length; i++) {
+        owEvents[i] = new OWEvent();
+    }
     eventsData = [];
     eventsIndex = [];
     if (isLMModified) {
@@ -13213,6 +13223,7 @@ function loadOW() {
         layer1Event.x = x;
         layer1Event.y = x;
         layer1Event.vramLoc = vramLoc;
+        owEvents[i].layer1Event = layer1Event;
         layer1Events.push(layer1Event);
         console.log("s: ", s.toString(16));
         console.log("y: ", y.toString(16));
