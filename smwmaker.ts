@@ -146,6 +146,9 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let beforeTiles: any, afterTiles: any;
+let vramLocThatReveals: number[];
+let locOfL1tileThatReveals: number[];
 let eventsData: number[];
 let eventsIndex: number[];
 let eventNum: number, step: number;
@@ -14606,6 +14609,16 @@ function loadOW() {
         eventsIndex.push(eventIndex);
     }
 
+    beforeTiles = [];
+    afterTiles = [];
+
+    for (let i = 0; i < 22; i++) {
+        const before = read1(0x04DA1D + i);
+        const after = read1(0x04DA33  + i);
+        beforeTiles.push(before);
+        afterTiles.push(after);
+    }
+
     if (isLMModified) {
         adr = read3(0x04EDBE);
         adr2 = read3(0x04EDB8);
@@ -14614,13 +14627,19 @@ function loadOW() {
         adr2 = 0x04D93D;
     }
 
-    for (let i = 0; i <= 0x15; i++) {
+    locOfL1tileThatReveals = [];
+    vramLocThatReveals = [];
+
+    for (let i = 0; i <= 0x10; i++) {
         let data = (read2(adr + 2 * i));
-        const vramLoc = (read2(adr2 + 2 * i));
+        const vramLoc = (read2(adr2 + 2 * i));      
 
         let s = (data >>> 10) & 0b1111;
         let y = ((data >>> 4) & 0b1111);
         let x = ((data >>> 0) & 0b1111);
+
+        locOfL1tileThatReveals.push(data);
+        vramLocThatReveals.push(vramLoc); 
 
         console.log("s: ", s.toString(16));
         console.log("y: ", y.toString(16));
