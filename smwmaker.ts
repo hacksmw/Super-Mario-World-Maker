@@ -14673,6 +14673,9 @@ function convertVram2linear(vram: number): number {
     if (i >= 4096) {
         // submap
         result += 64;
+        if (result >= 4096 + 4032) {
+            result -= 4032;
+        }
         result += 2;
     }
 
