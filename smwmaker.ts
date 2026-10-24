@@ -93,9 +93,19 @@ class Layer1Event {
     vramLoc: number = 0;
 }
 
+class Layer2EventTile {
+    src: number = 0;
+    dest: number = 0;
+}
+
+class Layer2Event {
+    tiles: Nullable<Layer2EventTile[]> = null;
+    length: number = 0;
+}
+
 class OWEvent {
     layer1Event: Nullable<Layer1Event> = null;
-    layer2Event: any = null;
+    layer2Event: Nullable<Layer2Event> = null;
     silentEvent: any = null;
 }
 
@@ -158,6 +168,7 @@ class LT3Tile {
     flipx: number = 0;
     flipy: number = 0;
 }
+
 
 let owEvents: OWEvent[];
 let beforeTiles: any, afterTiles: any;
@@ -14630,6 +14641,39 @@ function loadOW() {
         eventsIndex.push(eventIndex);
     }
 
+    for (let i = 0; i <= 0x2; i++) {
+        const eventIndex = read2(adr2 + (i*2));
+        const delta = read2(adr2 + ((i+1)*2)) - eventIndex;
+
+        let tiles: Layer2EventTile[] = [];
+        
+        for (let j = 0; j < delta; j++) {
+            let srcLow = eventsData[eventIndex + (j * 4) + 0];
+            let srcHigh = eventsData[eventIndex + (j * 4) + 1];
+            let destLow = eventsData[eventIndex + (j * 4) + 2];
+            let destHigh = eventsData[eventIndex + (j * 4) + 3];
+
+            let src = (srcHigh << 8) | srcLow;
+            let dest = (destHigh << 8) | destLow;
+
+            let linearTo = convertVram2linear(dest);
+
+            let tile: Layer2EventTile = {
+                src: src,
+                dest: linearTo,
+            };
+
+            tiles.push(tile);
+        }
+        
+        const layer2Event: Layer2Event = {
+            tiles: tiles,
+            length: delta,
+        };
+
+        owEvents[i].layer2Event = layer2Event;
+    }
+
     beforeTiles = [];
     afterTiles = [];
 
@@ -14668,14 +14712,6 @@ function loadOW() {
         owEvents[i].layer1Event = layer1Event;
 
         layer1Events.push(layer1Event);
-
-        
-
-        console.log("s: ", s.toString(16));
-        console.log("y: ", y.toString(16));
-        console.log("x: ", x.toString(16));
-        console.log("data: " + data.toString(16));
-        console.log("vramLoc: " + vramLoc.toString(16));
     }
 
     // render

@@ -79,6 +79,14 @@ class Layer1Event {
     y = 0;
     vramLoc = 0;
 }
+class Layer2EventTile {
+    src = 0;
+    dest = 0;
+}
+class Layer2Event {
+    tiles = null;
+    length = 0;
+}
 class OWEvent {
     layer1Event = null;
     layer2Event = null;
@@ -13195,6 +13203,30 @@ function loadOW() {
         const eventIndex = read1(adr2 + i);
         eventsIndex.push(eventIndex);
     }
+    for (let i = 0; i <= 0x2; i++) {
+        const eventIndex = read2(adr2 + (i * 2));
+        const delta = read2(adr2 + ((i + 1) * 2)) - eventIndex;
+        let tiles = [];
+        for (let j = 0; j < delta; j++) {
+            let srcLow = eventsData[eventIndex + (j * 4) + 0];
+            let srcHigh = eventsData[eventIndex + (j * 4) + 1];
+            let destLow = eventsData[eventIndex + (j * 4) + 2];
+            let destHigh = eventsData[eventIndex + (j * 4) + 3];
+            let src = (srcHigh << 8) | srcLow;
+            let dest = (destHigh << 8) | destLow;
+            let linearTo = convertVram2linear(dest);
+            let tile = {
+                src: src,
+                dest: linearTo,
+            };
+            tiles.push(tile);
+        }
+        const layer2Event = {
+            tiles: tiles,
+            length: delta,
+        };
+        owEvents[i].layer2Event = layer2Event;
+    }
     beforeTiles = [];
     afterTiles = [];
     for (let i = 0; i < 22; i++) {
@@ -13225,11 +13257,6 @@ function loadOW() {
         layer1Event.vramLoc = vramLoc;
         owEvents[i].layer1Event = layer1Event;
         layer1Events.push(layer1Event);
-        console.log("s: ", s.toString(16));
-        console.log("y: ", y.toString(16));
-        console.log("x: ", x.toString(16));
-        console.log("data: " + data.toString(16));
-        console.log("vramLoc: " + vramLoc.toString(16));
     }
     // render
     console.log("wait...");
