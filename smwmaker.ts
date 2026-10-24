@@ -14606,6 +14606,29 @@ function loadOW() {
         eventsIndex.push(eventIndex);
     }
 
+    if (isLMModified) {
+        adr = read3(0x04EDBE);
+        adr2 = read3(0x04EDB8);
+    } else {
+        adr = 0x04D85D;
+        adr2 = 0x04D93D;
+    }
+
+    for (let i = 0; i <= 0x15; i++) {
+        let data = (read2(adr + 2 * i));
+        const vramLoc = (read2(adr2 + 2 * i));
+
+        let s = (data >>> 10) & 0b1111;
+        let y = ((data >>> 4) & 0b1111);
+        let x = ((data >>> 0) & 0b1111);
+
+        console.log("s: ", s.toString(16));
+        console.log("y: ", y.toString(16));
+        console.log("x: ", x.toString(16));
+        console.log("data: " + data.toString(16));
+        console.log("vramLoc: " + vramLoc.toString(16));
+    }
+
     // render
 
     console.log("wait...");
@@ -14640,6 +14663,7 @@ function loadOW() {
         ctx!.putImageData(dnright, (i%16)*16 + 8, 128*8+intdiv(i, 16)*16 + 8);
     }
 
+    /*
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];  
     const delta = ((eventsIndex[(eventNum+1) * 2 + 1] << 8) | eventsIndex[(eventNum+1) * 2]) - eventIndex;
     const index = eventIndex * 4 + delta * 4;
@@ -14688,6 +14712,7 @@ function loadOW() {
         }
         
     }
+    */
 
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
@@ -14710,9 +14735,11 @@ function loadOW() {
         ctx!.putImageData(dnleft, (i%32)*16, intdiv(i, 32)*16 + 8 + factor);
         ctx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8 + factor);
     }
+
+    
+    
     
     console.log("done...");
     
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
-
