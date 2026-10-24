@@ -73,6 +73,12 @@ class Obj {
         this.settings = settings;
     }
 }
+class Layer1Event {
+    subscreen = 0;
+    x = 0;
+    y = 0;
+    vramLoc = 0;
+}
 class ExAni {
     used = 0;
     type = 0;
@@ -131,6 +137,7 @@ class LT3Tile {
 let beforeTiles, afterTiles;
 let vramLocThatReveals;
 let locOfL1tileThatReveals;
+let layer1Events;
 let eventsData;
 let eventsIndex;
 let eventNum, step;
@@ -13194,16 +13201,19 @@ function loadOW() {
         adr = 0x04D85D;
         adr2 = 0x04D93D;
     }
-    locOfL1tileThatReveals = [];
-    vramLocThatReveals = [];
-    for (let i = 0; i <= 0x10; i++) {
+    layer1Events = [];
+    for (let i = 0; i <= 0x77; i++) {
         let data = (read2(adr + 2 * i));
         const vramLoc = (read2(adr2 + 2 * i));
         let s = (data >>> 10) & 0b1111;
         let y = ((data >>> 4) & 0b1111);
         let x = ((data >>> 0) & 0b1111);
-        locOfL1tileThatReveals.push(data);
-        vramLocThatReveals.push(vramLoc);
+        const layer1Event = new Layer1Event();
+        layer1Event.subscreen = s;
+        layer1Event.x = x;
+        layer1Event.y = x;
+        layer1Event.vramLoc = vramLoc;
+        layer1Events.push(layer1Event);
         console.log("s: ", s.toString(16));
         console.log("y: ", y.toString(16));
         console.log("x: ", x.toString(16));
