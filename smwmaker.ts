@@ -14663,7 +14663,7 @@ function loadOW() {
         ctx!.putImageData(dnright, (i%16)*16 + 8, 128*8+intdiv(i, 16)*16 + 8);
     }
 
-    /*
+    
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];  
     const delta = ((eventsIndex[(eventNum+1) * 2 + 1] << 8) | eventsIndex[(eventNum+1) * 2]) - eventIndex;
     const index = eventIndex * 4 + delta * 4;
@@ -14712,7 +14712,6 @@ function loadOW() {
         }
         
     }
-    */
 
     for (let i = 0; i < 2048; i++) {
         let index = owLayer1Tiles[i];
