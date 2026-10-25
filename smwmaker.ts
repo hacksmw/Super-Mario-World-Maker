@@ -86,6 +86,13 @@ class Obj {
     }
 }
 
+class DestructionEvent {
+    submap: number = 0;
+    x: number = 0;
+    y: number = 0;
+    vramLoc: number = 0;
+}
+
 class Layer1Event {
     subscreen: number = 0;
     x: number = 0;
@@ -104,8 +111,9 @@ class Layer2Event {
 }
 
 class OWEvent {
-    layer1Event: Nullable<Layer1Event> = null;
+    destructionEvent: Nullable<DestructionEvent[]> = null;
     layer2Event: Nullable<Layer2Event> = null;
+    layer1Event: Nullable<Layer1Event> = null;
     silentEvent: any = null;
 }
 
@@ -14425,7 +14433,7 @@ function loadOW() {
     let tileNums;
     let tileSettings;
 
-    let adr: number, adr2: number;
+    let adr: number, adr2: number, adr3: number;
 
     if (isLMModified) {
         adr = (read1(0x04DC79)<<16)|read2(0x04DC72);
@@ -14714,6 +14722,13 @@ function loadOW() {
         let y = ((data >>> 4) & 0b1111);
         let x = ((data >>> 0) & 0b1111);
 
+        if (s) {
+            x++;
+            if (x === 32) {
+                x = 0;
+            }
+        }
+
         const layer1Event: Layer1Event = new Layer1Event();
 
         layer1Event.subscreen = s;
@@ -14732,6 +14747,7 @@ function loadOW() {
             tileNum: [],
             location: [],
         };
+        owEvents[i].destructionEvent = [];
     }
 
     if (!isLMModified) {
@@ -14758,12 +14774,14 @@ function loadOW() {
             owEvents[eventNum].silentEvent.tileNum.push(tileNum);
             owEvents[eventNum].silentEvent.location.push(convertedLoc);    
             
+            /*
             console.log("--silent event--");
             console.log("eventNum: ", eventNum.toString(16));
             console.log("isLayer2: ", isLayer2);
             console.log("tileNum: ", tileNum.toString(16));
             console.log("x: ", x.toString(16));
             console.log("y: ", y.toString(16));
+            */
         }
     } else {
         const table = read3(read3(0x04E9F8)+0x0D);
@@ -14777,9 +14795,11 @@ function loadOW() {
             const index = intdiv(read2(table + i*2), 2);
             const delta = intdiv(read2(table + (i+1)*2), 2) - index;
 
+            /*
             console.log("eventNum: ", i.toString(16));
             console.log("index: ", index);
             console.log("delta: ", delta);
+            */
 
             for (let j = index; j < index + delta; j++) {
                 const isLayer2 = read1(layer2Table + j);
@@ -14803,13 +14823,60 @@ function loadOW() {
                 owEvents[i].silentEvent.tileNum.push(tileNum);
                 owEvents[i].silentEvent.location.push(convertedLoc);  
 
+                /*
                 console.log("--silent event--");
                 console.log("isLayer2: ", isLayer2);
                 console.log("tileNum: ", tileNum.toString(16));
                 console.log("x: ", x.toString(16));
                 console.log("y: ", y.toString(16));
+                */
             }
         }
+    }
+
+    // destruction events
+
+    if (isLMModified) {
+        adr = read3(0x04E69C);
+        adr2 = read3(0x04EEC9);
+        adr3 = read3(0x04E67C);
+    } else {
+        adr = 0x04E5B6;
+        adr2 = 0x04E587;
+        adr3 = 0x04E5D6;
+    }
+
+    for (let i = 0; i < 0x10; i++) {
+        const value = read1(adr3 + i);
+
+        const loc = read2(adr + i*2);
+        
+        const vramLoc = read2(adr2 + i*2);
+
+        let s = (loc >>> 10) & 0b1111;
+        let y = ((loc >>> 4) & 0b1111);
+        let x = ((loc >>> 0) & 0b1111);
+
+        if (s) {
+            x++;
+            if (x === 32) {
+                x = 0;
+            }
+        }
+        
+        console.log("value: ", value.toString(16));
+        console.log("s: ", s);
+        console.log("x: ", x.toString(16));
+        console.log("y: ", y.toString(16));
+
+        let tile = {
+            submap: s,
+            x: x,
+            y: y,
+            vramLoc: vramLoc,
+        };
+
+        owEvents[value].destructionEvent!.push(tile);
     }
 
     // render

@@ -73,6 +73,12 @@ class Obj {
         this.settings = settings;
     }
 }
+class DestructionEvent {
+    submap = 0;
+    x = 0;
+    y = 0;
+    vramLoc = 0;
+}
 class Layer1Event {
     subscreen = 0;
     x = 0;
@@ -88,8 +94,9 @@ class Layer2Event {
     length = 0;
 }
 class OWEvent {
-    layer1Event = null;
+    destructionEvent = null;
     layer2Event = null;
+    layer1Event = null;
     silentEvent = null;
 }
 class ExAni {
@@ -13026,7 +13033,7 @@ function loadOW() {
     step = 0;
     let tileNums;
     let tileSettings;
-    let adr, adr2;
+    let adr, adr2, adr3;
     if (isLMModified) {
         adr = (read1(0x04DC79) << 16) | read2(0x04DC72);
         adr2 = (read1(0x04DC79) << 16) | read2(0x04DC8D);
@@ -13261,6 +13268,12 @@ function loadOW() {
         let s = (data >>> 10) & 0b1111;
         let y = ((data >>> 4) & 0b1111);
         let x = ((data >>> 0) & 0b1111);
+        if (s) {
+            x++;
+            if (x === 32) {
+                x = 0;
+            }
+        }
         const layer1Event = new Layer1Event();
         layer1Event.subscreen = s;
         layer1Event.x = x;
@@ -13275,6 +13288,7 @@ function loadOW() {
             tileNum: [],
             location: [],
         };
+        owEvents[i].destructionEvent = [];
     }
     if (!isLMModified) {
         for (let i = 0; i < 44; i++) {
@@ -13297,12 +13311,14 @@ function loadOW() {
             owEvents[eventNum].silentEvent.isLayer2.push(isLayer2);
             owEvents[eventNum].silentEvent.tileNum.push(tileNum);
             owEvents[eventNum].silentEvent.location.push(convertedLoc);
+            /*
             console.log("--silent event--");
             console.log("eventNum: ", eventNum.toString(16));
             console.log("isLayer2: ", isLayer2);
             console.log("tileNum: ", tileNum.toString(16));
             console.log("x: ", x.toString(16));
             console.log("y: ", y.toString(16));
+            */
         }
     }
     else {
@@ -13314,9 +13330,11 @@ function loadOW() {
         for (let i = 0; i <= 0x10; i++) {
             const index = intdiv(read2(table + i * 2), 2);
             const delta = intdiv(read2(table + (i + 1) * 2), 2) - index;
+            /*
             console.log("eventNum: ", i.toString(16));
             console.log("index: ", index);
             console.log("delta: ", delta);
+            */
             for (let j = index; j < index + delta; j++) {
                 const isLayer2 = read1(layer2Table + j);
                 const tileNum = read2(tileNumTable + 2 * j);
@@ -13336,13 +13354,51 @@ function loadOW() {
                 owEvents[i].silentEvent.isLayer2.push(isLayer2);
                 owEvents[i].silentEvent.tileNum.push(tileNum);
                 owEvents[i].silentEvent.location.push(convertedLoc);
+                /*
                 console.log("--silent event--");
                 console.log("isLayer2: ", isLayer2);
                 console.log("tileNum: ", tileNum.toString(16));
                 console.log("x: ", x.toString(16));
                 console.log("y: ", y.toString(16));
+                */
             }
         }
+    }
+    // destruction events
+    if (isLMModified) {
+        adr = read3(0x04E69C);
+        adr2 = read3(0x04EEC9);
+        adr3 = read3(0x04E67C);
+    }
+    else {
+        adr = 0x04E5B6;
+        adr2 = 0x04E587;
+        adr3 = 0x04E5D6;
+    }
+    for (let i = 0; i < 0x10; i++) {
+        const value = read1(adr3 + i);
+        const loc = read2(adr + i * 2);
+        const vramLoc = read2(adr2 + i * 2);
+        let s = (loc >>> 10) & 0b1111;
+        let y = ((loc >>> 4) & 0b1111);
+        let x = ((loc >>> 0) & 0b1111);
+        if (s) {
+            x++;
+            if (x === 32) {
+                x = 0;
+            }
+        }
+        console.log("value: ", value.toString(16));
+        console.log("s: ", s);
+        console.log("x: ", x.toString(16));
+        console.log("y: ", y.toString(16));
+        let tile = {
+            submap: s,
+            x: x,
+            y: y,
+            vramLoc: vramLoc,
+        };
+        owEvents[value].destructionEvent.push(tile);
     }
     // render
     console.log("wait...");
