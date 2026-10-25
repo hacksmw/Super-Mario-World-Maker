@@ -176,6 +176,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let layer26x6TileSize: number;
 let koopaKidsTeleportX: number[];
 let koopaKidsTeleportY: number[];
 let koopaKidsTile: number;
@@ -14642,7 +14643,13 @@ function loadOW() {
 
     let settings = decompress_rle1(fileData.slice(snes2pc(adr)));
 
-    for (let i = 0; i < 0x900 + 0x400; i+=1) {
+    layer26x6TileSize = 0x900;
+
+    if (isLMModified) {
+        layer26x6TileSize = read2(0x04E4C0);
+    }
+
+    for (let i = 0; i < 0x1300; i+=1) {
         const tileNum = read1(adr2 + i);
         const tileSetting = settings[i];
         const realTileNum = ((tileSetting & 0b11) << 8) | tileNum;
@@ -15076,7 +15083,7 @@ function loadOW() {
         let x = (linearTo % 64);
         let y = (intdiv(linearTo, 64));
 
-        if (from >= 0x900) {
+        if (from >= layer26x6TileSize) {
             for (let j = 0; j < 4; j++) {
                 const tile = eventTiles[from+j];
                 const sett = eventTilesSettings[from+j];
