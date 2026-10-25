@@ -176,6 +176,9 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let listOfLevelTilesThatCanBeDestroyed: number[];
+let listOfLevelTilesThatCanBeDestroyedBefore: number[];
+let listOfLevelTilesThatCanBeDestroyedAfter: number[];
 let autoSaveTiles: number[];
 let noAutoMoveLevels: number[];
 let specialStages: number[];
@@ -14979,6 +14982,30 @@ function loadOW() {
     autoSaveTiles[5] = read1(0x048F7F + 5);
     autoSaveTiles[6] = read1(0x048F7F + 6);
     autoSaveTiles[7] = read1(0x048F7F + 7);
+
+    // destroyable tiles;
+
+    listOfLevelTilesThatCanBeDestroyed = new Array(5);
+    listOfLevelTilesThatCanBeDestroyedBefore = new Array(5);
+    listOfLevelTilesThatCanBeDestroyedAfter = new Array(5);
+
+    listOfLevelTilesThatCanBeDestroyed[0]  = read1(0x04E5A7 + 0);
+    listOfLevelTilesThatCanBeDestroyed[1]  = read1(0x04E5A7 + 1);
+    listOfLevelTilesThatCanBeDestroyed[2]  = read1(0x04E5A7 + 2);
+    listOfLevelTilesThatCanBeDestroyed[3]  = read1(0x04E5A7 + 3);
+    listOfLevelTilesThatCanBeDestroyed[4]  = read1(0x04E5A7 + 4);
+
+    listOfLevelTilesThatCanBeDestroyedBefore[0]  = read1(0x04E5AC + 0);
+    listOfLevelTilesThatCanBeDestroyedBefore[1]  = read1(0x04E5AC + 1);
+    listOfLevelTilesThatCanBeDestroyedBefore[2]  = read1(0x04E5AC + 2);
+    listOfLevelTilesThatCanBeDestroyedBefore[3]  = read1(0x04E5AC + 3);
+    listOfLevelTilesThatCanBeDestroyedBefore[4]  = read1(0x04E5AC + 4);
+
+    listOfLevelTilesThatCanBeDestroyedAfter[0]  = read1(0x04E5B1 + 0);
+    listOfLevelTilesThatCanBeDestroyedAfter[1]  = read1(0x04E5B1 + 1);
+    listOfLevelTilesThatCanBeDestroyedAfter[2]  = read1(0x04E5B1 + 2);
+    listOfLevelTilesThatCanBeDestroyedAfter[3]  = read1(0x04E5B1 + 3);
+    listOfLevelTilesThatCanBeDestroyedAfter[4]  = read1(0x04E5B1 + 4);
 
     // render
 
