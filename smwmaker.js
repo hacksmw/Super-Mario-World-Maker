@@ -13297,6 +13297,51 @@ function loadOW() {
             owEvents[eventNum].silentEvent.isLayer2.push(isLayer2);
             owEvents[eventNum].silentEvent.tileNum.push(tileNum);
             owEvents[eventNum].silentEvent.location.push(convertedLoc);
+            console.log("--silent event--");
+            console.log("eventNum: ", eventNum.toString(16));
+            console.log("isLayer2: ", isLayer2);
+            console.log("tileNum: ", tileNum.toString(16));
+            console.log("x: ", x.toString(16));
+            console.log("y: ", y.toString(16));
+        }
+    }
+    else {
+        const table = read3(read3(0x04E9F8) + 0x0D);
+        const layer2Table = read3(read3(0x04E9F8) + 0x34);
+        const locTable = read3(read3(0x04E9F8) + 0x28);
+        const tileNumTable = read3(read3(0x04E9F8) + 0x22);
+        console.log("table address is ", table.toString(16));
+        for (let i = 0; i <= 0x10; i++) {
+            const index = intdiv(read2(table + i * 2), 2);
+            const delta = intdiv(read2(table + (i + 1) * 2), 2) - index;
+            console.log("eventNum: ", i.toString(16));
+            console.log("index: ", index);
+            console.log("delta: ", delta);
+            for (let j = index; j < index + delta; j++) {
+                const isLayer2 = read1(layer2Table + j);
+                const tileNum = read2(tileNumTable + 2 * j);
+                const location = read2(locTable + 2 * j);
+                let x, y;
+                let convertedLoc;
+                if (!isLayer2) {
+                    x = (getXY(location))[0];
+                    y = (getXY(location))[1];
+                    convertedLoc = y * 32 + x;
+                }
+                else {
+                    convertedLoc = convertVram2linear(location);
+                    x = convertedLoc % 64;
+                    y = intdiv(convertedLoc, 64);
+                }
+                owEvents[i].silentEvent.isLayer2.push(isLayer2);
+                owEvents[i].silentEvent.tileNum.push(tileNum);
+                owEvents[i].silentEvent.location.push(convertedLoc);
+                console.log("--silent event--");
+                console.log("isLayer2: ", isLayer2);
+                console.log("tileNum: ", tileNum.toString(16));
+                console.log("x: ", x.toString(16));
+                console.log("y: ", y.toString(16));
+            }
         }
     }
     // render
