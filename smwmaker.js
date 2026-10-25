@@ -13282,9 +13282,18 @@ function loadOW() {
             const isLayer2 = read1(0x04E910 + i);
             const location = read2(0x04E93C + i * 2);
             const tileNum = read2(0x04E994 + i * 2);
-            const x = (getXY(location))[0];
-            const y = (getXY(location))[1];
-            const convertedLoc = y * 32 + x;
+            let x, y;
+            let convertedLoc;
+            if (!isLayer2) {
+                x = (getXY(location))[0];
+                y = (getXY(location))[1];
+                convertedLoc = y * 32 + x;
+            }
+            else {
+                convertedLoc = convertVram2linear(location);
+                x = convertedLoc % 64;
+                y = intdiv(convertedLoc, 64);
+            }
             owEvents[eventNum].silentEvent.isLayer2.push(isLayer2);
             owEvents[eventNum].silentEvent.tileNum.push(tileNum);
             owEvents[eventNum].silentEvent.location.push(convertedLoc);
