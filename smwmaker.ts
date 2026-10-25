@@ -176,6 +176,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let bossSequenceLevels: number[];
 let owMusics: number[];
 let owEvents: OWEvent[];
 let beforeTiles: any, afterTiles: any;
@@ -14419,6 +14420,13 @@ function getXY(loc: number) {
     return [-1, -1];
 }
 
+function convertTransLevelNum(transLevelNum: number): number {
+    if (transLevelNum <= 0x24) {
+        return transLevelNum;
+    }
+    return transLevelNum - 0x24 + 0x100;
+}
+
 function loadOW() {
     const canvas = document.createElement("canvas");
 
@@ -14917,6 +14925,23 @@ function loadOW() {
         const owmusic = read1(0x048D8A + i);
         owMusics.push(owmusic);
     }
+
+    // boss sequence levels
+
+    bossSequenceLevels = new Array(0x11);
+    
+    bossSequenceLevels[0] = convertTransLevelNum(read1(0x00C9A7+0));
+    bossSequenceLevels[1] = convertTransLevelNum(read1(0x00C9A7+1));
+    bossSequenceLevels[2] = convertTransLevelNum(read1(0x00C9A7+2));
+    bossSequenceLevels[3] = convertTransLevelNum(read1(0x00C9A7+3));
+    bossSequenceLevels[4] = convertTransLevelNum(read1(0x00C9A7+4));
+    bossSequenceLevels[5] = convertTransLevelNum(read1(0x00C9A7+5));
+    bossSequenceLevels[6] = convertTransLevelNum(read1(0x00C9A7+6));
+    bossSequenceLevels[7] = convertTransLevelNum(read1(0x00C9A7+7));
+    bossSequenceLevels[8] = convertTransLevelNum(read1(0x00C9A7+8));
+    bossSequenceLevels[9] = convertTransLevelNum(read1(0x00CA13));
+    bossSequenceLevels[10] = convertTransLevelNum(read1(0x04E660));
+    bossSequenceLevels[11] = convertTransLevelNum(read1(0x00CA0C));
 
     // render
 
