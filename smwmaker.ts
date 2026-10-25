@@ -176,7 +176,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
-
+let owMusics: number[];
 let owEvents: OWEvent[];
 let beforeTiles: any, afterTiles: any;
 let vramLocThatReveals: number[];
@@ -14907,6 +14907,15 @@ function loadOW() {
         };
 
         owEvents[value].destructionEvent!.push(tile);
+    }
+
+    // Musics
+
+    owMusics = [];
+
+    for (let i = 0; i < 7; i++) {
+        const owmusic = read1(0x048D8A + i);
+        owMusics.push(owmusic);
     }
 
     // render
