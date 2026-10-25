@@ -153,6 +153,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let specialStages;
 let bossSequenceLevels;
 let owMusics;
 let owEvents;
@@ -13431,7 +13432,7 @@ function loadOW() {
         owMusics.push(owmusic);
     }
     // boss sequence levels
-    bossSequenceLevels = new Array(0x11);
+    bossSequenceLevels = new Array(12);
     bossSequenceLevels[0] = convertTransLevelNum(read1(0x00C9A7 + 0));
     bossSequenceLevels[1] = convertTransLevelNum(read1(0x00C9A7 + 1));
     bossSequenceLevels[2] = convertTransLevelNum(read1(0x00C9A7 + 2));
@@ -13444,6 +13445,14 @@ function loadOW() {
     bossSequenceLevels[9] = convertTransLevelNum(read1(0x00CA13));
     bossSequenceLevels[10] = convertTransLevelNum(read1(0x04E660));
     bossSequenceLevels[11] = convertTransLevelNum(read1(0x00CA0C));
+    // special world stages
+    specialStages = new Array(6);
+    specialStages[0] = convertTransLevelNum((read2(0x00AD2B) - 1) - 0x1EA2);
+    specialStages[1] = convertTransLevelNum((read2(0x02A986)) - 0x1EA2);
+    specialStages[2] = convertTransLevelNum((read2(0x00AA74)) - 0x1EA2);
+    specialStages[3] = convertTransLevelNum((read2(0x019826)) - 0x1EA2);
+    specialStages[4] = convertTransLevelNum((read2(0x01B9CD)) - 0x1EA2);
+    specialStages[5] = convertTransLevelNum((read2(0x0CAE0F)) - 0x1EA2);
     // render
     console.log("wait...");
     for (let i = 0; i < result.length; i++) {
