@@ -153,6 +153,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let autoSaveTiles;
 let noAutoMoveLevels;
 let specialStages;
 let bossSequenceLevels;
@@ -13462,6 +13463,16 @@ function loadOW() {
     noAutoMoveLevels[3] = convertTransLevelNum(read2(0x04906C + 2 * 3));
     noAutoMoveLevels[4] = convertTransLevelNum(read2(0x04906C + 2 * 4));
     noAutoMoveLevels[5] = convertTransLevelNum(read2(0x04906C + 2 * 5));
+    // auto save tiles
+    autoSaveTiles = new Array(8);
+    autoSaveTiles[0] = read1(0x048F7F + 0);
+    autoSaveTiles[1] = read1(0x048F7F + 1);
+    autoSaveTiles[2] = read1(0x048F7F + 2);
+    autoSaveTiles[3] = read1(0x048F7F + 3);
+    autoSaveTiles[4] = read1(0x048F7F + 4);
+    autoSaveTiles[5] = read1(0x048F7F + 5);
+    autoSaveTiles[6] = read1(0x048F7F + 6);
+    autoSaveTiles[7] = read1(0x048F7F + 7);
     // render
     console.log("wait...");
     for (let i = 0; i < result.length; i++) {
