@@ -87,7 +87,6 @@ class Obj {
 }
 
 class DestructionEvent {
-    submap: number = 0;
     x: number = 0;
     y: number = 0;
     vramLoc: number = 0;
@@ -14416,7 +14415,8 @@ function getXY(loc: number) {
             }
         }
     }
-    throw new Error();
+
+    return [-1, -1];
 }
 
 function loadOW() {
@@ -14712,26 +14712,33 @@ function loadOW() {
         adr2 = 0x04D93D;
     }
 
+    // layer 1 events
+
     layer1Events = [];
 
     for (let i = 0; i <= 0x77; i++) {
         let data = (read2(adr + 2 * i));
         const vramLoc = (read2(adr2 + 2 * i));      
 
-        let s = (data >>> 10) & 0b1111;
-        let y = ((data >>> 4) & 0b1111);
-        let x = ((data >>> 0) & 0b1111);
+        let x: number, y: number;
 
-        if (s) {
+        console.log("event: ", i.toString(16));
+        console.log("data: ", data.toString(16));
+
+        [x, y] = getXY(data);
+
+        // if in submap
+        if (y >= 0x20) {
             x++;
             if (x === 32) {
                 x = 0;
             }
         }
 
+        console.log("x: ", x.toString(16), ", y: ", y.toString(16));
+
         const layer1Event: Layer1Event = new Layer1Event();
 
-        layer1Event.subscreen = s;
         layer1Event.x = x;
         layer1Event.y = y;
         layer1Event.vramLoc = vramLoc;
@@ -14739,7 +14746,11 @@ function loadOW() {
         owEvents[i].layer1Event = layer1Event;
 
         layer1Events.push(layer1Event);
+
+        
     }
+
+    // init the tables before using.
 
     for (let i = 0; i <= 0x77; i++) {
         owEvents[i].silentEvent = {
@@ -14749,6 +14760,8 @@ function loadOW() {
         };
         owEvents[i].destructionEvent = [];
     }
+
+    // silent events
 
     if (!isLMModified) {
         for (let i = 0; i < 44; i++) {
@@ -14761,8 +14774,16 @@ function loadOW() {
             let convertedLoc: number;
 
             if (!isLayer2) {
-                x = (getXY(location))[0];
-                y = (getXY(location))[1];
+                [x, y] = getXY(location);
+
+                // if in submap
+                if (y >= 0x20) {
+                    x++;
+                    if (x === 32) {
+                        x = 0;
+                    }
+                }
+
                 convertedLoc = y * 32 + x;
             } else {
                 convertedLoc = convertVram2linear(location);
@@ -14810,8 +14831,16 @@ function loadOW() {
                 let convertedLoc: number;
 
                 if (!isLayer2) {
-                    x = (getXY(location))[0];
-                    y = (getXY(location))[1];
+                    [x, y] = getXY(location);
+                    
+                    // if in submap
+                    if (y >= 0x20) {
+                        x++;
+                        if (x === 32) {
+                            x = 0;
+                        }
+                    }   
+
                     convertedLoc = y * 32 + x;
                 } else {
                     convertedLoc = convertVram2linear(location);
@@ -14853,24 +14882,25 @@ function loadOW() {
         
         const vramLoc = read2(adr2 + i*2);
 
-        let s = (loc >>> 10) & 0b1111;
-        let y = ((loc >>> 4) & 0b1111);
-        let x = ((loc >>> 0) & 0b1111);
+        let x, y;
 
-        if (s) {
+        [x, y] = getXY(loc);
+
+        // if in submap
+        if (y >= 0x20) {
             x++;
             if (x === 32) {
                 x = 0;
             }
         }
         
+        /*
         console.log("value: ", value.toString(16));
-        console.log("s: ", s);
         console.log("x: ", x.toString(16));
         console.log("y: ", y.toString(16));
+        */
 
         let tile = {
-            submap: s,
             x: x,
             y: y,
             vramLoc: vramLoc,
