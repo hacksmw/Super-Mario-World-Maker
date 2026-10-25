@@ -176,6 +176,9 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let koopaKidsTeleportX: number[];
+let koopaKidsTeleportY: number[];
+let koopaKidsTile: number;
 let listOfLevelTilesThatCanBeDestroyed: number[];
 let listOfLevelTilesThatCanBeDestroyedBefore: number[];
 let listOfLevelTilesThatCanBeDestroyedAfter: number[];
@@ -15006,6 +15009,21 @@ function loadOW() {
     listOfLevelTilesThatCanBeDestroyedAfter[2]  = read1(0x04E5B1 + 2);
     listOfLevelTilesThatCanBeDestroyedAfter[3]  = read1(0x04E5B1 + 3);
     listOfLevelTilesThatCanBeDestroyedAfter[4]  = read1(0x04E5B1 + 4);
+
+    // unused koopa kids
+
+    koopaKidsTile = read1(0x04FBA2);
+
+    koopaKidsTeleportX = new Array(3);
+    koopaKidsTeleportY = new Array(3);
+  
+    koopaKidsTeleportX[0] = read2(0x048E49 + 0*2);
+    koopaKidsTeleportX[1] = read2(0x048E49 + 1*2);
+    koopaKidsTeleportX[2] = read2(0x048E49 + 2*2);
+
+    koopaKidsTeleportY[0] = read2(0x02104F + 0*2);
+    koopaKidsTeleportY[1] = read2(0x02104F + 1*2);
+    koopaKidsTeleportY[2] = read2(0x02104F + 2*2);    
 
     // render
 
