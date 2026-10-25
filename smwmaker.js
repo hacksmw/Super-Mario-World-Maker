@@ -153,6 +153,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let noAutoMoveLevels;
 let specialStages;
 let bossSequenceLevels;
 let owMusics;
@@ -13453,6 +13454,14 @@ function loadOW() {
     specialStages[3] = convertTransLevelNum((read2(0x019826)) - 0x1EA2);
     specialStages[4] = convertTransLevelNum((read2(0x01B9CD)) - 0x1EA2);
     specialStages[5] = convertTransLevelNum((read2(0x0CAE0F)) - 0x1EA2);
+    // no auto-move levels
+    noAutoMoveLevels = new Array(6);
+    noAutoMoveLevels[0] = convertTransLevelNum(read2(0x04906C + 2 * 0));
+    noAutoMoveLevels[1] = convertTransLevelNum(read2(0x04906C + 2 * 1));
+    noAutoMoveLevels[2] = convertTransLevelNum(read2(0x04906C + 2 * 2));
+    noAutoMoveLevels[3] = convertTransLevelNum(read2(0x04906C + 2 * 3));
+    noAutoMoveLevels[4] = convertTransLevelNum(read2(0x04906C + 2 * 4));
+    noAutoMoveLevels[5] = convertTransLevelNum(read2(0x04906C + 2 * 5));
     // render
     console.log("wait...");
     for (let i = 0; i < result.length; i++) {

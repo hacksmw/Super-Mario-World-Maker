@@ -176,6 +176,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let noAutoMoveLevels: number[];
 let specialStages: number[];
 let bossSequenceLevels: number[];
 let owMusics: number[];
@@ -14943,7 +14944,7 @@ function loadOW() {
     bossSequenceLevels[9] = convertTransLevelNum(read1(0x00CA13));
     bossSequenceLevels[10] = convertTransLevelNum(read1(0x04E660));
     bossSequenceLevels[11] = convertTransLevelNum(read1(0x00CA0C));
-    
+       
     // special world stages
 
     specialStages = new Array(6);
@@ -14954,6 +14955,16 @@ function loadOW() {
     specialStages[3] = convertTransLevelNum((read2(0x019826)) - 0x1EA2);
     specialStages[4] = convertTransLevelNum((read2(0x01B9CD)) - 0x1EA2);
     specialStages[5] = convertTransLevelNum((read2(0x0CAE0F)) - 0x1EA2);
+
+    // no auto-move levels
+    noAutoMoveLevels = new Array(6);
+
+    noAutoMoveLevels[0] = convertTransLevelNum(read2(0x04906C + 2*0));
+    noAutoMoveLevels[1] = convertTransLevelNum(read2(0x04906C + 2*1));
+    noAutoMoveLevels[2] = convertTransLevelNum(read2(0x04906C + 2*2));
+    noAutoMoveLevels[3] = convertTransLevelNum(read2(0x04906C + 2*3));
+    noAutoMoveLevels[4] = convertTransLevelNum(read2(0x04906C + 2*4));
+    noAutoMoveLevels[5] = convertTransLevelNum(read2(0x04906C + 2*5));
 
     // render
 
