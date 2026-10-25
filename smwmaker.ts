@@ -14399,6 +14399,18 @@ function convertVram2linear(vram: number): number {
     return result; 
 }
 
+function getXY(loc: number) {
+    for (let x = 0; x < 32; x++) {
+        for (let y = 0; y < 64; y++) {
+            const index = (((y >>> 4) & 0b11) << 9) | (((x >>> 4) & 0b1) << 8) | ((y & 0b1111) << 4) | (x & 0b1111);
+            if (index === loc) {
+                return [x, y];
+            }
+        }
+    }
+    throw new Error();
+}
+
 function loadOW() {
     const canvas = document.createElement("canvas");
 
@@ -14706,12 +14718,38 @@ function loadOW() {
 
         layer1Event.subscreen = s;
         layer1Event.x = x;
-        layer1Event.y = x;
+        layer1Event.y = y;
         layer1Event.vramLoc = vramLoc;
 
         owEvents[i].layer1Event = layer1Event;
 
         layer1Events.push(layer1Event);
+    }
+
+    for (let i = 0; i <= 0x77; i++) {
+        owEvents[i].silentEvent = {
+            isLayer2: [],
+            tileNum: [],
+            location: [],
+        };
+    }
+
+    if (!isLMModified) {
+        for (let i = 0; i < 44; i++) {
+            const eventNum = read1(0x04E8E4 + i);
+            const isLayer2 = read1(0x04E910 + i);
+            const location = read2(0x04E93C + i * 2);
+            const tileNum = read2(0x04E994 + i * 2);
+
+            const x = (getXY(location))[0];
+            const y = (getXY(location))[1];
+
+            const convertedLoc = y * 32 + x;
+
+            owEvents[eventNum].silentEvent.isLayer2.push(isLayer2);
+            owEvents[eventNum].silentEvent.tileNum.push(tileNum);
+            owEvents[eventNum].silentEvent.location.push(convertedLoc);
+        }
     }
 
     // render
@@ -14827,3 +14865,4 @@ function loadOW() {
     
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
+
