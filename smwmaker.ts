@@ -182,6 +182,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let messages1: string[], messages2: string[];
 let castleDestMsg: string[];
 let owsp1bmp: number[][], owsp2bmp: number[][], owsp3bmp: number[][], owsp4bmp: number[][];
 let owSpritesDisabledSlot: number[];
@@ -14466,6 +14467,65 @@ function convertTransLevelNum(transLevelNum: number): number {
     return transLevelNum - 0x24 + 0x100;
 }
 
+
+function tile2text(tiles: LT3Tile[]): string {
+    let result: string = "";
+
+    for (let i = 0; i < tiles.length; i++) {
+        const chr = tiles[i].index - 0x100;
+
+        if (0 <= chr && chr <= 25 ) {
+            // upper case
+            result += String.fromCharCode(chr + 65);
+        } else if (0x40 <= chr && chr <= 0x40+25) {
+            // lower case
+            result += String.fromCharCode((chr - 0x40) + 97);
+        } else if (0x64 <= chr && chr <= 0x64 + 6) {
+            // number
+            result += String.fromCharCode((chr - 0x64) + 49);
+        } else if (chr === 0x64 + 7) {
+            // 0
+            result += '0';
+        } else if (chr === 26) {
+            // !
+            result += "!";
+        } else if (chr === 27) {
+            // .
+            result += ".";
+        } else if (chr === 28) {
+            // -
+            result += "-";
+        } else if (chr === 29) {
+            // ,
+            result += ",";
+        } else if (chr === 30) {
+            // ?
+            result += "?";
+        } else if (chr === 31) {
+            // 
+            result += " ";
+        } else if (chr === 0x40+25+1) {
+            // #
+            result += "#";
+        } else if (chr === 0x40+25+2) {
+            // (
+            result += "(";
+        } else if (chr === 0x40+25+3) {
+            // )
+            result += ")";
+        } else if (chr === 0x40+25+4) {
+            // '
+            result += "'";
+        } else if (chr === -4) {
+            // space
+        } else {
+            result += "\\" + hex(chr);
+        }
+    }
+
+    return result;
+}
+
 function loadOW() {
     const canvas = document.createElement("canvas");
 
@@ -15061,6 +15121,24 @@ function loadOW() {
     koopaKidsTeleportY[1] = read2(0x02104F + 1*2);
     koopaKidsTeleportY[2] = read2(0x02104F + 2*2);    
 
+    // messages
+
+    messages1 = [];
+    messages2 = [];
+
+    for (let i = 0; i < 0x200; i++) {
+        messages1[i] = "";
+        messages2[i] = "";
+    }
+
+    for (let i = 0; i < 23; i++) {
+        let value = read1(0x05A590 + i);
+        let isMessage2 = (value >>> 7);
+        let levelNum = convertTransLevelNum(value & 0b0111_1111);
+        let index = read2(0x05A5A7 + 2*i);
+        
+    }
+
     // castle destruction messages
 
     castleDestMsg = new Array();
@@ -15213,62 +15291,4 @@ function loadOW() {
     console.log("done...");
     
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
-}
-
-function tile2text(tiles: LT3Tile[]): string {
-    let result: string = "";
-
-    for (let i = 0; i < tiles.length; i++) {
-        const chr = tiles[i].index - 0x100;
-
-        if (0 <= chr && chr <= 25 ) {
-            // upper case
-            result += String.fromCharCode(chr + 65);
-        } else if (0x40 <= chr && chr <= 0x40+25) {
-            // lower case
-            result += String.fromCharCode((chr - 0x40) + 97);
-        } else if (0x64 <= chr && chr <= 0x64 + 6) {
-            // number
-            result += String.fromCharCode((chr - 0x64) + 49);
-        } else if (chr === 0x64 + 7) {
-            // 0
-            result += '0';
-        } else if (chr === 26) {
-            // !
-            result += "!";
-        } else if (chr === 27) {
-            // .
-            result += ".";
-        } else if (chr === 28) {
-            // -
-            result += "-";
-        } else if (chr === 29) {
-            // ,
-            result += ",";
-        } else if (chr === 30) {
-            // ?
-            result += "?";
-        } else if (chr === 31) {
-            // 
-            result += " ";
-        } else if (chr === 0x40+25+1) {
-            // #
-            result += "#";
-        } else if (chr === 0x40+25+2) {
-            // (
-            result += "(";
-        } else if (chr === 0x40+25+3) {
-            // )
-            result += ")";
-        } else if (chr === 0x40+25+4) {
-            // '
-            result += "'";
-        } else if (chr === -4) {
-            // space
-        } else {
-            result += "\\" + hex(chr);
-        }
-    }
-
-    return result;
 }

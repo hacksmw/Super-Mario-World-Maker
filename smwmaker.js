@@ -158,6 +158,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let messages1, messages2;
 let castleDestMsg;
 let owsp1bmp, owsp2bmp, owsp3bmp, owsp4bmp;
 let owSpritesDisabledSlot;
@@ -13066,6 +13067,75 @@ function convertTransLevelNum(transLevelNum) {
     }
     return transLevelNum - 0x24 + 0x100;
 }
+function tile2text(tiles) {
+    let result = "";
+    for (let i = 0; i < tiles.length; i++) {
+        const chr = tiles[i].index - 0x100;
+        if (0 <= chr && chr <= 25) {
+            // upper case
+            result += String.fromCharCode(chr + 65);
+        }
+        else if (0x40 <= chr && chr <= 0x40 + 25) {
+            // lower case
+            result += String.fromCharCode((chr - 0x40) + 97);
+        }
+        else if (0x64 <= chr && chr <= 0x64 + 6) {
+            // number
+            result += String.fromCharCode((chr - 0x64) + 49);
+        }
+        else if (chr === 0x64 + 7) {
+            // 0
+            result += '0';
+        }
+        else if (chr === 26) {
+            // !
+            result += "!";
+        }
+        else if (chr === 27) {
+            // .
+            result += ".";
+        }
+        else if (chr === 28) {
+            // -
+            result += "-";
+        }
+        else if (chr === 29) {
+            // ,
+            result += ",";
+        }
+        else if (chr === 30) {
+            // ?
+            result += "?";
+        }
+        else if (chr === 31) {
+            // 
+            result += " ";
+        }
+        else if (chr === 0x40 + 25 + 1) {
+            // #
+            result += "#";
+        }
+        else if (chr === 0x40 + 25 + 2) {
+            // (
+            result += "(";
+        }
+        else if (chr === 0x40 + 25 + 3) {
+            // )
+            result += ")";
+        }
+        else if (chr === 0x40 + 25 + 4) {
+            // '
+            result += "'";
+        }
+        else if (chr === -4) {
+            // space
+        }
+        else {
+            result += "\\" + hex(chr);
+        }
+    }
+    return result;
+}
 function loadOW() {
     const canvas = document.createElement("canvas");
     canvas.width = 160 * 8;
@@ -13538,6 +13608,19 @@ function loadOW() {
     koopaKidsTeleportY[0] = read2(0x02104F + 0 * 2);
     koopaKidsTeleportY[1] = read2(0x02104F + 1 * 2);
     koopaKidsTeleportY[2] = read2(0x02104F + 2 * 2);
+    // messages
+    messages1 = [];
+    messages2 = [];
+    for (let i = 0; i < 0x200; i++) {
+        messages1[i] = "";
+        messages2[i] = "";
+    }
+    for (let i = 0; i < 23; i++) {
+        let value = read1(0x05A590 + i);
+        let isMessage2 = (value >>> 7);
+        let levelNum = convertTransLevelNum(value & 127);
+        let index = read2(0x05A5A7 + 2 * i);
+    }
     // castle destruction messages
     castleDestMsg = new Array();
     for (let i = 0; i < 7; i++) {
@@ -13650,73 +13733,4 @@ function loadOW() {
     }
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-function tile2text(tiles) {
-    let result = "";
-    for (let i = 0; i < tiles.length; i++) {
-        const chr = tiles[i].index - 0x100;
-        if (0 <= chr && chr <= 25) {
-            // upper case
-            result += String.fromCharCode(chr + 65);
-        }
-        else if (0x40 <= chr && chr <= 0x40 + 25) {
-            // lower case
-            result += String.fromCharCode((chr - 0x40) + 97);
-        }
-        else if (0x64 <= chr && chr <= 0x64 + 6) {
-            // number
-            result += String.fromCharCode((chr - 0x64) + 49);
-        }
-        else if (chr === 0x64 + 7) {
-            // 0
-            result += '0';
-        }
-        else if (chr === 26) {
-            // !
-            result += "!";
-        }
-        else if (chr === 27) {
-            // .
-            result += ".";
-        }
-        else if (chr === 28) {
-            // -
-            result += "-";
-        }
-        else if (chr === 29) {
-            // ,
-            result += ",";
-        }
-        else if (chr === 30) {
-            // ?
-            result += "?";
-        }
-        else if (chr === 31) {
-            // 
-            result += " ";
-        }
-        else if (chr === 0x40 + 25 + 1) {
-            // #
-            result += "#";
-        }
-        else if (chr === 0x40 + 25 + 2) {
-            // (
-            result += "(";
-        }
-        else if (chr === 0x40 + 25 + 3) {
-            // )
-            result += ")";
-        }
-        else if (chr === 0x40 + 25 + 4) {
-            // '
-            result += "'";
-        }
-        else if (chr === -4) {
-            // space
-        }
-        else {
-            result += "\\" + hex(chr);
-        }
-    }
-    return result;
 }
