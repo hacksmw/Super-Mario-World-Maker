@@ -158,6 +158,7 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let owsp1bmp, owsp2bmp, owsp3bmp, owsp4bmp;
 let owSpritesDisabledSlot;
 let owSprites;
 let layer26x6TileSize;
@@ -255,6 +256,7 @@ let bg2, bg3;
 let superGFXBypass;
 let layer3Bypass;
 let layer3TilemapBypass;
+let owsp1, owsp2, owsp3, owsp4;
 let disableOrgLevelPalAni;
 let disableOrgLevelAni;
 let disableCustomGlobalAni;
@@ -4149,6 +4151,7 @@ function loadGraphics() {
     let lg1gfx, lg2gfx, lg3gfx, lg4gfx;
     let lt3gfx;
     let owfg1gfx, owfg2gfx, owfg3gfx, owfg4gfx;
+    let owsp1gfx, owsp2gfx, owsp3gfx, owsp4gfx;
     // get tileset
     if ((fgbgGFX >= tilesetList.length)) {
         throw new Error();
@@ -4175,6 +4178,10 @@ function loadGraphics() {
     owfg2 = 0x1D;
     owfg3 = 0x8;
     owfg4 = 0x1E;
+    owsp1 = 0x10;
+    owsp2 = 0xf;
+    owsp3 = 0x1c;
+    owsp4 = 0x1d;
     sp1 = read1((spriteGfxTable) + (4 * sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4 * sprGFX + 1));
     sp3 = read1((spriteGfxTable) + (4 * sprGFX + 2));
@@ -4201,6 +4208,10 @@ function loadGraphics() {
     owfg2gfx = getUncompressedGFX(owfg2);
     owfg3gfx = getUncompressedGFX(owfg3);
     owfg4gfx = getUncompressedGFX(owfg4);
+    owsp1gfx = getUncompressedGFX(owsp1);
+    owsp2gfx = getUncompressedGFX(owsp2);
+    owsp3gfx = getUncompressedGFX(owsp3);
+    owsp4gfx = getUncompressedGFX(owsp4);
     superGFXBypass = false;
     layer3Bypass = false;
     layer3TilemapBypass = false;
@@ -4385,6 +4396,10 @@ function loadGraphics() {
     owfg2bmp = convertGraphics(owfg2gfx, is4bpp);
     owfg3bmp = convertGraphics(owfg3gfx, is4bpp);
     owfg4bmp = convertGraphics(owfg4gfx, is4bpp);
+    owsp1bmp = convertGraphics(owsp1gfx, is4bpp);
+    owsp2bmp = convertGraphics(owsp2gfx, is4bpp);
+    owsp3bmp = convertGraphics(owsp3gfx, is4bpp);
+    owsp4bmp = convertGraphics(owsp4gfx, is4bpp);
     if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
     }

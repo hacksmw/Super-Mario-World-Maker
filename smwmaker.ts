@@ -182,6 +182,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let owsp1bmp: number[][], owsp2bmp: number[][], owsp3bmp: number[][], owsp4bmp: number[][];
 let owSpritesDisabledSlot: number[];
 let owSprites: OWSprite[];
 let layer26x6TileSize: number;
@@ -279,6 +280,7 @@ let bg2: number, bg3: number;
 let superGFXBypass: boolean;
 let layer3Bypass: boolean;
 let layer3TilemapBypass: boolean;
+let owsp1: number, owsp2: number, owsp3: number, owsp4: number;
 
 let disableOrgLevelPalAni: number;
 let disableOrgLevelAni: number;
@@ -4857,6 +4859,7 @@ function loadGraphics() {
     let lg1gfx: number[], lg2gfx: number[], lg3gfx: number[], lg4gfx: number[];
     let lt3gfx: number[];
     let owfg1gfx: number[], owfg2gfx: number[], owfg3gfx: number[], owfg4gfx: number[];
+    let owsp1gfx: number[], owsp2gfx: number[], owsp3gfx: number[], owsp4gfx: number[];
 
     // get tileset
 
@@ -4893,6 +4896,11 @@ function loadGraphics() {
     owfg2 = 0x1D;
     owfg3 = 0x8;
     owfg4 = 0x1E;
+
+    owsp1 = 0x10;
+    owsp2 = 0xf;
+    owsp3 = 0x1c;
+    owsp4 = 0x1d;
     
     sp1 = read1((spriteGfxTable) + (4*sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4*sprGFX + 1));
@@ -4928,6 +4936,11 @@ function loadGraphics() {
     owfg2gfx = getUncompressedGFX(owfg2);
     owfg3gfx = getUncompressedGFX(owfg3);
     owfg4gfx = getUncompressedGFX(owfg4);
+
+    owsp1gfx = getUncompressedGFX(owsp1);
+    owsp2gfx = getUncompressedGFX(owsp2);
+    owsp3gfx = getUncompressedGFX(owsp3);
+    owsp4gfx = getUncompressedGFX(owsp4);
 
     superGFXBypass = false;
     layer3Bypass = false;
@@ -5157,6 +5170,11 @@ function loadGraphics() {
     owfg2bmp = convertGraphics(owfg2gfx, is4bpp);
     owfg3bmp = convertGraphics(owfg3gfx, is4bpp);
     owfg4bmp = convertGraphics(owfg4gfx, is4bpp);
+
+    owsp1bmp = convertGraphics(owsp1gfx, is4bpp);
+    owsp2bmp = convertGraphics(owsp2gfx, is4bpp);
+    owsp3bmp = convertGraphics(owsp3gfx, is4bpp);
+    owsp4bmp = convertGraphics(owsp4gfx, is4bpp);
     
     if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
