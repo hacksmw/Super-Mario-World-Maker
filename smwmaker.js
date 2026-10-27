@@ -13067,7 +13067,73 @@ function convertTransLevelNum(transLevelNum) {
     }
     return transLevelNum - 0x24 + 0x100;
 }
-function tile2text(tiles) {
+function tile2char(tileNum) {
+    const chr = tileNum;
+    if (0 <= chr && chr <= 25) {
+        // upper case
+        return String.fromCharCode(chr + 65);
+    }
+    else if (0x40 <= chr && chr <= 0x40 + 25) {
+        // lower case
+        return String.fromCharCode((chr - 0x40) + 97);
+    }
+    else if (0x64 <= chr && chr <= 0x64 + 6) {
+        // number
+        return String.fromCharCode((chr - 0x64) + 49);
+    }
+    else if (chr === 0x64 + 7) {
+        // 0
+        return '0';
+    }
+    else if (chr === 26) {
+        // !
+        return "!";
+    }
+    else if (chr === 27) {
+        // .
+        return ".";
+    }
+    else if (chr === 28) {
+        // -
+        return "-";
+    }
+    else if (chr === 29) {
+        // ,
+        return ",";
+    }
+    else if (chr === 30) {
+        // ?
+        return "?";
+    }
+    else if (chr === 31) {
+        // 
+        return " ";
+    }
+    else if (chr === 0x40 + 25 + 1) {
+        // #
+        return "#";
+    }
+    else if (chr === 0x40 + 25 + 2) {
+        // (
+        return "(";
+    }
+    else if (chr === 0x40 + 25 + 3) {
+        // )
+        return ")";
+    }
+    else if (chr === 0x40 + 25 + 4) {
+        // '
+        return "'";
+    }
+    else if (chr === -4) {
+        // space
+    }
+    else {
+        return "\\" + hex(chr);
+    }
+    return "\\" + hex(chr);
+}
+function tiles2text(tiles) {
     let result = "";
     for (let i = 0; i < tiles.length; i++) {
         const chr = tiles[i].index - 0x100;
@@ -13620,6 +13686,27 @@ function loadOW() {
         let isMessage2 = (value >>> 7);
         let levelNum = convertTransLevelNum(value & 127);
         let index = read2(0x05A5A7 + 2 * i);
+        let line = 0;
+        let message = "";
+        for (let j = 0;; j++) {
+            let v = read1(0x05A5D9 + index + j);
+            let w = (v & 127);
+            message += tile2char(w);
+            let newLine = v >>> 7;
+            if (newLine) {
+                message += "\n";
+                line++;
+            }
+            if (line > 7) {
+                break;
+            }
+        }
+        if (isMessage2) {
+            messages2[levelNum] = message;
+        }
+        else {
+            messages1[levelNum] = message;
+        }
     }
     // castle destruction messages
     castleDestMsg = new Array();
@@ -13627,7 +13714,7 @@ function loadOW() {
         let s = "";
         for (let j = 0; j < 8; j++) {
             const data = stripe(fileData.slice(snes2pc(read3(0x0084D0 + ((0xB + ((i * 8) + (7 - j))) * 3)))));
-            s += tile2text(data) + "\n";
+            s += tiles2text(data) + "\n";
         }
         castleDestMsg.push(s);
     }
