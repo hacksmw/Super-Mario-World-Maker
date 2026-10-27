@@ -24,6 +24,11 @@ const horizontalLevelModesHeight = [
     0x1B, 0x1C, 0x1D, 0x20, 0x22, 0x25, 0x26, 0x28, 0x2A, 0x2C, 0x2F, 0x31, 0x34, 0x38, 0x3B,
     0x40, 0x44, 0x4A, 0x51, 0x59, 0x63, 0x70, 0x80, 0x95, 0xB3, 0xE0, 0X12A, 0x1C0, 0x380, 0x0, 0x0, 0x0
 ];
+class OWSprite {
+    num = 0;
+    xPos = 0;
+    yPos = 0;
+}
 class TilePart {
     gfx = 0;
     xflip = 0;
@@ -153,6 +158,8 @@ class LT3Tile {
     flipx = 0;
     flipy = 0;
 }
+let owSpritesDisabledSlot;
+let owSprites;
 let layer26x6TileSize;
 let koopaKidsTeleportX;
 let koopaKidsTeleportY;
@@ -13513,6 +13520,24 @@ function loadOW() {
     koopaKidsTeleportY[0] = read2(0x02104F + 0 * 2);
     koopaKidsTeleportY[1] = read2(0x02104F + 1 * 2);
     koopaKidsTeleportY[2] = read2(0x02104F + 2 * 2);
+    // sprites
+    owSprites = new Array(13);
+    for (let i = 0; i < 13; i++) {
+        const spriteNum = read1(0x04F625 + 5 * i + 0);
+        const xLow = read1(0x04F625 + 5 * i + 1);
+        const xHigh = read1(0x04F625 + 5 * i + 2);
+        const yLow = read1(0x04F625 + 5 * i + 3);
+        const yHigh = read1(0x04F625 + 5 * i + 4);
+        const owSprite = new OWSprite();
+        owSprite.num = spriteNum;
+        owSprite.xPos = (xHigh << 8) | xLow;
+        owSprite.yPos = (yHigh << 8) | yLow;
+        owSprites[i] = owSprite;
+    }
+    owSpritesDisabledSlot = new Array(10);
+    for (let i = 0; i < 10; i++) {
+        owSpritesDisabledSlot[i] = read1(0x04F829 + i);
+    }
     // render
     console.log("wait...");
     for (let i = 0; i < result.length; i++) {
