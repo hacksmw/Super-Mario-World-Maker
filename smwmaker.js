@@ -13449,8 +13449,6 @@ function loadOW() {
         let data = (read2(adr + 2 * i));
         const vramLoc = (read2(adr2 + 2 * i));
         let x, y;
-        console.log("event: ", i.toString(16));
-        console.log("data: ", data.toString(16));
         [x, y] = getXY(data);
         // if in submap
         if (y >= 0x20) {
@@ -13459,7 +13457,7 @@ function loadOW() {
                 x = 0;
             }
         }
-        console.log("x: ", x.toString(16), ", y: ", y.toString(16));
+        //console.log("x: ", x.toString(16), ", y: ", y.toString(16));
         const layer1Event = new Layer1Event();
         layer1Event.x = x;
         layer1Event.y = y;
@@ -13519,7 +13517,6 @@ function loadOW() {
         const layer2Table = read3(read3(0x04E9F8) + 0x34);
         const locTable = read3(read3(0x04E9F8) + 0x28);
         const tileNumTable = read3(read3(0x04E9F8) + 0x22);
-        console.log("table address is ", table.toString(16));
         for (let i = 0; i <= 0x10; i++) {
             const index = intdiv(read2(table + i * 2), 2);
             const delta = intdiv(read2(table + (i + 1) * 2), 2) - index;
@@ -13681,31 +13678,68 @@ function loadOW() {
         messages1[i] = "";
         messages2[i] = "";
     }
-    for (let i = 0; i < 23; i++) {
-        let value = read1(0x05A590 + i);
-        let isMessage2 = (value >>> 7);
-        let levelNum = convertTransLevelNum(value & 127);
-        let index = read2(0x05A5A7 + 2 * i);
-        let line = 0;
-        let message = "";
-        for (let j = 0;; j++) {
-            let v = read1(0x05A5D9 + index + j);
-            let w = (v & 127);
-            message += tile2char(w);
-            let newLine = v >>> 7;
-            if (newLine) {
-                message += "\n";
-                line++;
+    if (!isLMModified) {
+        for (let i = 0; i < 23; i++) {
+            let value = read1(0x05A590 + i);
+            let isMessage2 = (value >>> 7);
+            let levelNum = convertTransLevelNum(value & 127);
+            let index = read2(0x05A5A7 + 2 * i);
+            let line = 0;
+            let message = "";
+            for (let j = 0;; j++) {
+                let v = read1(0x05A5D9 + index + j);
+                let w = (v & 127);
+                message += tile2char(w);
+                let newLine = v >>> 7;
+                if (newLine) {
+                    message += "\n";
+                    line++;
+                }
+                if (line > 7) {
+                    break;
+                }
             }
-            if (line > 7) {
-                break;
+            if (isMessage2) {
+                messages2[levelNum] = message;
+            }
+            else {
+                messages1[levelNum] = message;
             }
         }
-        if (isMessage2) {
-            messages2[levelNum] = message;
-        }
-        else {
-            messages1[levelNum] = message;
+    }
+    else {
+        for (let i = 0; i < 0xDD; i++) {
+            let levelNum = convertTransLevelNum(i);
+            const pointer = 0x03BE80 + 4 * i;
+            const offset = read3(0x03BC0B);
+            const msg1index = read2(pointer);
+            const msg2index = read2(pointer + 2);
+            let msg1 = "";
+            let msg2 = "";
+            line_loop: for (let j = 0; j < 8; j++) {
+                for (let k = 0; k < 18; k++) {
+                    let tile = read1(offset + msg1index + j * 18 + k);
+                    if (tile === 0xFE)
+                        break line_loop;
+                    let char = tile2char(tile);
+                    msg1 += char;
+                }
+                msg1 += "\n";
+            }
+            line_loop2: for (let j = 0; j < 8; j++) {
+                for (let k = 0; k < 18; k++) {
+                    let tile = read1(offset + msg2index + j * 18 + k);
+                    if (tile === 0xFE)
+                        break line_loop2;
+                    let char = tile2char(tile);
+                    msg2 += char;
+                }
+                msg2 += "\n";
+            }
+            messages1[levelNum] = msg1;
+            messages2[levelNum] = msg2;
+            console.log(msg1);
+            console.log(msg2);
         }
     }
     // castle destruction messages
@@ -13767,9 +13801,9 @@ function loadOW() {
         const from = (eventsData[i + 1] << 8) | eventsData[i];
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
         const linearTo = convertVram2linear(to);
-        console.log("from: ", from.toString(16));
-        console.log("x: ", (linearTo % 64).toString(16));
-        console.log("y: ", (intdiv(linearTo, 64)).toString(16));
+        //console.log("from: ", from.toString(16));
+        //console.log("x: ", (linearTo % 64).toString(16));
+        //console.log("y: ", (intdiv(linearTo, 64)).toString(16));
         let x = (linearTo % 64);
         let y = (intdiv(linearTo, 64));
         if (from >= layer26x6TileSize) {
