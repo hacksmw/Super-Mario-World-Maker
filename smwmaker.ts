@@ -182,6 +182,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let castleDestMsg: string[];
 let owsp1bmp: number[][], owsp2bmp: number[][], owsp3bmp: number[][], owsp4bmp: number[][];
 let owSpritesDisabledSlot: number[];
 let owSprites: OWSprite[];
@@ -5297,7 +5298,8 @@ function stripe(data: any) {
 							x=0;
                             y++;
                             if (y === 64) {
-                                throw new Error("overflow");
+                                //throw new Error("overflow");
+                                console.log("overflow");
                                 y = 0;
                                 x++;
                             }
@@ -5305,7 +5307,8 @@ function stripe(data: any) {
 					} else {
 						y++;
 						if (y === 64) {
-                            throw new Error("overflow");
+                            console.log("overflow");
+                            //throw new Error("overflow");
                             y=0;
 						}
 					}
@@ -15058,6 +15061,20 @@ function loadOW() {
     koopaKidsTeleportY[1] = read2(0x02104F + 1*2);
     koopaKidsTeleportY[2] = read2(0x02104F + 2*2);    
 
+    // castle destruction messages
+
+    castleDestMsg = new Array();
+
+    for (let i = 0; i < 7; i++) {
+        let s = "";
+        for (let j = 0; j < 8; j++) {
+            const data = stripe(fileData.slice(snes2pc(read3(0x0084D0 + ((0xB+((i*8)+(7-j)))*3)))));
+            s += tile2text(data) + "\n"; 
+        }
+        castleDestMsg.push(s);
+    }  
+    
+
     // sprites
 
     owSprites = new Array(13);
@@ -15198,3 +15215,60 @@ function loadOW() {
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
 
+function tile2text(tiles: LT3Tile[]): string {
+    let result: string = "";
+
+    for (let i = 0; i < tiles.length; i++) {
+        const chr = tiles[i].index - 0x100;
+
+        if (0 <= chr && chr <= 25 ) {
+            // upper case
+            result += String.fromCharCode(chr + 65);
+        } else if (0x40 <= chr && chr <= 0x40+25) {
+            // lower case
+            result += String.fromCharCode((chr - 0x40) + 97);
+        } else if (0x64 <= chr && chr <= 0x64 + 6) {
+            // number
+            result += String.fromCharCode((chr - 0x64) + 49);
+        } else if (chr === 0x64 + 7) {
+            // 0
+            result += '0';
+        } else if (chr === 26) {
+            // !
+            result += "!";
+        } else if (chr === 27) {
+            // .
+            result += ".";
+        } else if (chr === 28) {
+            // -
+            result += "-";
+        } else if (chr === 29) {
+            // ,
+            result += ",";
+        } else if (chr === 30) {
+            // ?
+            result += "?";
+        } else if (chr === 31) {
+            // 
+            result += " ";
+        } else if (chr === 0x40+25+1) {
+            // #
+            result += "#";
+        } else if (chr === 0x40+25+2) {
+            // (
+            result += "(";
+        } else if (chr === 0x40+25+3) {
+            // )
+            result += ")";
+        } else if (chr === 0x40+25+4) {
+            // '
+            result += "'";
+        } else if (chr === -4) {
+            // space
+        } else {
+            result += "\\" + hex(chr);
+        }
+    }
+
+    return result;
+}
