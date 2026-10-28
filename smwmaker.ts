@@ -15491,11 +15491,15 @@ function loadOW() {
         exit.destX = Math.floor(dstx / 16);
         exit.destSubmap = dsts;
 
+        dstx2 = dstx2 * 16 + 1;
+        dsty2 = dsty2 * 16 + 1;
+
         exit.destX2 = dstx2;
         exit.destY2 = dsty2;
 
         owExits.push(exit);
 
+        /*
         console.log("srcx: ", Math.floor(srcx / 16).toString(16));
         console.log("srcy: ", Math.floor(srcy / 16).toString(16));
         console.log("srcs: ", srcs.toString(16));
@@ -15503,6 +15507,7 @@ function loadOW() {
         console.log("dstx: ", Math.floor(dstx / 16).toString(16));
         console.log("dsty: ", Math.floor(dsty / 16).toString(16));
         console.log("dsts: ", dsts.toString(16));
+        */
     }
 
     // sprites
