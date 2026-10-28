@@ -204,6 +204,7 @@ class LevelSpecificData {
     right: number = 0;
 }
 
+let initialMarioStatuses: number[];
 let levelSpecificDatas: LevelSpecificData[];
 let directions: number[];
 let events: number[];
@@ -15603,6 +15604,14 @@ function loadOW() {
             levelSpecificDatas[levelNum].left = left;
             levelSpecificDatas[levelNum].right = right;
         }
+    }
+
+    initialMarioStatuses = new Array(22);
+
+    // initial mario statuses
+
+    for (let i = 0; i < 22; i++) {
+        initialMarioStatuses[i] = read1(0x009EF0 + i);
     }
 
     // sprites
