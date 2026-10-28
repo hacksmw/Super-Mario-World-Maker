@@ -165,7 +165,10 @@ class Pipe {
     destX = 0;
     destY = 0;
     destSubmap = 0;
+    destX2 = 0;
+    destY2 = 0;
 }
+let owExits;
 let owPipes;
 let levelNames;
 let messages1, messages2;
@@ -13882,6 +13885,52 @@ function loadOW() {
         console.log("destY: ", Math.floor(destY / 16).toString(16));
         console.log("destSubmap: ", destSubmap.toString(16));
         */
+    }
+    // exits
+    owExits = [];
+    adr = 0x049964;
+    adr2 = 0x0499AA;
+    adr3 = 0x0499F0;
+    /*
+    if (isLMModified) {
+        adr = read3(read3(0x049A36)+0x11);
+        adr2 = read3(read3(0x049A36)+0x2C);
+        adr3 = read3(read3(0x049A36)+0x48);
+    }
+    */
+    for (let i = 0; i < 70; i++) {
+        let srcy = read2(adr + i * 5 + 0);
+        let srcx = read2(adr + i * 5 + 2);
+        let srcs = read1(adr + i * 5 + 4);
+        if (srcs !== 0) {
+            srcx += 16;
+            srcy += 32 * 16;
+        }
+        let dsty = read2(adr2 + i * 5 + 0);
+        let dstx = read2(adr2 + i * 5 + 2);
+        let dsts = read1(adr2 + i * 5 + 4);
+        if (dsts !== 0) {
+            dstx += 16;
+            dsty += 32 * 16;
+        }
+        let dsty2 = read1(adr3 + i * 2 + 0);
+        let dstx2 = read1(adr3 + i * 2 + 1);
+        let exit = new Pipe();
+        exit.x = Math.floor(srcx / 16);
+        exit.y = Math.floor(srcy / 16);
+        exit.submap = srcs;
+        exit.destY = Math.floor(dsty / 16);
+        exit.destX = Math.floor(dstx / 16);
+        exit.destSubmap = dsts;
+        exit.destX2 = dstx2;
+        exit.destY2 = dsty2;
+        owExits.push(exit);
+        console.log("srcx: ", Math.floor(srcx / 16).toString(16));
+        console.log("srcy: ", Math.floor(srcy / 16).toString(16));
+        console.log("srcs: ", srcs.toString(16));
+        console.log("dstx: ", Math.floor(dstx / 16).toString(16));
+        console.log("dsty: ", Math.floor(dsty / 16).toString(16));
+        console.log("dsts: ", dsts.toString(16));
     }
     // sprites
     owSprites = new Array(13);
