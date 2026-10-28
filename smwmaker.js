@@ -168,6 +168,8 @@ class Pipe {
     destX2 = 0;
     destY2 = 0;
 }
+let directions;
+let events;
 let owExits;
 let owPipes;
 let levelNames;
@@ -13936,6 +13938,20 @@ function loadOW() {
         console.log("dsty: ", Math.floor(dsty / 16).toString(16));
         console.log("dsts: ", dsts.toString(16));
         */
+    }
+    // direction and event
+    directions = [];
+    events = [];
+    for (let i = 0; i < 0x200; i++) {
+        directions[i] = 0;
+        events[i] = 0;
+    }
+    for (let i = 0; i < 96; i++) {
+        const direction = read1(0x04D678 + i);
+        const event = read1(0x05D608 + i);
+        const realLevelNum = convertTransLevelNum(i);
+        directions[realLevelNum] = direction;
+        events[realLevelNum] = event;
     }
     // sprites
     owSprites = new Array(13);
