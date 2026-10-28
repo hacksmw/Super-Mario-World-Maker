@@ -193,6 +193,18 @@ class Pipe {
     destY2: number = 0;
 }
 
+class LevelSpecificData {
+    beaten: number = 0;
+    midway: number = 0;
+    noEntry: number = 0;
+    save: number = 0;
+    up: number = 0;
+    down: number = 0;
+    left: number = 0;
+    right: number = 0;
+}
+
+let levelSpecificDatas: LevelSpecificData[];
 let directions: number[];
 let events: number[];
 let owExits: Pipe[];
@@ -15528,6 +15540,69 @@ function loadOW() {
         const realLevelNum = convertTransLevelNum(i);
         directions[realLevelNum] = direction;
         events[realLevelNum] = event;
+    }
+
+    // level specific data
+
+    levelSpecificDatas = [];
+
+    for (let i = 0; i < 0x200; i++) {
+        levelSpecificDatas[i] = new LevelSpecificData();
+    }
+
+    if (!isLMModified) {
+        for (let i = 0; i < 96; i++) {
+            const value = read2(0x009EE0 + i*2);
+            
+            const flags = value >>> 8;
+            const transLevelNum = value & 0xFF;
+            
+            const levelNum = convertTransLevelNum(transLevelNum);
+
+            const beaten = (flags >>> 7) & 1;
+            const midway = (flags >>> 6) & 1;
+            const noEntry = (flags >>> 5) & 1;
+            const save = (flags >>> 4) & 1;
+            const up = (flags >>> 3) & 1;
+            const dn = (flags >>> 2) & 1;
+            const left = (flags >>> 1) & 1;
+            const right = (flags >>> 0) & 1;
+
+            levelSpecificDatas[levelNum].beaten = beaten;
+            levelSpecificDatas[levelNum].midway = midway;
+            levelSpecificDatas[levelNum].noEntry = noEntry;
+            levelSpecificDatas[levelNum].save = save;
+            levelSpecificDatas[levelNum].up = up;
+            levelSpecificDatas[levelNum].down = dn;
+            levelSpecificDatas[levelNum].left = left;
+            levelSpecificDatas[levelNum].right = right;
+        }
+    } else {
+        for (let i = 0; i < 96; i++) {
+            const value = read1(0x05DDA0 + i);
+            
+            const flags = value;
+            
+            const levelNum = convertTransLevelNum(i);
+
+            const beaten = (flags >>> 7) & 1;
+            const midway = (flags >>> 6) & 1;
+            const noEntry = (flags >>> 5) & 1;
+            const save = (flags >>> 4) & 1;
+            const up = (flags >>> 3) & 1;
+            const dn = (flags >>> 2) & 1;
+            const left = (flags >>> 1) & 1;
+            const right = (flags >>> 0) & 1;
+
+            levelSpecificDatas[levelNum].beaten = beaten;
+            levelSpecificDatas[levelNum].midway = midway;
+            levelSpecificDatas[levelNum].noEntry = noEntry;
+            levelSpecificDatas[levelNum].save = save;
+            levelSpecificDatas[levelNum].up = up;
+            levelSpecificDatas[levelNum].down = dn;
+            levelSpecificDatas[levelNum].left = left;
+            levelSpecificDatas[levelNum].right = right;
+        }
     }
 
     // sprites
