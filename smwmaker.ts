@@ -182,6 +182,7 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+let levelNames: string[];
 let messages1: string[], messages2: string[];
 let castleDestMsg: string[];
 let owsp1bmp: number[][], owsp2bmp: number[][], owsp3bmp: number[][], owsp4bmp: number[][];
@@ -15272,7 +15273,91 @@ function loadOW() {
         }
         castleDestMsg.push(s);
     }  
-    
+
+    // level names
+
+    levelNames = [];
+
+    for (let i = 0; i < 0x200; i++) {
+        levelNames[i] = "";
+    }
+
+    if (!isLMModified) {
+        for (let i = 0; i < 0xDD; i++) {
+            let transLevelNum = i;
+
+            let realLevelNum = convertTransLevelNum(i);
+            
+            const value = read2(0x04A0FC + 2 * transLevelNum);
+            
+            let offsetA = (value >>> 8) & 0b0111_1111;
+            let offsetB = (value >>> 4) & 0b1111;
+            let offsetC = (value >>> 0) & 0b1111;
+
+            let a = read2(0x049C91 + offsetA * 2);
+            let b = read2(0x049CCF + offsetB * 2);
+            let c = read2(0x049CED + offsetC * 2);
+
+            let skipA: boolean = false, skipB: boolean = false;
+
+            //skipA = (((a & 0xFF) >>> 7) === 1);
+            //skipB = ((b & 0xFF) === 0x9F);
+
+            let nameA = "";
+
+            if (!skipA) {
+                for (let j = 0; j < 19; j++) {
+                    const tileNum = (read1(0x049AC5 + a + j));
+                    const realTileNum = tileNum & 0b0111_1111;
+                    const chr = tile2char(realTileNum);
+                    nameA += chr;
+                    const eos = tileNum >>> 7;
+                    if (eos) {
+                        break;
+                    }
+                    
+                }
+            }
+
+            let nameB = "";
+            
+            if (!skipB) {
+                for (let j = 0; j < 19; j++) {
+                    const tileNum = (read1(0x049AC5 + b + j));
+                    const realTileNum = tileNum & 0b0111_1111;
+                    const chr = tile2char(realTileNum);
+                    nameB += chr;
+                    const eos = tileNum >>> 7;
+                    if (eos) {
+                        break;
+                    }
+                    
+                }
+            }
+
+            let nameC = "";
+
+            for (let j = 0; j < 19; j++) {
+                const tileNum = (read1(0x049AC5 + c + j));
+                const realTileNum = tileNum & 0b0111_1111;
+                const chr = tile2char(realTileNum);
+                nameC += chr;
+                const eos = tileNum >>> 7;
+                if (eos) {
+                    break;
+                }
+                
+            }
+
+            let name = nameA + nameB + nameC;
+
+
+            levelNames[realLevelNum] = name;
+
+        }
+    } else {
+        
+    }
 
     // sprites
 
