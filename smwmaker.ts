@@ -3221,8 +3221,6 @@ function loadLevel(lvlNum: number): boolean {
         pointer = 0;
     }
 
-    console.log("pointer: " + pointer.toString(16)) ;
-
     if (pointer) {
         // TB0MMMMM 
         const offset = pointer + lvlNum;
@@ -15254,8 +15252,8 @@ function loadOW() {
             messages2[levelNum] = msg2;
           
 
-            console.log(msg1);
-            console.log(msg2);
+            //console.log(msg1);
+            //console.log(msg2);
         }
     }
 
@@ -15356,7 +15354,18 @@ function loadOW() {
 
         }
     } else {
-        
+        const table = read3(0x03BB57);
+
+        for (let i = 0; i < 0xDD; i++) {
+            let realLevelNum = convertTransLevelNum(i);
+            let name = "";
+            for (let j = 0; j < 19; j++) {
+                let chr = tile2char(read1(table + i * 19 + j)); 
+                name += chr;
+            }
+            levelNames[realLevelNum] = name;
+            console.log(name);
+        }
     }
 
     // sprites
