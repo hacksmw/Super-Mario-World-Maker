@@ -182,6 +182,16 @@ class LT3Tile {
     flipy: number = 0;
 }
 
+class Pipe {
+    x: number = 0;
+    y: number = 0;
+    submap: number = 0;
+    destX: number = 0;
+    destY: number = 0;
+    destSubmap: number = 0;
+}
+
+let owPipes: Pipe[];
 let levelNames: string[];
 let messages1: string[], messages2: string[];
 let castleDestMsg: string[];
@@ -14592,7 +14602,7 @@ function loadOW() {
     let tileNums;
     let tileSettings;
 
-    let adr: number, adr2: number, adr3: number;
+    let adr: number, adr2: number, adr3: number, adr4: number;
 
     if (isLMModified) {
         adr = (read1(0x04DC79)<<16)|read2(0x04DC72);
@@ -15364,9 +15374,72 @@ function loadOW() {
                 name += chr;
             }
             levelNames[realLevelNum] = name;
-            console.log(name);
         }
     }
+
+    // star and pipes
+
+    adr = 0x048431;
+    adr2 = 0x048467;
+    adr3 = 0x04849D;
+    adr4 = 0x0484D3;
+
+    /*
+    if (isLMModified) {
+        adr = read3(read3(0x04850A)+0x14);
+        adr2 = read3(read3(0x04850A)+0x24);
+        adr3 = read3(read3(0x048567)+0x07);
+        adr4 = read3(read3(0x048567)+0x19);
+    }
+    */
+
+    owPipes = [];
+
+    for (let i = 0; i < 0x1A; i++) {
+        let sourceX = read1(adr + (i * 2) + 0);
+        
+        let sourceSubmap = read1(adr + (i * 2) + 1);
+        let sourceY = read1(adr2 + (i * 2) + 0);
+
+        let dest = read2(adr3 + (i * 2));
+        let destX = dest & 0b1_1111_1111;
+        let destSubmap = (dest >>> 9) & 0b111;
+        let destY = read2(adr4 + (i * 2));
+
+        if (sourceSubmap !== 0) {
+            sourceX++;
+            if (sourceX === 0x20) {
+                sourceX = 0;
+            }
+            sourceY += 0x20;
+        }
+
+        if (destSubmap !== 0) {
+            destX += 16;
+            destY += 32 * 16;
+        }
+
+        let pipe = new Pipe();
+
+        pipe.x = sourceX;
+        pipe.y = sourceY;
+        pipe.submap = sourceSubmap;
+        pipe.destSubmap = destSubmap;
+        pipe.destX = Math.floor(destX / 16);
+        pipe.destY = Math.floor(destY / 16);
+
+        owPipes.push(pipe);
+
+        /*
+        console.log("sourceX: ", sourceX.toString(16));
+        console.log("sourceY: ", sourceY.toString(16));
+        console.log("sourceSubmap: ", sourceSubmap.toString(16));
+        console.log("destX: ", Math.floor(destX / 16).toString(16));
+        console.log("destY: ", Math.floor(destY / 16).toString(16));
+        console.log("destSubmap: ", destSubmap.toString(16));
+        */
+    }
+
 
     // sprites
 
