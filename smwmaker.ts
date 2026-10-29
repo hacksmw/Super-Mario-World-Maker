@@ -14691,6 +14691,19 @@ function getSubmapNumBy8x8(x: number, y: number): number {
     return 0;
 }
 
+function getSubmapNumBy16x16(x: number, y: number): number {
+    const isSubmap = Math.floor(y / 32);
+    
+    if (isSubmap) {
+        let xPos = x * 2;
+        let yPos = y * 2 + 1;
+
+        return getSubmapNumBy8x8(xPos, yPos);
+    }
+
+    return 0;
+}
+
 function getOWPalettes() {
     let palettes: number[][][];
     let pals: RGB[][][];
@@ -14806,7 +14819,7 @@ function getOWPalettes() {
         } catch (e) {
             console.log("Can't load OW palettes");
         }
-    } 
+    }
 
     /* Convert palettes */
 
@@ -15891,9 +15904,11 @@ function loadOW() {
         owSpritesDisabledSlot[i] = read1(0x04F829 + i);
     }
 
-    // render
+    /* render */
 
     console.log("wait...");
+
+    // layer 2
 
     const tempCanvas = document.createElement("canvas");
     tempCanvas.height = canvas.height;
@@ -15922,7 +15937,7 @@ function loadOW() {
 
     }
     
-    // map16
+    // map16 tiles
     for (let i = 0; i < 0xBF; i++) {
         let upleft = getOW8x8Img(owMap16[i].upleft.gfx, owMap16[i].upleft.pal, !!(owMap16[i].upleft.xflip), !!(owMap16[i].upleft.yflip));
         let upright = getOW8x8Img(owMap16[i].upright.gfx, owMap16[i].upright.pal, !!(owMap16[i].upright.xflip), !!(owMap16[i].upright.yflip));
@@ -15935,6 +15950,7 @@ function loadOW() {
         ctx!.putImageData(dnright, (i%16)*16 + 8, 128*8+intdiv(i, 16)*16 + 8);
     }
 
+    // events
     
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];  
     const delta = ((eventsIndex[(eventNum+1) * 2 + 1] << 8) | eventsIndex[(eventNum+1) * 2]) - eventIndex;
@@ -15990,10 +16006,15 @@ function loadOW() {
 
         if (index === 0) continue;
 
-        let upleft = getOW8x8Img(owMap16[index].upleft.gfx, owMap16[index].upleft.pal, !!(owMap16[index].upleft.xflip), !!(owMap16[index].upleft.yflip));
-        let upright = getOW8x8Img(owMap16[index].upright.gfx, owMap16[index].upright.pal, !!(owMap16[index].upright.xflip), !!(owMap16[index].upright.yflip));
-        let dnleft = getOW8x8Img(owMap16[index].lowleft.gfx, owMap16[index].lowleft.pal, !!(owMap16[index].lowleft.xflip), !!(owMap16[index].lowleft.yflip));
-        let dnright = getOW8x8Img(owMap16[index].lowright.gfx, owMap16[index].lowright.pal, !!(owMap16[index].lowright.xflip), !!(owMap16[index].lowright.yflip));
+        let x = i % 32;
+        let y = intdiv(i, 32);
+
+        let submap = getSubmapNumBy16x16(x, y);
+
+        let upleft = getOW8x8Img(owMap16[index].upleft.gfx, owMap16[index].upleft.pal, !!(owMap16[index].upleft.xflip), !!(owMap16[index].upleft.yflip), submap);
+        let upright = getOW8x8Img(owMap16[index].upright.gfx, owMap16[index].upright.pal, !!(owMap16[index].upright.xflip), !!(owMap16[index].upright.yflip), submap);
+        let dnleft = getOW8x8Img(owMap16[index].lowleft.gfx, owMap16[index].lowleft.pal, !!(owMap16[index].lowleft.xflip), !!(owMap16[index].lowleft.yflip), submap);
+        let dnright = getOW8x8Img(owMap16[index].lowright.gfx, owMap16[index].lowright.pal, !!(owMap16[index].lowright.xflip), !!(owMap16[index].lowright.yflip), submap);
 
         let factor = 0;
 
