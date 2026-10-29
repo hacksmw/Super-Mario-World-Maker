@@ -178,6 +178,14 @@ class LevelSpecificData {
     left = 0;
     right = 0;
 }
+class OwFGBG {
+    fg1 = 0;
+    fg2 = 0;
+    fg3 = 0;
+    fg4 = 0;
+}
+let owFGBG;
+let owFGBGindex;
 let owPals;
 let initialMarioStatuses;
 let levelSpecificDatas;
@@ -14247,6 +14255,23 @@ function loadOW() {
     }
     // ow palettes
     owPals = getOWPalettes();
+    // ow graphics
+    owFGBG = new Array(7);
+    owFGBGindex = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        const index = read1(0x04DC02 + i);
+        owFGBGindex[i] = index;
+        const fg1 = read1(0x00A92B + index * 4 + 0);
+        const fg2 = read1(0x00A92B + index * 4 + 1);
+        const fg3 = read1(0x00A92B + index * 4 + 2);
+        const fg4 = read1(0x00A92B + index * 4 + 3);
+        owFGBG[i] = {
+            fg1: fg1,
+            fg2: fg2,
+            fg3: fg3,
+            fg4: fg4,
+        };
+    }
     // sprites
     owSprites = new Array(13);
     for (let i = 0; i < 13; i++) {
