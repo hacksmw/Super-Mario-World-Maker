@@ -14343,7 +14343,7 @@ function checkRomFileSize(fileData: any, header: boolean = true): boolean {
     }
 }
 
-function getOW8x8Img(index: number = 0, palette: number = 0, flipx = false, flipy = false) {
+function getOW8x8Img(index: number = 0, palette: number = 0, flipx = false, flipy = false, submap = 0) {
     index = index % 0x300;
 
     const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
@@ -14385,7 +14385,7 @@ function getOW8x8Img(index: number = 0, palette: number = 0, flipx = false, flip
         let color: RGB;            
         let r: number, g: number, b: number;
 
-        color = pal[palette][bitmap[j]];
+        color = owPals[submap][palette][bitmap[j]];
             
         r = color.r
         g = color.g
@@ -14750,9 +14750,8 @@ function getOWPalettes() {
         pals[k] = pal;
     }
 
+    /*
     // test
-
-    
     const palImg = getPalImage(pals[0]);
 
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -14765,7 +14764,7 @@ function getOWPalettes() {
     ctx!.putImageData(palImg, 0, 0);
 
     document.body.appendChild(canvas);
-    
+    */
 
     return pals;
 }
@@ -15830,6 +15829,7 @@ function loadOW() {
 
     }
     
+    // map16
     for (let i = 0; i < 0xBF; i++) {
         let upleft = getOW8x8Img(owMap16[i].upleft.gfx, owMap16[i].upleft.pal, !!(owMap16[i].upleft.xflip), !!(owMap16[i].upleft.yflip));
         let upright = getOW8x8Img(owMap16[i].upright.gfx, owMap16[i].upright.pal, !!(owMap16[i].upright.xflip), !!(owMap16[i].upright.yflip));

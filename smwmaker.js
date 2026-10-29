@@ -12963,7 +12963,7 @@ function checkRomFileSize(fileData, header = true) {
             break;
     }
 }
-function getOW8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
+function getOW8x8Img(index = 0, palette = 0, flipx = false, flipy = false, submap = 0) {
     index = index % 0x300;
     const canvas = document.createElement("canvas");
     canvas.width = 8;
@@ -12994,7 +12994,7 @@ function getOW8x8Img(index = 0, palette = 0, flipx = false, flipy = false) {
     for (let j = 0; j < 64; j++) {
         let color;
         let r, g, b;
-        color = pal[palette][bitmap[j]];
+        color = owPals[submap][palette][bitmap[j]];
         r = color.r;
         g = color.g;
         b = color.b;
@@ -13341,14 +13341,21 @@ function getOWPalettes() {
         }
         pals[k] = pal;
     }
+    /*
     // test
     const palImg = getPalImage(pals[0]);
-    const canvas = document.createElement("canvas");
+
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    
     canvas.width = palImg.width;
     canvas.height = palImg.height;
+
     const ctx = canvas.getContext("2d");
-    ctx.putImageData(palImg, 0, 0);
+
+    ctx!.putImageData(palImg, 0, 0);
+
     document.body.appendChild(canvas);
+    */
     return pals;
 }
 function loadOW() {
@@ -14179,6 +14186,7 @@ function loadOW() {
         let tileImg = getOW8x8Img(realTileNum, pal, !!flipX, !!flipY);
         ctx.putImageData(tileImg, (i % 64) * 8, intdiv(i, 64) * 8);
     }
+    // map16
     for (let i = 0; i < 0xBF; i++) {
         let upleft = getOW8x8Img(owMap16[i].upleft.gfx, owMap16[i].upleft.pal, !!(owMap16[i].upleft.xflip), !!(owMap16[i].upleft.yflip));
         let upright = getOW8x8Img(owMap16[i].upright.gfx, owMap16[i].upright.pal, !!(owMap16[i].upright.xflip), !!(owMap16[i].upright.yflip));
