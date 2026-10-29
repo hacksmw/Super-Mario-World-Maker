@@ -245,7 +245,7 @@ let owPipes: Pipe[];
 let levelNames: string[];
 let messages1: string[], messages2: string[];
 let castleDestMsg: string[];
-let owsp1bmp: number[][], owsp2bmp: number[][], owsp3bmp: number[][], owsp4bmp: number[][];
+let owsp1bmps: number[][][], owsp2bmps: number[][][], owsp3bmps: number[][][], owsp4bmps: number[][][];
 let owSpritesDisabledSlot: number[];
 let owSprites: OWSprite[];
 let layer26x6TileSize: number;
@@ -343,7 +343,7 @@ let bg2: number, bg3: number;
 let superGFXBypass: boolean;
 let layer3Bypass: boolean;
 let layer3TilemapBypass: boolean;
-let owsp1: number, owsp2: number, owsp3: number, owsp4: number;
+let owsp1s: number[], owsp2s: number[], owsp3s: number[], owsp4s: number[];
 
 let disableOrgLevelPalAni: number;
 let disableOrgLevelAni: number;
@@ -4920,7 +4920,7 @@ function loadGraphics() {
     let lg1gfx: number[], lg2gfx: number[], lg3gfx: number[], lg4gfx: number[];
     let lt3gfx: number[];
     let owfg1sgfx: number[][], owfg2sgfx: number[][], owfg3sgfx: number[][], owfg4sgfx: number[][];
-    let owsp1gfx: number[], owsp2gfx: number[], owsp3gfx: number[], owsp4gfx: number[];
+    let owsp1sgfx: number[][], owsp2sgfx: number[][], owsp3sgfx: number[][], owsp4sgfx: number[][];
 
     // get tileset
 
@@ -4965,10 +4965,19 @@ function loadGraphics() {
         owfg4s[i] = 0x1E;
     }
 
-    owsp1 = 0x10;
-    owsp2 = 0xf;
-    owsp3 = 0x1c;
-    owsp4 = 0x1d;
+    owsp1s = new Array(7);
+    owsp2s = new Array(7);
+    owsp3s = new Array(7);
+    owsp4s = new Array(7);
+
+    for (let i = 0; i < 7; i++) {
+        owsp1s[i] = 0x10;
+        owsp2s[i] = 0xf;
+        owsp3s[i] = 0x1c;
+        owsp4s[i] = 0x1d;
+    }
+
+    
     
     sp1 = read1((spriteGfxTable) + (4*sprGFX + 0));
     sp2 = read1((spriteGfxTable) + (4*sprGFX + 1));
@@ -5012,10 +5021,19 @@ function loadGraphics() {
         owfg4sgfx[i] = getUncompressedGFX(owfg4s[i]);
     }
 
-    owsp1gfx = getUncompressedGFX(owsp1);
-    owsp2gfx = getUncompressedGFX(owsp2);
-    owsp3gfx = getUncompressedGFX(owsp3);
-    owsp4gfx = getUncompressedGFX(owsp4);
+    owsp1sgfx = new Array(7);
+    owsp2sgfx = new Array(7);
+    owsp3sgfx = new Array(7);
+    owsp4sgfx = new Array(7);
+
+    for (let i = 0; i < 7; i++) {
+        owsp1sgfx[i] = getUncompressedGFX(owsp1s[i]);
+        owsp2sgfx[i] = getUncompressedGFX(owsp2s[i]);
+        owsp3sgfx[i] = getUncompressedGFX(owsp3s[i]);
+        owsp4sgfx[i] = getUncompressedGFX(owsp4s[i]);
+    }
+
+    
 
     
     
@@ -5256,13 +5274,20 @@ function loadGraphics() {
         owfg4bmps[i] = convertGraphics(owfg4sgfx[i], is4bpp);
     }
 
-
-
-    owsp1bmp = convertGraphics(owsp1gfx, is4bpp);
-    owsp2bmp = convertGraphics(owsp2gfx, is4bpp);
-    owsp3bmp = convertGraphics(owsp3gfx, is4bpp);
-    owsp4bmp = convertGraphics(owsp4gfx, is4bpp);
     
+
+    owsp1bmps = new Array(7);
+    owsp2bmps = new Array(7);
+    owsp3bmps = new Array(7);
+    owsp4bmps = new Array(7);
+
+    for (let i = 0; i < 7; i++) {
+        owsp1bmps[i] = convertGraphics(owsp1sgfx[i], is4bpp);
+        owsp2bmps[i] = convertGraphics(owsp2sgfx[i], is4bpp);
+        owsp3bmps[i] = convertGraphics(owsp3sgfx[i], is4bpp);
+        owsp4bmps[i] = convertGraphics(owsp4sgfx[i], is4bpp);
+    }
+
     if (lmVer >= 1.70 && layer3TilemapBypass) {
         lt3tiles = convertLT3(lt3gfx);
     } else {
@@ -16050,7 +16075,7 @@ function loadOW() {
         
     }
 
-    for (let i = 1; i < 7; i++) {
+    for (let i = 0; i < 7; i++) {
         owfg1s[i] = owGFX[i].fg1;
         owfg2s[i] = owGFX[i].fg2;
         owfg3s[i] = owGFX[i].fg3;
@@ -16061,18 +16086,22 @@ function loadOW() {
         owfg3bmps[i] = convertGraphics(getUncompressedGFX(owfg3s[i]), is4bpp);
         owfg4bmps[i] = convertGraphics(getUncompressedGFX(owfg4s[i]), is4bpp);
     }
+
+    for (let i = 0; i < 7; i++) {
+        owsp1s[i] = owGFX[i].sp1;
+        owsp2s[i] = owGFX[i].sp2;
+        owsp3s[i] = owGFX[i].sp3;
+        owsp4s[i] = owGFX[i].sp4;
+
+        owsp1bmps[i] = convertGraphics(getUncompressedGFX(owsp1s[i]), is4bpp);
+        owsp2bmps[i] = convertGraphics(getUncompressedGFX(owsp2s[i]), is4bpp);
+        owsp3bmps[i] = convertGraphics(getUncompressedGFX(owsp3s[i]), is4bpp);
+        owsp4bmps[i] = convertGraphics(getUncompressedGFX(owsp4s[i]), is4bpp);
+    }
     
     
 
-    owsp1 = owGFX[0].sp1;
-    owsp2 = owGFX[0].sp2;
-    owsp3 = owGFX[0].sp3;
-    owsp4 = owGFX[0].sp4;
-
-    owsp1bmp = convertGraphics(getUncompressedGFX(owsp1), is4bpp);
-    owsp2bmp = convertGraphics(getUncompressedGFX(owsp2), is4bpp);
-    owsp3bmp = convertGraphics(getUncompressedGFX(owsp3), is4bpp);
-    owsp4bmp = convertGraphics(getUncompressedGFX(owsp4), is4bpp);
+    
 
     owani2s = new Array(7);
     owani2bmps = new Array(7);
