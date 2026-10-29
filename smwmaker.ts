@@ -14629,9 +14629,8 @@ function getOWPalettes() {
         palettes[k] = palette;
     }
 
-
     // load layer 2 palettes (normal)
-    
+        
     for (let k = 0; k < 7; k++) {
         const palId = read1(0x00AD1E + k);
         const palTable = read2(0x00ABDF + palId * 2);    
@@ -14711,6 +14710,20 @@ function getOWPalettes() {
         }
     }
 
+    if (isLMModified) {
+        try {
+            const addr = (read1(read3(0x00AD33)+0x1E)<<16)|read2(read3(0x00AD33)+0x12);
+            for (let i = 0; i < 14; i++) {
+                for (let j = 0; j < 256; j++) {
+                    const data = read2(addr + (i * (256 * 2)) + (j * 2));
+                    palettes[i][intdiv(j, 16)][j % 16] = data;
+                }
+            }
+        } catch (e) {
+
+        }
+    }   
+
     /* Convert palettes */
 
     pals = new Array(14);
@@ -14739,7 +14752,7 @@ function getOWPalettes() {
 
     // test
 
-    /*
+    
     const palImg = getPalImage(pals[0]);
 
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -14752,7 +14765,7 @@ function getOWPalettes() {
     ctx!.putImageData(palImg, 0, 0);
 
     document.body.appendChild(canvas);
-    */
+    
 
     return pals;
 }

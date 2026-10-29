@@ -13308,6 +13308,19 @@ function getOWPalettes() {
             palettes[k][8][6 + i] = data;
         }
     }
+    if (isLMModified) {
+        try {
+            const addr = (read1(read3(0x00AD33) + 0x1E) << 16) | read2(read3(0x00AD33) + 0x12);
+            for (let i = 0; i < 14; i++) {
+                for (let j = 0; j < 256; j++) {
+                    const data = read2(addr + (i * (256 * 2)) + (j * 2));
+                    palettes[i][intdiv(j, 16)][j % 16] = data;
+                }
+            }
+        }
+        catch (e) {
+        }
+    }
     /* Convert palettes */
     pals = new Array(14);
     for (let k = 0; k < 14; k++) {
@@ -13329,20 +13342,13 @@ function getOWPalettes() {
         pals[k] = pal;
     }
     // test
-    /*
     const palImg = getPalImage(pals[0]);
-
-    const canvas = document.createElement("canvas") as HTMLCanvasElement;
-    
+    const canvas = document.createElement("canvas");
     canvas.width = palImg.width;
     canvas.height = palImg.height;
-
     const ctx = canvas.getContext("2d");
-
-    ctx!.putImageData(palImg, 0, 0);
-
+    ctx.putImageData(palImg, 0, 0);
     document.body.appendChild(canvas);
-    */
     return pals;
 }
 function loadOW() {
