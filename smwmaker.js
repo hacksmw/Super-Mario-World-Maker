@@ -13229,6 +13229,89 @@ function tiles2text(tiles) {
     }
     return result;
 }
+function getSubmapNumBy8x8(x, y) {
+    const isSubmap = Math.floor(y / 64);
+    const j = Math.floor(x / 32);
+    switch (isSubmap) {
+        case 0:
+            return 0;
+        case 1:
+            {
+                let h = y - 64;
+                if (h === 0) {
+                    // yoshi's island or bowser's valley
+                    if (j === 0) {
+                        // yoshi's island
+                        return 1;
+                    }
+                    else if (j === 1) {
+                        // bowser's valley
+                        return 4;
+                    }
+                    else {
+                        // undefined
+                        throw new Error("Undefined 0");
+                    }
+                }
+                h--;
+                let i = Math.floor(h / 21);
+                switch (i) {
+                    case 0:
+                        // yoshi's island or bowser's valley
+                        if (j === 0) {
+                            // yoshi's island
+                            return 1;
+                        }
+                        else if (j === 1) {
+                            // bowser's valley
+                            return 4;
+                        }
+                        else {
+                            // undefined
+                            throw new Error("Undefined 1");
+                        }
+                        break;
+                    case 1:
+                        // yoshi's island or bowser's valley
+                        if (j === 0) {
+                            // vanilla dome
+                            return 2;
+                        }
+                        else if (j === 1) {
+                            // special world
+                            return 5;
+                        }
+                        else {
+                            // undefined
+                            throw new Error("Undefined 2");
+                        }
+                        break;
+                    case 2:
+                        // forest or star road
+                        if (j === 0) {
+                            // forest
+                            return 3;
+                        }
+                        else if (j === 1) {
+                            // star road
+                            return 6;
+                        }
+                        else {
+                            // undefined
+                            throw new Error("Undefined 3");
+                        }
+                        break;
+                    default:
+                        // undefined
+                        throw new Error("Undefined 4");
+                }
+            }
+            break;
+        default:
+            throw new Error("Undefined5 ");
+    }
+    return 0;
+}
 function getOWPalettes() {
     let palettes;
     let pals;
@@ -13319,6 +13402,7 @@ function getOWPalettes() {
             }
         }
         catch (e) {
+            console.log("Can't load OW palettes");
         }
     }
     /* Convert palettes */
@@ -14259,87 +14343,4 @@ function loadOW() {
     }
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-function getSubmapNumBy8x8(x, y) {
-    const isSubmap = Math.floor(y / 64);
-    const j = Math.floor(x / 32);
-    switch (isSubmap) {
-        case 0:
-            return 0;
-        case 1:
-            {
-                let h = y - 64;
-                if (h === 0) {
-                    // yoshi's island or bowser's valley
-                    if (j === 0) {
-                        // yoshi's island
-                        return 1;
-                    }
-                    else if (j === 1) {
-                        // bowser's valley
-                        return 4;
-                    }
-                    else {
-                        // undefined
-                        throw new Error("Undefined 0");
-                    }
-                }
-                h--;
-                let i = Math.floor(h / 21);
-                switch (i) {
-                    case 0:
-                        // yoshi's island or bowser's valley
-                        if (j === 0) {
-                            // yoshi's island
-                            return 1;
-                        }
-                        else if (j === 1) {
-                            // bowser's valley
-                            return 4;
-                        }
-                        else {
-                            // undefined
-                            throw new Error("Undefined 1");
-                        }
-                        break;
-                    case 1:
-                        // yoshi's island or bowser's valley
-                        if (j === 0) {
-                            // vanilla dome
-                            return 2;
-                        }
-                        else if (j === 1) {
-                            // special world
-                            return 5;
-                        }
-                        else {
-                            // undefined
-                            throw new Error("Undefined 2");
-                        }
-                        break;
-                    case 2:
-                        // forest or star road
-                        if (j === 0) {
-                            // forest
-                            return 3;
-                        }
-                        else if (j === 1) {
-                            // star road
-                            return 6;
-                        }
-                        else {
-                            // undefined
-                            throw new Error("Undefined 3");
-                        }
-                        break;
-                    default:
-                        // undefined
-                        throw new Error("Undefined 4");
-                }
-            }
-            break;
-        default:
-            throw new Error("Undefined5 ");
-    }
-    return 0;
 }
