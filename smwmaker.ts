@@ -230,8 +230,8 @@ class OwGFX {
 
 let owfg5bmp: number[][], owfg6bmp: number[][];
 let owfg5: number, owfg6: number;
-let owani2: number;
-let owani2bmp: number[][];
+let owani2s: number[];
+let owani2bmps: number[][][];
 let mergesp3sp4: boolean;
 let owGFX: OwGFX[];
 let owFGBGindex: number[];
@@ -16074,9 +16074,13 @@ function loadOW() {
     owsp3bmp = convertGraphics(getUncompressedGFX(owsp3), is4bpp);
     owsp4bmp = convertGraphics(getUncompressedGFX(owsp4), is4bpp);
 
-    owani2 = owGFX[0].an2;
+    owani2s = new Array(7);
+    owani2bmps = new Array(7);
 
-    owani2bmp = convertGraphics(getUncompressedGFX(owani2), is4bpp);
+    for (let i = 0; i < 7; i++) {
+        owani2s[i] = owGFX[i].an2;
+        owani2bmps[i] = convertGraphics(getUncompressedGFX(owani2s[i]), is4bpp);
+    }
 
     owfg5 = owGFX[0].fg5;
     owfg6 = owGFX[0].fg6;
