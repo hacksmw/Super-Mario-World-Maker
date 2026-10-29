@@ -187,6 +187,12 @@ class OwGFX {
     sp2 = 0;
     sp3 = 0;
     sp4 = 0;
+    an2 = 0;
+    lg1 = 0;
+    lg2 = 0;
+    lg3 = 0;
+    lg4 = 0;
+    lt3 = 0;
 }
 let mergesp3sp4;
 let owGFX;
@@ -14280,6 +14286,12 @@ function loadOW() {
             fg3: fg3,
             fg4: fg4,
             sp1, sp2, sp3, sp4,
+            lg1: 0x28,
+            lg2: 0x29,
+            lg3: 0x2A,
+            lg4: 0x2B,
+            lt3: 0x7F,
+            an2: 0x14,
         };
     }
     mergesp3sp4 = false;

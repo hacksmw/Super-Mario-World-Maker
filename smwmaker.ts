@@ -213,6 +213,12 @@ class OwGFX {
     sp2: number = 0;
     sp3: number = 0;
     sp4: number = 0;
+    an2: number = 0;
+    lg1: number = 0;
+    lg2: number = 0;
+    lg3: number = 0;
+    lg4: number = 0;
+    lt3: number = 0;
 }
 
 let mergesp3sp4: boolean;
@@ -15918,6 +15924,12 @@ function loadOW() {
             fg3: fg3,
             fg4: fg4,
             sp1, sp2, sp3, sp4,
+            lg1: 0x28,
+            lg2: 0x29,
+            lg3: 0x2A,
+            lg4: 0x2B,
+            lt3: 0x7F,
+            an2: 0x14,
         };
     }   
     
@@ -15926,6 +15938,8 @@ function loadOW() {
     if (lmVer >= 2.30) {
         const val = read1(0x0FF9F0);
         mergesp3sp4 = (!((val >>> 5) & 1));
+
+        
     }
 
     // sprites
