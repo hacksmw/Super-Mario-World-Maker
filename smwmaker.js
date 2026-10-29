@@ -332,8 +332,8 @@ let lg1, lg2, lg3, lg4;
 let lg1bmp, lg2bmp, lg3bmp, lg4bmp;
 let lt3bmp;
 let lt3tiles;
-let owfg1, owfg2, owfg3, owfg4;
-let owfg1bmp, owfg2bmp, owfg3bmp, owfg4bmp;
+let owfg1s, owfg2s, owfg3s, owfg4s;
+let owfg1bmps, owfg2bmps, owfg3bmps, owfg4bmps;
 let offset;
 let slippery;
 let water;
@@ -4209,7 +4209,7 @@ function loadGraphics() {
     let mariogfx;
     let lg1gfx, lg2gfx, lg3gfx, lg4gfx;
     let lt3gfx;
-    let owfg1gfx, owfg2gfx, owfg3gfx, owfg4gfx;
+    let owfg1sgfx, owfg2sgfx, owfg3sgfx, owfg4sgfx;
     let owsp1gfx, owsp2gfx, owsp3gfx, owsp4gfx;
     // get tileset
     if ((fgbgGFX >= tilesetList.length)) {
@@ -4233,10 +4233,16 @@ function loadGraphics() {
     lg3 = 0x2A;
     lg4 = 0x2B;
     lt3 = 0x7f;
-    owfg1 = 0x1C;
-    owfg2 = 0x1D;
-    owfg3 = 0x8;
-    owfg4 = 0x1E;
+    owfg1s = new Array(7);
+    owfg2s = new Array(7);
+    owfg3s = new Array(7);
+    owfg4s = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        owfg1s[i] = 0x1C;
+        owfg2s[i] = 0x1D;
+        owfg3s[i] = 0x8;
+        owfg4s[i] = 0x1E;
+    }
     owsp1 = 0x10;
     owsp2 = 0xf;
     owsp3 = 0x1c;
@@ -4263,10 +4269,16 @@ function loadGraphics() {
     lg3gfx = getUncompressedGFX(lg3);
     lg4gfx = getUncompressedGFX(lg4);
     // OW graphics
-    owfg1gfx = getUncompressedGFX(owfg1);
-    owfg2gfx = getUncompressedGFX(owfg2);
-    owfg3gfx = getUncompressedGFX(owfg3);
-    owfg4gfx = getUncompressedGFX(owfg4);
+    owfg1sgfx = new Array(7);
+    owfg2sgfx = new Array(7);
+    owfg3sgfx = new Array(7);
+    owfg4sgfx = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        owfg1sgfx[i] = getUncompressedGFX(owfg1s[i]);
+        owfg2sgfx[i] = getUncompressedGFX(owfg2s[i]);
+        owfg3sgfx[i] = getUncompressedGFX(owfg3s[i]);
+        owfg4sgfx[i] = getUncompressedGFX(owfg4s[i]);
+    }
     owsp1gfx = getUncompressedGFX(owsp1);
     owsp2gfx = getUncompressedGFX(owsp2);
     owsp3gfx = getUncompressedGFX(owsp3);
@@ -4451,10 +4463,16 @@ function loadGraphics() {
     lg2bmp = convertGraphics2bpp(lg2gfx);
     lg3bmp = convertGraphics2bpp(lg3gfx);
     lg4bmp = convertGraphics2bpp(lg4gfx);
-    owfg1bmp = convertGraphics(owfg1gfx, is4bpp);
-    owfg2bmp = convertGraphics(owfg2gfx, is4bpp);
-    owfg3bmp = convertGraphics(owfg3gfx, is4bpp);
-    owfg4bmp = convertGraphics(owfg4gfx, is4bpp);
+    owfg1bmps = new Array(7);
+    owfg2bmps = new Array(7);
+    owfg3bmps = new Array(7);
+    owfg4bmps = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        owfg1bmps[i] = convertGraphics(owfg1sgfx[i], is4bpp);
+        owfg2bmps[i] = convertGraphics(owfg2sgfx[i], is4bpp);
+        owfg3bmps[i] = convertGraphics(owfg3sgfx[i], is4bpp);
+        owfg4bmps[i] = convertGraphics(owfg4sgfx[i], is4bpp);
+    }
     owsp1bmp = convertGraphics(owsp1gfx, is4bpp);
     owsp2bmp = convertGraphics(owsp2gfx, is4bpp);
     owsp3bmp = convertGraphics(owsp3gfx, is4bpp);
@@ -13003,16 +13021,16 @@ function getOW8x8Img(index = 0, palette = 0, flipx = false, flipy = false, subma
     let gfx;
     switch (page) {
         case 0:
-            gfx = owfg1bmp;
+            gfx = owfg1bmps[submap];
             break;
         case 1:
-            gfx = owfg2bmp;
+            gfx = owfg2bmps[submap];
             break;
         case 2:
-            gfx = owfg3bmp;
+            gfx = owfg3bmps[submap];
             break;
         case 3:
-            gfx = owfg4bmp;
+            gfx = owfg4bmps[submap];
             break;
         default:
             throw new Error("unimplemented");
@@ -14370,14 +14388,16 @@ function loadOW() {
             }
         }
     }
-    owfg1 = owGFX[0].fg1;
-    owfg2 = owGFX[0].fg2;
-    owfg3 = owGFX[0].fg3;
-    owfg4 = owGFX[0].fg4;
-    owfg1bmp = convertGraphics(getUncompressedGFX(owfg1), is4bpp);
-    owfg2bmp = convertGraphics(getUncompressedGFX(owfg2), is4bpp);
-    owfg3bmp = convertGraphics(getUncompressedGFX(owfg3), is4bpp);
-    owfg4bmp = convertGraphics(getUncompressedGFX(owfg4), is4bpp);
+    for (let i = 1; i < 7; i++) {
+        owfg1s[i] = owGFX[i].fg1;
+        owfg2s[i] = owGFX[i].fg2;
+        owfg3s[i] = owGFX[i].fg3;
+        owfg4s[i] = owGFX[i].fg4;
+        owfg1bmps[i] = convertGraphics(getUncompressedGFX(owfg1s[i]), is4bpp);
+        owfg2bmps[i] = convertGraphics(getUncompressedGFX(owfg2s[i]), is4bpp);
+        owfg3bmps[i] = convertGraphics(getUncompressedGFX(owfg3s[i]), is4bpp);
+        owfg4bmps[i] = convertGraphics(getUncompressedGFX(owfg4s[i]), is4bpp);
+    }
     owsp1 = owGFX[0].sp1;
     owsp2 = owGFX[0].sp2;
     owsp3 = owGFX[0].sp3;
