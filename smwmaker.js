@@ -14258,6 +14258,10 @@ function loadOW() {
     }
     // render
     console.log("wait...");
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.height = canvas.height;
+    tempCanvas.width = canvas.width;
+    const tempCtx = tempCanvas.getContext("2d");
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];
         let tileSetting = result2[i];
@@ -14336,11 +14340,12 @@ function loadOW() {
         if (i >= 1024) {
             factor = 8;
         }
-        ctx.putImageData(upleft, (i % 32) * 16, intdiv(i, 32) * 16 + 0 + factor);
-        ctx.putImageData(upright, (i % 32) * 16 + 8, intdiv(i, 32) * 16 + 0 + factor);
-        ctx.putImageData(dnleft, (i % 32) * 16, intdiv(i, 32) * 16 + 8 + factor);
-        ctx.putImageData(dnright, (i % 32) * 16 + 8, intdiv(i, 32) * 16 + 8 + factor);
+        tempCtx.putImageData(upleft, (i % 32) * 16, intdiv(i, 32) * 16 + 0 + factor);
+        tempCtx.putImageData(upright, (i % 32) * 16 + 8, intdiv(i, 32) * 16 + 0 + factor);
+        tempCtx.putImageData(dnleft, (i % 32) * 16, intdiv(i, 32) * 16 + 8 + factor);
+        tempCtx.putImageData(dnright, (i % 32) * 16 + 8, intdiv(i, 32) * 16 + 8 + factor);
     }
+    ctx.drawImage(tempCanvas, 0, 0);
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
