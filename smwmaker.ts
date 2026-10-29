@@ -215,6 +215,7 @@ class OwGFX {
     sp4: number = 0;
 }
 
+let mergesp3sp4: boolean;
 let owGFX: OwGFX[];
 let owFGBGindex: number[];
 let owPals: RGB[][][];
@@ -15918,7 +15919,14 @@ function loadOW() {
             fg4: fg4,
             sp1, sp2, sp3, sp4,
         };
-    }    
+    }   
+    
+    mergesp3sp4 = false;
+
+    if (lmVer >= 2.30) {
+        const val = read1(0x0FF9F0);
+        mergesp3sp4 = (!((val >>> 5) & 1));
+    }
 
     // sprites
 
@@ -15950,12 +15958,12 @@ function loadOW() {
 
     console.log("wait...");
 
-    // layer 2
-
     const tempCanvas = document.createElement("canvas");
     tempCanvas.height = canvas.height;
     tempCanvas.width = canvas.width;
     const tempCtx = tempCanvas.getContext("2d");
+
+    // layer 2
 
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];

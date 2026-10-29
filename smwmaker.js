@@ -188,6 +188,7 @@ class OwGFX {
     sp3 = 0;
     sp4 = 0;
 }
+let mergesp3sp4;
 let owGFX;
 let owFGBGindex;
 let owPals;
@@ -14281,6 +14282,11 @@ function loadOW() {
             sp1, sp2, sp3, sp4,
         };
     }
+    mergesp3sp4 = false;
+    if (lmVer >= 2.30) {
+        const val = read1(0x0FF9F0);
+        mergesp3sp4 = (!((val >>> 5) & 1));
+    }
     // sprites
     owSprites = new Array(13);
     for (let i = 0; i < 13; i++) {
@@ -14301,11 +14307,11 @@ function loadOW() {
     }
     /* render */
     console.log("wait...");
-    // layer 2
     const tempCanvas = document.createElement("canvas");
     tempCanvas.height = canvas.height;
     tempCanvas.width = canvas.width;
     const tempCtx = tempCanvas.getContext("2d");
+    // layer 2
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];
         let tileSetting = result2[i];
