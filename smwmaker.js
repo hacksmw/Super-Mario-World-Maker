@@ -201,8 +201,8 @@ class OwGFX {
     l3size = 0;
     unused = 0;
 }
-let owfg5bmp, owfg6bmp;
-let owfg5, owfg6;
+let owfg5bmps, owfg6bmps;
+let owfg5s, owfg6s;
 let owani2s;
 let owani2bmps;
 let mergesp3sp4;
@@ -14412,10 +14412,16 @@ function loadOW() {
         owani2s[i] = owGFX[i].an2;
         owani2bmps[i] = convertGraphics(getUncompressedGFX(owani2s[i]), is4bpp);
     }
-    owfg5 = owGFX[0].fg5;
-    owfg6 = owGFX[0].fg6;
-    owfg5bmp = convertGraphics(getUncompressedGFX(owfg5), is4bpp);
-    owfg6bmp = convertGraphics(getUncompressedGFX(owfg6), is4bpp);
+    owfg5s = new Array(7);
+    owfg6s = new Array(7);
+    owfg5bmps = new Array(7);
+    owfg6bmps = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        owfg5s[i] = owGFX[i].fg5;
+        owfg6s[i] = owGFX[i].fg6;
+        owfg5bmps[i] = convertGraphics(getUncompressedGFX(owfg5s[i]), is4bpp);
+        owfg6bmps[i] = convertGraphics(getUncompressedGFX(owfg6s[i]), is4bpp);
+    }
     // sprites
     owSprites = new Array(13);
     for (let i = 0; i < 13; i++) {
