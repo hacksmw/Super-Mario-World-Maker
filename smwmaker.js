@@ -178,6 +178,7 @@ class LevelSpecificData {
     left = 0;
     right = 0;
 }
+let owPals;
 let initialMarioStatuses;
 let levelSpecificDatas;
 let directions;
@@ -13228,6 +13229,122 @@ function tiles2text(tiles) {
     }
     return result;
 }
+function getOWPalettes() {
+    let palettes;
+    let pals;
+    // reset palette array
+    palettes = new Array(14);
+    for (let k = 0; k < 14; k++) {
+        const palette = new Array(16);
+        for (let i = 0; i < palette.length; i++) {
+            palette[i] = new Array(16);
+            for (let j = 0; j < palette[i].length; j++) {
+                palette[i][j] = 0;
+            }
+            palette[i][0] = 0;
+            palette[i][1] = 0;
+        }
+        palettes[k] = palette;
+    }
+    // load layer 2 palettes (normal)
+    for (let k = 0; k < 7; k++) {
+        const palId = read1(0x00AD1E + k);
+        const palTable = read2(0x00ABDF + palId * 2);
+        const addr = (0x00B3D8 + palTable);
+        for (let j = 0; j < 4; j++) {
+            for (let i = 0; i < 7; i++) {
+                const data = readPal(addr, j * 7 + i);
+                palettes[k][4 + j][1 + i] = data;
+            }
+        }
+    }
+    // load layer 2 palettes (special world)
+    for (let k = 0; k < 7; k++) {
+        const palId = read1(0x00AD1E + k);
+        const palTable = read2(0x00ABDF + palId * 2);
+        const addr = (0x00B732 + palTable);
+        for (let j = 0; j < 4; j++) {
+            for (let i = 0; i < 7; i++) {
+                const data = readPal(addr, j * 7 + i);
+                palettes[k + 7][4 + j][1 + i] = data;
+            }
+        }
+    }
+    // load layer1 palettes
+    for (let k = 0; k < 14; k++) {
+        const addr = 0x00B528;
+        for (let j = 0; j < 6; j++) {
+            for (let i = 0; i < 7; i++) {
+                const data = readPal(addr, j * 7 + i);
+                palettes[k][2 + j][9 + i] = data;
+            }
+        }
+    }
+    // load layer3 palettes
+    for (let k = 0; k < 14; k++) {
+        const addr = 0x00B5EC;
+        for (let j = 0; j < 2; j++) {
+            for (let i = 0; i < 8; i++) {
+                const data = readPal(addr, j * 8 + i);
+                palettes[k][0 + j][8 + i] = data;
+            }
+        }
+    }
+    // load sprite palettes
+    for (let k = 0; k < 14; k++) {
+        const addr = 0x00B58A;
+        for (let j = 0; j < 7; j++) {
+            for (let i = 0; i < 7; i++) {
+                const data = readPal(addr, j * 7 + i);
+                palettes[k][9 + j][1 + i] = data;
+            }
+        }
+    }
+    // mario palette
+    for (let k = 0; k < 14; k++) {
+        const addr = 0x00b2c8;
+        for (let i = 0; i < 0xA; i++) {
+            const data = readPal(addr, i);
+            palettes[k][8][6 + i] = data;
+        }
+    }
+    /* Convert palettes */
+    pals = new Array(14);
+    for (let k = 0; k < 14; k++) {
+        let pal = new Array(16);
+        for (let i = 0; i < 16; i++) {
+            pal[i] = new Array(16);
+            for (let j = 0; j < 16; j++) {
+                let r, g, b;
+                r = ((palettes[k][i][j]) & 0b11111) * 8;
+                g = ((palettes[k][i][j] >>> 5) & 0b11111) * 8;
+                b = ((palettes[k][i][j] >>> 10) & 0b11111) * 8;
+                pal[i][j] = {
+                    r: r,
+                    g: g,
+                    b: b,
+                };
+            }
+        }
+        pals[k] = pal;
+    }
+    // test
+    /*
+    const palImg = getPalImage(pals[0]);
+
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    
+    canvas.width = palImg.width;
+    canvas.height = palImg.height;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx!.putImageData(palImg, 0, 0);
+
+    document.body.appendChild(canvas);
+    */
+    return pals;
+}
 function loadOW() {
     const canvas = document.createElement("canvas");
     canvas.width = 160 * 8;
@@ -14022,6 +14139,8 @@ function loadOW() {
     for (let i = 0; i < 22; i++) {
         initialMarioStatuses[i] = read1(0x009EF0 + i);
     }
+    // ow palettes
+    owPals = getOWPalettes();
     // sprites
     owSprites = new Array(13);
     for (let i = 0; i < 13; i++) {
