@@ -15920,10 +15920,30 @@ function loadOW() {
         const fg3 = read1(0x00A92B + index * 4 + 2);
         const fg4 = read1(0x00A92B + index * 4 + 3);
 
+        owfg1 = fg1;
+        owfg2 = fg2;
+        owfg3 = fg3;
+        owfg4 = fg4;
+
+        owfg1bmp = convertGraphics(getUncompressedGFX(owfg1), is4bpp);
+        owfg2bmp = convertGraphics(getUncompressedGFX(owfg2), is4bpp);
+        owfg3bmp = convertGraphics(getUncompressedGFX(owfg3), is4bpp);
+        owfg4bmp = convertGraphics(getUncompressedGFX(owfg4), is4bpp);
+
         const sp1 = read1(0x00A907 + 0);
         const sp2 = read1(0x00A907 + 1);
         const sp3 = read1(0x00A907 + 2);
         const sp4 = read1(0x00A907 + 3);
+
+        owsp1 = sp1;
+        owsp2 = sp2;
+        owsp3 = sp3;
+        owsp4 = sp4;
+
+        owsp1bmp = convertGraphics(getUncompressedGFX(owsp1), is4bpp);
+        owsp2bmp = convertGraphics(getUncompressedGFX(owsp2), is4bpp);
+        owsp3bmp = convertGraphics(getUncompressedGFX(owsp3), is4bpp);
+        owsp4bmp = convertGraphics(getUncompressedGFX(owsp4), is4bpp);
 
         owGFX[i] = {
             fg1: fg1,
