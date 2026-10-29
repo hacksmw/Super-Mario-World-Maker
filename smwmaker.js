@@ -193,6 +193,13 @@ class OwGFX {
     lg3 = 0;
     lg4 = 0;
     lt3 = 0;
+    fg5 = 0;
+    fg6 = 0;
+    l3bypass = 0;
+    l3tilemapbypass = 0;
+    l3dest = 0;
+    l3size = 0;
+    unused = 0;
 }
 let mergesp3sp4;
 let owGFX;
@@ -14292,12 +14299,72 @@ function loadOW() {
             lg4: 0x2B,
             lt3: 0x7F,
             an2: 0x14,
+            fg5: 0x7F,
+            fg6: 0x7F,
+            l3bypass: 0,
+            l3tilemapbypass: 0,
+            l3dest: 0,
+            l3size: 0,
+            unused: 0,
         };
     }
     mergesp3sp4 = false;
     if (lmVer >= 2.30) {
         const val = read1(0x0FF9F0);
         mergesp3sp4 = (!((val >>> 5) & 1));
+        const address = (read1(0x0FFAC2) << 16) | read2(0x0FFAB9);
+        for (let i = 0; i < 7; i++) {
+            const lg1 = read2(address + (32 * i) + (2 * 15));
+            const lg2 = read2(address + (32 * i) + (2 * 14));
+            const lg3 = read2(address + (32 * i) + (2 * 13));
+            const lg4 = read2(address + (32 * i) + (2 * 12));
+            const sp1 = read2(address + (32 * i) + (2 * 11));
+            const sp2 = read2(address + (32 * i) + (2 * 10));
+            const lt3 = read2(address + (32 * i) + (2 * 1));
+            const an2 = read2(address + (32 * i) + (2 * 0));
+            const sp3 = read2(address + (32 * i) + (2 * 9));
+            const sp4 = read2(address + (32 * i) + (2 * 8));
+            const fg1 = read2(address + (32 * i) + (2 * 7));
+            const fg2 = read2(address + (32 * i) + (2 * 6));
+            const fg3 = read2(address + (32 * i) + (2 * 5));
+            const fg4 = read2(address + (32 * i) + (2 * 4));
+            const fg5 = read2(address + (32 * i) + (2 * 3));
+            const fg6 = read2(address + (32 * i) + (2 * 2));
+            const l3bypass = (an2 >>> 6) & 1;
+            const l3tilemapbypass = (an2 >>> 5) & 1;
+            const l3dest = (lt3 >>> 6) & 0b11;
+            const l3size = (lt3 >>> 4) & 0b11;
+            owGFX[i].l3bypass = l3bypass;
+            owGFX[i].l3tilemapbypass = l3tilemapbypass;
+            owGFX[i].l3dest = l3dest;
+            owGFX[i].l3size = l3size;
+            owGFX[i].lg1 = lg1;
+            owGFX[i].lg2 = lg2;
+            owGFX[i].lg3 = lg3;
+            owGFX[i].lg4 = lg4;
+            owGFX[i].sp1 = sp1;
+            owGFX[i].sp2 = sp2;
+            owGFX[i].lt3 = lt3 & 0xFFF;
+            owGFX[i].an2 = an2 & 0xFFF;
+            owGFX[i].sp3 = sp3;
+            owGFX[i].sp4 = sp4;
+            if (!mergesp3sp4) {
+                owGFX[i].fg1 = fg1;
+                owGFX[i].fg2 = fg2;
+                owGFX[i].fg3 = fg3;
+                owGFX[i].fg4 = fg4;
+                owGFX[i].fg5 = fg5;
+                owGFX[i].fg6 = fg6;
+            }
+            else {
+                owGFX[i].fg1 = sp3;
+                owGFX[i].fg2 = sp4;
+                owGFX[i].fg3 = fg1;
+                owGFX[i].fg4 = fg2;
+                owGFX[i].fg5 = fg3;
+                owGFX[i].fg6 = fg4;
+            }
+        }
     }
     // sprites
     owSprites = new Array(13);
