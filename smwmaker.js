@@ -201,6 +201,7 @@ class OwGFX {
     l3size = 0;
     unused = 0;
 }
+let globalOWAnis;
 let disableThunder;
 let owfg5bmps, owfg6bmps;
 let owfg5s, owfg6s;
@@ -3431,7 +3432,7 @@ function loadExAnimations() {
         }
     }
 }
-function convertAddr2index(index, aniType = 0) {
+function convertAddr2index(index, aniType = 0, alterGFX = alternateGFX) {
     if (aniType < 0x13) {
         if (0x7D00 <= index && index <= 0xACFF) {
             const n = ((index - 0x7D00)) / 0x20;
@@ -3446,19 +3447,19 @@ function convertAddr2index(index, aniType = 0) {
             return 0x900 + n;
         }
         else if (0x0000 <= index && index <= 0x7FFF) {
-            if (alternateGFX === 0) {
+            if (alterGFX === 0) {
                 const n = (index) / 0x20;
                 return n + 0xC00;
             }
-            else if (alternateGFX === 1) {
+            else if (alterGFX === 1) {
                 const n = (index) / 0x20;
                 return n + 0x1000;
             }
-            else if (alternateGFX === 2) {
+            else if (alterGFX === 2) {
                 const n = (index) / 0x20;
                 return n + 0x1400;
             }
-            else if (alternateGFX === 3) {
+            else if (alterGFX === 3) {
                 const n = (index) / 0x20;
                 return n + 0x1800;
             }
@@ -14560,4 +14561,26 @@ function loadOW() {
     ctx.drawImage(tempCanvas, 0, 0);
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+function loadOWExAnimations() {
+    globalOWAnis = [];
+    if (isLMModified && lmVer >= 2.40) {
+        let globalAnisPointer;
+        let hasGlobalAnis;
+        try {
+            globalAnisPointer = (read1(read3(0x048087) + 0x58) << 16) | read2(read3(0x048087) + 0x61);
+            hasGlobalAnis = read2(read3(0x048087) + 0x61);
+        }
+        catch (e) {
+            globalAnisPointer = 0;
+            hasGlobalAnis = 0;
+        }
+        if (globalAnisPointer && hasGlobalAnis) {
+            console.log("Global OW ExAnimation is enabled");
+            loadExAnimation(globalAnisPointer, globalOWAnis);
+        }
+        else {
+            console.log("Global OW ExAnimation is disabled");
+        }
+    }
 }

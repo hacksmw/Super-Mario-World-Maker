@@ -228,6 +228,7 @@ class OwGFX {
     unused: number = 0;
 }
 
+let globalOWAnis: ExAni[];
 let disableThunder: number;
 let owfg5bmps: number[][][], owfg6bmps: number[][][];
 let owfg5s: number[], owfg6s: number[];
@@ -4010,7 +4011,7 @@ function loadExAnimations() {
     }   
 }
 
-function convertAddr2index(index: number, aniType: number = 0): number {
+function convertAddr2index(index: number, aniType: number = 0, alterGFX = alternateGFX): number {
     if (aniType < 0x13) {
         if (0x7D00 <= index && index <= 0xACFF ) {
             const n = ((index - 0x7D00)) / 0x20 ;
@@ -4022,16 +4023,16 @@ function convertAddr2index(index: number, aniType: number = 0): number {
             const n = ((index - 0x2000)) / 0x20;
             return 0x900 + n;
         } else if (0x0000 <= index && index <= 0x7FFF) {
-            if (alternateGFX === 0) {
+            if (alterGFX === 0) {
                 const n = (index) / 0x20;
                 return n + 0xC00;
-            } else if (alternateGFX === 1) {
+            } else if (alterGFX === 1) {
                 const n = (index) / 0x20;
                 return n + 0x1000;
-            } else if (alternateGFX === 2) {
+            } else if (alterGFX === 2) {
                 const n = (index) / 0x20;
                 return n + 0x1400;
-            } else if (alternateGFX === 3) {
+            } else if (alterGFX === 3) {
                 const n = (index) / 0x20;
                 return n + 0x1800;
             } else {
@@ -16288,3 +16289,26 @@ function loadOW() {
     return ctx!.getImageData(0, 0, canvas.width, canvas.height);
 }
 
+function loadOWExAnimations() {
+    globalOWAnis = [];
+    
+    if (isLMModified && lmVer >= 2.40) {
+        let globalAnisPointer: number; 
+        let hasGlobalAnis: number;
+      
+        try {
+            globalAnisPointer = (read1(read3(0x048087)+0x58)<<16)|read2(read3(0x048087)+0x61)
+            hasGlobalAnis = read2(read3(0x048087)+0x61);
+        } catch (e) {
+            globalAnisPointer = 0;
+            hasGlobalAnis = 0;
+        }
+        
+        if (globalAnisPointer && hasGlobalAnis) {
+            console.log("Global OW ExAnimation is enabled")
+            loadExAnimation(globalAnisPointer, globalOWAnis); 
+        } else {
+            console.log("Global OW ExAnimation is disabled")
+        }
+    }   
+}
