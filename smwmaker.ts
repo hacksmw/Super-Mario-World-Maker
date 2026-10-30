@@ -357,6 +357,7 @@ let ani2: number;
 let exgfx60: number, exgfx61: number, exgfx62: number, exgfx63: number;
 let exgfx60bmp: number[][], exgfx61bmp: number[][], exgfx62bmp: number[][], exgfx63bmp: number[][];
 let lt3: number;
+let globalAlternateGFX: number;
 let alternateGFX: number;
 let lg1: number, lg2: number, lg3: number, lg4: number;
 let lg1bmp: number[][], lg2bmp: number[][], lg3bmp: number[][], lg4bmp: number[][];
@@ -3993,7 +3994,9 @@ function loadExAnimations() {
         
         if (lmVer >= 1.80 && globalAnisPointer && read2(read3(0x0583ae)+0x5B) !== 0) {
             console.log("Global ExAnimation is enabled")
-            loadExAnimation(globalAnisPointer, globalAnis); 
+            let header: any = {};
+            loadExAnimation(globalAnisPointer, globalAnis, header); 
+            globalAlternateGFX = header.alternateGFX;            
         } else {
             console.log("Global ExAnimation is disabled")
         }
@@ -4001,7 +4004,9 @@ function loadExAnimations() {
         if (lmVer >= 1.70 && lvlAnisPointer && ((lvlAnisPointer >>> 8) & 0xFF)  !== 0 && read1(lvlAnisPointer + 1) !== 0) {
             console.log("Level ExAnimation is enabled")
             try {
-                loadExAnimation(lvlAnisPointer, levelAnis); 
+                let header: any = {};
+                loadExAnimation(lvlAnisPointer, levelAnis, header); 
+                alternateGFX = header.alternateGFX;
             } catch (e) {
                 console.log("Can't load ExAnimations");
             }
@@ -4084,7 +4089,7 @@ function convertDestAddr2index(index: number, aniType: number = 0, useAlternativ
     return index;    
 }
 
-function loadExAnimation(pointer: number, anis: ExAni[]) {
+function loadExAnimation(pointer: number, anis: ExAni[], header: any) {
     const tbl = read3(pointer);
 
     const highestUsedAniSlot = read1(tbl + 0) - 1; 
@@ -4095,7 +4100,7 @@ function loadExAnimation(pointer: number, anis: ExAni[]) {
 
     let count: number = 0;
 
-    alternateGFX = alterGFX;
+    header.alternateGFX = alterGFX;
 
     for (let i = 0; i < 16; i++) {
         const bit = (whichManualTriggersAreInitialized >> i) & 1;
@@ -16305,8 +16310,9 @@ function loadOWExAnimations() {
         }
         
         if (globalAnisPointer && hasGlobalAnis) {
-            console.log("Global OW ExAnimation is enabled")
-            loadExAnimation(globalAnisPointer, globalOWAnis); 
+            console.log("Global OW ExAnimation is enabled");
+            let header: any = {};
+            loadExAnimation(globalAnisPointer, globalOWAnis, header);
         } else {
             console.log("Global OW ExAnimation is disabled")
         }
