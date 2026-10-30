@@ -3982,13 +3982,13 @@ function loadExAnimations() {
         
 
         try {
-            globalAnisPointer = read1(read3(0x0583AE)+0x5C)<<8+(read2(read3(0x0583AE)+0x65));
+            globalAnisPointer = ((read1(read3(0x0583AE)+0x5C) << 16) | (read2(read3(0x0583AE)+0x65)));
         } catch (e) {
             globalAnisPointer = 0;
         }
 
         try {
-            lvlAnisPointer = (read3(read3(0x0583ae)+0xEA) + 3 * levelNum);
+            lvlAnisPointer = read3(read3(read3(0x0583ae)+0xEA) + 3 * levelNum);
         } catch (e) {
             lvlAnisPointer = 0;
         }
@@ -4091,9 +4091,10 @@ function convertDestAddr2index(index: number, aniType: number = 0, useAlternativ
 }
 
 function loadExAnimation(pointer: number, anis: ExAni[], header: any) {
-    const tbl = read3(pointer);
+    const tbl = pointer;
 
     const highestUsedAniSlot = read1(tbl + 0) - 1; 
+
     const alterGFX = read1(tbl+1);
     const whichCustomTriggersStartUninitialized = read2(tbl+2);
     const InitialStatesForEachCustomTriggerWhenInitialized = read2(tbl+4);
@@ -11583,13 +11584,7 @@ function fileOpen(): void {
                 }
             }
             
-            try {
-                loadROM(levelNum, fileData);
-            } catch (e: any) {
-                throw e;
-                alert(e.message);
-                unload();
-            }
+            loadROM(levelNum, fileData);
 
 
             btnOpen.disabled = true;
@@ -15345,10 +15340,17 @@ function loadOW() {
             */
         }
     } else {
-        const table = read3(read3(0x04E9F8)+0x0D);
-        const layer2Table = read3(read3(0x04E9F8)+0x34);
-        const locTable = read3(read3(0x04E9F8)+0x28);
-        const tileNumTable = read3(read3(0x04E9F8)+0x22);
+        let table, layer2Table, locTable, tileNumTable;
+
+        table = read3(read3(0x04E9F8)+0x0D);
+
+        layer2Table = 0x04E910;
+        locTable = 0x04E93C;
+        tileNumTable = 0x04E994;
+
+        layer2Table = read3(read3(0x04E9F8)+0x34);
+        locTable = read3(read3(0x04E9F8)+0x28);
+        tileNumTable = read3(read3(0x04E9F8)+0x22);
 
         for (let i = 0; i <= 0x10; i++) {
             const index = intdiv(read2(table + i*2), 2);
@@ -16307,7 +16309,7 @@ function loadOWExAnimations() {
         let hasGlobalAnis: number;
       
         try {
-            globalAnisPointer = (read1(read3(0x048087)+0x58)<<16)|read2(read3(0x048087)+0x61)
+            globalAnisPointer = (read1(read3(0x048087)+0x58)<<16) | read2(read3(0x048087)+0x61);
             hasGlobalAnis = read2(read3(0x048087)+0x61);
         } catch (e) {
             globalAnisPointer = 0;
@@ -16317,10 +16319,73 @@ function loadOWExAnimations() {
         if (globalAnisPointer && hasGlobalAnis) {
             console.log("Global OW ExAnimation is enabled");
             let header: any = {};
-            loadExAnimation(globalAnisPointer, globalOWAnis, header);
+            loadOWExAnimation(globalAnisPointer, globalOWAnis, header);
             globalOWAlternateGFX = header.alternateGFX;
         } else {
             console.log("Global OW ExAnimation is disabled")
         }
     }   
+}
+
+function loadOWExAnimation(pointer: number, anis: ExAni[], header: any) {
+    const tbl = pointer;
+
+    const highestUsedAniSlot = read1(tbl + 0) - 1; 
+    const alterGFX = read1(tbl+1);
+    const whichCustomTriggersStartUninitialized = read2(tbl+2);
+    const InitialStatesForEachCustomTriggerWhenInitialized = read2(tbl+4);
+    const whichManualTriggersAreInitialized = read2(tbl+6);
+
+    let count: number = 0;
+
+    header.alternateGFX = alterGFX;
+
+    for (let i = 0; i < 16; i++) {
+        const bit = (whichManualTriggersAreInitialized >> i) & 1;
+        if (bit === 1) {
+            count++;
+        }
+    }
+    
+    for (let i = 0; i <= highestUsedAniSlot; i++) {
+        const index = read2(tbl+8+count+(i*2));
+
+        if (index !== 0) {
+            const pointer = (tbl+8+count+index);
+            const aniType = read1(pointer+0);
+            const trigger = read1(pointer+1);
+            const frames = read1(pointer+2) + 1;
+            const vramDest = read2(pointer+3);
+            const palDest = read1(pointer+3);
+            const numColor = read1(pointer+4);
+            const useLevelsAlterGFX = vramDest >>> 15;
+            const frameData: number[] = [];
+
+            const dest = convertDestAddr2index(vramDest, aniType, useLevelsAlterGFX);
+
+            for (let j = 0; j < frames; j++) {
+                const data = read2(pointer+5+(j*2));
+                const index = convertAddr2index(data, aniType);
+
+                frameData.push(index);
+            }
+
+            const ani = new ExAni();
+
+            ani.used = 1;
+            ani.type = aniType;
+            
+            ani.trigger = trigger;
+            ani.frames = frames;
+            ani.palDest = palDest;
+            ani.numColor = numColor;
+            ani.vramDest = dest;
+            ani.useLevelsAlterGFX = useLevelsAlterGFX;
+            ani.frameData = frameData;
+
+            anis.push(ani);                
+        } else {
+            anis.push(new ExAni());
+        }            
+    }
 }
