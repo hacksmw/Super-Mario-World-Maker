@@ -3440,7 +3440,7 @@ function loadExAnimations() {
 }
 function convertAddr2index(index, aniType = 0, alterGFX = alternateGFX, isOverworld = false) {
     if (isOverworld) {
-        if (aniType < 0x13) {
+        if (aniType >= 0x13) {
             return index;
         }
         if (0xAD00 <= index && index <= 0xC7FF) {
@@ -3511,6 +3511,24 @@ function convertAddr2index(index, aniType = 0, alterGFX = alternateGFX, isOverwo
     return index;
 }
 function convertDestAddr2index(index, aniType = 0, useAlternativeGFX = 0, isOverworld = false) {
+    if (isOverworld) {
+        if (aniType >= 0x13) {
+            return index;
+        }
+        if (0x0000 <= index && index <= 0x2FFF) {
+            const n = (index - 0x0000) / 0x10;
+            return n + 0x0;
+        }
+        else if (0x6000 <= index && index <= 0x7FFF) {
+            const n = (index - 0x6000) / 0x10;
+            return n + 0x400;
+        }
+        else if (0x4000 <= index && index <= 0x4FFF) {
+            const n = (index - 0x4000) / 0x8;
+            return n + 0xA000;
+        }
+        return index;
+    }
     if (aniType < 0x13) {
         if (0x0000 <= index && index <= 0x2FFF) {
             const n = (index - 0x0000) / 0x10;

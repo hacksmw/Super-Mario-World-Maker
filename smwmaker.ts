@@ -4019,7 +4019,7 @@ function loadExAnimations() {
 
 function convertAddr2index(index: number, aniType: number = 0, alterGFX = alternateGFX, isOverworld = false): number {
     if (isOverworld) {
-        if (aniType < 0x13) {
+        if (aniType >= 0x13) {
             return index;
         }
 
@@ -4081,6 +4081,25 @@ function convertAddr2index(index: number, aniType: number = 0, alterGFX = altern
 }
 
 function convertDestAddr2index(index: number, aniType: number = 0, useAlternativeGFX: number = 0, isOverworld = false): number {
+    if (isOverworld) {
+        if (aniType >= 0x13) {
+            return index;
+        }
+
+        if (0x0000 <= index && index <= 0x2FFF) {
+            const n = (index - 0x0000) / 0x10;
+            return n + 0x0;
+        } else if (0x6000 <= index && index <= 0x7FFF) {
+            const n = (index - 0x6000) / 0x10;
+            return n + 0x400;
+        } else if (0x4000 <= index && index <= 0x4FFF) {
+            const n = (index - 0x4000) / 0x8;
+            return n + 0xA000;
+        }
+
+        return index;
+    }
+
     if (aniType < 0x13) {
         if (0x0000 <= index && index <= 0x2FFF) {
             const n = (index - 0x0000) / 0x10;
