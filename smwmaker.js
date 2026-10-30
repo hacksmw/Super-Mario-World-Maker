@@ -201,6 +201,7 @@ class OwGFX {
     l3size = 0;
     unused = 0;
 }
+let disableThunder;
 let owfg5bmps, owfg6bmps;
 let owfg5s, owfg6s;
 let owani2s;
@@ -14442,6 +14443,8 @@ function loadOW() {
         owfg5bmps[i] = convertGraphics(getUncompressedGFX(owfg5s[i]), is4bpp);
         owfg6bmps[i] = convertGraphics(getUncompressedGFX(owfg6s[i]), is4bpp);
     }
+    // disable thunder effect
+    disableThunder = read1(0x027909);
     // sprites
     owSprites = new Array(13);
     for (let i = 0; i < 13; i++) {
