@@ -201,6 +201,13 @@ class OwGFX {
     l3size = 0;
     unused = 0;
 }
+class SubmapAniSettings {
+    disableOrgLevelPalAni = 0;
+    disableOrgLevelAni = 0;
+    disableCustomLevelAni = 0;
+    disableCustomGlobalAni = 0;
+}
+let submapAniSettings;
 let localOWAnis;
 let globalOWAlternateGFX;
 let globalOWAnis;
@@ -13568,6 +13575,57 @@ function getOWPalettes() {
     */
     return pals;
 }
+function loadOWExAnimations() {
+    globalOWAnis = [];
+    localOWAnis = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        localOWAnis[i] = [];
+    }
+    if (isLMModified && lmVer >= 2.40) {
+        let globalAnisPointer;
+        let hasGlobalAnis;
+        try {
+            globalAnisPointer = (read1(read3(0x048087) + 0x58) << 16) | read2(read3(0x048087) + 0x61);
+            hasGlobalAnis = read2(read3(0x048087) + 0x61);
+        }
+        catch (e) {
+            globalAnisPointer = 0;
+            hasGlobalAnis = 0;
+        }
+        if (globalAnisPointer && hasGlobalAnis) {
+            console.log("Global OW ExAnimation is enabled");
+            let header = {};
+            loadExAnimation(globalAnisPointer, globalOWAnis, header, true);
+            globalOWAlternateGFX = header.alternateGFX;
+        }
+        else {
+            console.log("Global OW ExAnimation is disabled");
+        }
+        for (let i = 0; i < 7; i++) {
+            let localAnisPointer = read3(read3(read3(0x048087) + 0xE1) + 3 * i);
+            let hasLocalAni = (((localAnisPointer >>> 8) & 0xFF) !== 0);
+            if (!hasLocalAni)
+                continue;
+            let header = {};
+            loadExAnimation(localAnisPointer, localOWAnis[i], header, true);
+        }
+        // read submap's animation settings
+        submapAniSettings = new Array(7);
+        for (let i = 0; i < 7; i++) {
+            const levelAnimationSettings = read1(read3(read3(0x048087) + 0x4A) + i);
+            const disableOrgLevelPalAni = (levelAnimationSettings >>> 7) & 1;
+            const disableOrgLevelAni = (levelAnimationSettings >>> 6) & 1;
+            const disableCustomLevelAni = (levelAnimationSettings >>> 5) & 1;
+            const disableCustomGlobalAni = (levelAnimationSettings >>> 4) & 1;
+            submapAniSettings[i] = {
+                disableOrgLevelPalAni,
+                disableOrgLevelAni,
+                disableCustomLevelAni,
+                disableCustomGlobalAni,
+            };
+        }
+    }
+}
 function loadOW() {
     const canvas = document.createElement("canvas");
     canvas.width = 160 * 8;
@@ -14616,41 +14674,4 @@ function loadOW() {
     ctx.drawImage(tempCanvas, 0, 0);
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-function loadOWExAnimations() {
-    globalOWAnis = [];
-    localOWAnis = new Array(7);
-    for (let i = 0; i < 7; i++) {
-        localOWAnis[i] = [];
-    }
-    if (isLMModified && lmVer >= 2.40) {
-        let globalAnisPointer;
-        let hasGlobalAnis;
-        try {
-            globalAnisPointer = (read1(read3(0x048087) + 0x58) << 16) | read2(read3(0x048087) + 0x61);
-            hasGlobalAnis = read2(read3(0x048087) + 0x61);
-        }
-        catch (e) {
-            globalAnisPointer = 0;
-            hasGlobalAnis = 0;
-        }
-        if (globalAnisPointer && hasGlobalAnis) {
-            console.log("Global OW ExAnimation is enabled");
-            let header = {};
-            loadExAnimation(globalAnisPointer, globalOWAnis, header, true);
-            globalOWAlternateGFX = header.alternateGFX;
-        }
-        else {
-            console.log("Global OW ExAnimation is disabled");
-        }
-        for (let i = 0; i < 7; i++) {
-            let localAnisPointer = read3(read3(read3(0x048087) + 0xE1) + 3 * i);
-            let hasLocalAni = (((localAnisPointer >>> 8) & 0xFF) !== 0);
-            if (!hasLocalAni)
-                continue;
-            console.log("submap number: ", i);
-            let header = {};
-            loadExAnimation(localAnisPointer, localOWAnis[i], header, true);
-        }
-    }
 }
