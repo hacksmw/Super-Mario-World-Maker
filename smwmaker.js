@@ -3438,7 +3438,7 @@ function loadExAnimations() {
         }
     }
 }
-function convertAddr2index(index, aniType = 0, alterGFX = alternateGFX) {
+function convertAddr2index(index, aniType = 0, alterGFX = alternateGFX, isOverworld = false) {
     if (aniType < 0x13) {
         if (0x7D00 <= index && index <= 0xACFF) {
             const n = ((index - 0x7D00)) / 0x20;
@@ -3479,7 +3479,7 @@ function convertAddr2index(index, aniType = 0, alterGFX = alternateGFX) {
     }
     return index;
 }
-function convertDestAddr2index(index, aniType = 0, useAlternativeGFX = 0) {
+function convertDestAddr2index(index, aniType = 0, useAlternativeGFX = 0, isOverworld = false) {
     if (aniType < 0x13) {
         if (0x0000 <= index && index <= 0x2FFF) {
             const n = (index - 0x0000) / 0x10;
@@ -3526,7 +3526,7 @@ function convertDestAddr2index(index, aniType = 0, useAlternativeGFX = 0) {
     }
     return index;
 }
-function loadExAnimation(pointer, anis, header) {
+function loadExAnimation(pointer, anis, header, isOverworld = false) {
     const tbl = pointer;
     const highestUsedAniSlot = read1(tbl + 0) - 1;
     const alterGFX = read1(tbl + 1);
@@ -3553,10 +3553,10 @@ function loadExAnimation(pointer, anis, header) {
             const numColor = read1(pointer + 4);
             const useLevelsAlterGFX = vramDest >>> 15;
             const frameData = [];
-            const dest = convertDestAddr2index(vramDest, aniType, useLevelsAlterGFX);
+            const dest = convertDestAddr2index(vramDest, aniType, useLevelsAlterGFX, isOverworld);
             for (let j = 0; j < frames; j++) {
                 const data = read2(pointer + 5 + (j * 2));
-                const index = convertAddr2index(data, aniType);
+                const index = convertAddr2index(data, aniType, alternateGFX, isOverworld);
                 frameData.push(index);
             }
             const ani = new ExAni();
@@ -14583,61 +14583,11 @@ function loadOWExAnimations() {
         if (globalAnisPointer && hasGlobalAnis) {
             console.log("Global OW ExAnimation is enabled");
             let header = {};
-            loadOWExAnimation(globalAnisPointer, globalOWAnis, header);
+            loadExAnimation(globalAnisPointer, globalOWAnis, header, true);
             globalOWAlternateGFX = header.alternateGFX;
         }
         else {
             console.log("Global OW ExAnimation is disabled");
-        }
-    }
-}
-function loadOWExAnimation(pointer, anis, header) {
-    const tbl = pointer;
-    const highestUsedAniSlot = read1(tbl + 0) - 1;
-    const alterGFX = read1(tbl + 1);
-    const whichCustomTriggersStartUninitialized = read2(tbl + 2);
-    const InitialStatesForEachCustomTriggerWhenInitialized = read2(tbl + 4);
-    const whichManualTriggersAreInitialized = read2(tbl + 6);
-    let count = 0;
-    header.alternateGFX = alterGFX;
-    for (let i = 0; i < 16; i++) {
-        const bit = (whichManualTriggersAreInitialized >> i) & 1;
-        if (bit === 1) {
-            count++;
-        }
-    }
-    for (let i = 0; i <= highestUsedAniSlot; i++) {
-        const index = read2(tbl + 8 + count + (i * 2));
-        if (index !== 0) {
-            const pointer = (tbl + 8 + count + index);
-            const aniType = read1(pointer + 0);
-            const trigger = read1(pointer + 1);
-            const frames = read1(pointer + 2) + 1;
-            const vramDest = read2(pointer + 3);
-            const palDest = read1(pointer + 3);
-            const numColor = read1(pointer + 4);
-            const useLevelsAlterGFX = vramDest >>> 15;
-            const frameData = [];
-            const dest = convertDestAddr2index(vramDest, aniType, useLevelsAlterGFX);
-            for (let j = 0; j < frames; j++) {
-                const data = read2(pointer + 5 + (j * 2));
-                const index = convertAddr2index(data, aniType);
-                frameData.push(index);
-            }
-            const ani = new ExAni();
-            ani.used = 1;
-            ani.type = aniType;
-            ani.trigger = trigger;
-            ani.frames = frames;
-            ani.palDest = palDest;
-            ani.numColor = numColor;
-            ani.vramDest = dest;
-            ani.useLevelsAlterGFX = useLevelsAlterGFX;
-            ani.frameData = frameData;
-            anis.push(ani);
-        }
-        else {
-            anis.push(new ExAni());
         }
     }
 }
