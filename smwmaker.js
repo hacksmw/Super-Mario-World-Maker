@@ -201,6 +201,7 @@ class OwGFX {
     l3size = 0;
     unused = 0;
 }
+let globalOWAlternateGFX;
 let globalOWAnis;
 let disableThunder;
 let owfg5bmps, owfg6bmps;
@@ -14469,6 +14470,8 @@ function loadOW() {
     for (let i = 0; i < 10; i++) {
         owSpritesDisabledSlot[i] = read1(0x04F829 + i);
     }
+    // ExAnimations
+    loadOWExAnimations();
     /* render */
     console.log("wait...");
     const tempCanvas = document.createElement("canvas");
@@ -14584,6 +14587,7 @@ function loadOWExAnimations() {
             console.log("Global OW ExAnimation is enabled");
             let header = {};
             loadExAnimation(globalAnisPointer, globalOWAnis, header);
+            globalOWAlternateGFX = header.alternateGFX;
         }
         else {
             console.log("Global OW ExAnimation is disabled");
