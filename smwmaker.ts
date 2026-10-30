@@ -235,6 +235,7 @@ class SubmapAniSettings {
     disableCustomGlobalAni: number = 0;
 }
 
+let titleScreen: any[];
 let submapAniSettings: SubmapAniSettings[];
 let localOWAnis: ExAni[][];
 let globalOWAlternateGFX: number;
@@ -5362,6 +5363,7 @@ function loadGraphics() {
             lt3tiles = stripe(fileData.slice(snes2pc(layer3)));
         } else {
             lt3tiles = [];
+            
         }
     }
     
@@ -5417,7 +5419,7 @@ function convertLT3(lt3gfx: number[]): any {
     return result;
 }
 
-function stripe(data: any) {
+function stripe(data: any, limit = 64) {
 	const result = new Array(64*64);
 
     let pointer = 0;
@@ -5471,21 +5473,19 @@ function stripe(data: any) {
 					
 					if (direct === 0) {
 						x++;
-						if (x === 64) {
+						if (x === limit) {
 							x=0;
                             y++;
-                            if (y === 64) {
-                                //throw new Error("overflow");
-                                console.log("overflow");
+                            if (y === limit) {
+                                throw new Error("overflow");
                                 y = 0;
                                 x++;
                             }
 						}
 					} else {
 						y++;
-						if (y === 64) {
-                            console.log("overflow");
-                            //throw new Error("overflow");
+						if (y === limit) {
+                            throw new Error("overflow");
                             y=0;
 						}
 					}
@@ -5527,10 +5527,10 @@ function stripe(data: any) {
 					
 					if (direct === 0) {
 						x++;
-						if (x === 64) {
+						if (x === limit) {
 							x=0;
                             y++;
-                            if (y === 64) {
+                            if (y === limit) {
                                 throw new Error("overflow");
                                 y = 0;
                                 x++;
@@ -5538,7 +5538,7 @@ function stripe(data: any) {
 						}
 					} else {
 						y++;
-						if (y === 64) {
+						if (y === limit) {
                             throw new Error("overflow");
 							y=0;                           
 						}
@@ -16281,6 +16281,9 @@ function loadOW() {
     for (let i = 0; i < 10; i++) {
         owSpritesDisabledSlot[i] = read1(0x04F829 + i);
     }
+
+    // Title Screen
+    titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
 
     // ExAnimations
 

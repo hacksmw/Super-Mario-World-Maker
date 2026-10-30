@@ -207,6 +207,7 @@ class SubmapAniSettings {
     disableCustomLevelAni = 0;
     disableCustomGlobalAni = 0;
 }
+let titleScreen;
 let submapAniSettings;
 let localOWAnis;
 let globalOWAlternateGFX;
@@ -4616,7 +4617,7 @@ function convertLT3(lt3gfx) {
     }
     return result;
 }
-function stripe(data) {
+function stripe(data, limit = 64) {
     const result = new Array(64 * 64);
     let pointer = 0;
     for (let i = 0; i < result.length; i++) {
@@ -4657,12 +4658,11 @@ function stripe(data) {
                     }
                     if (direct === 0) {
                         x++;
-                        if (x === 64) {
+                        if (x === limit) {
                             x = 0;
                             y++;
-                            if (y === 64) {
-                                //throw new Error("overflow");
-                                console.log("overflow");
+                            if (y === limit) {
+                                throw new Error("overflow");
                                 y = 0;
                                 x++;
                             }
@@ -4670,9 +4670,8 @@ function stripe(data) {
                     }
                     else {
                         y++;
-                        if (y === 64) {
-                            console.log("overflow");
-                            //throw new Error("overflow");
+                        if (y === limit) {
+                            throw new Error("overflow");
                             y = 0;
                         }
                     }
@@ -4704,10 +4703,10 @@ function stripe(data) {
                     }
                     if (direct === 0) {
                         x++;
-                        if (x === 64) {
+                        if (x === limit) {
                             x = 0;
                             y++;
-                            if (y === 64) {
+                            if (y === limit) {
                                 throw new Error("overflow");
                                 y = 0;
                                 x++;
@@ -4716,7 +4715,7 @@ function stripe(data) {
                     }
                     else {
                         y++;
-                        if (y === 64) {
+                        if (y === limit) {
                             throw new Error("overflow");
                             y = 0;
                         }
@@ -14575,6 +14574,8 @@ function loadOW() {
     for (let i = 0; i < 10; i++) {
         owSpritesDisabledSlot[i] = read1(0x04F829 + i);
     }
+    // Title Screen
+    titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
     // ExAnimations
     loadOWExAnimations();
     /* render */
