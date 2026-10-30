@@ -4018,6 +4018,35 @@ function loadExAnimations() {
 }
 
 function convertAddr2index(index: number, aniType: number = 0, alterGFX = alternateGFX, isOverworld = false): number {
+    if (isOverworld) {
+        if (aniType < 0x13) {
+            return index;
+        }
+
+        if (0xAD00 <= index && index <= 0xC7FF) {
+            const n = ((index - 0xAD00)) / 0x20;
+            return 0x600 + n;
+        } else if (0x0000 <= index && index <= 0x7FFF) {
+            if (alterGFX === 0) {
+                const n = (index) / 0x20;
+                return n + 0x700;
+            } else if (alterGFX === 1) {
+                const n = (index) / 0x20;
+                return n + 0xB00;
+            } else if (alterGFX === 2) {
+                const n = (index) / 0x20;
+                return n + 0xF00;
+            } else if (alterGFX === 3) {
+                const n = (index) / 0x20;
+                return n + 0x1300;
+            } else {
+                return index;
+            }
+        }
+
+        return index;
+    }
+    
     if (aniType < 0x13) {
         if (0x7D00 <= index && index <= 0xACFF ) {
             const n = ((index - 0x7D00)) / 0x20 ;
