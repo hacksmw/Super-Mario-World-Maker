@@ -201,6 +201,7 @@ class OwGFX {
     l3size = 0;
     unused = 0;
 }
+let localOWAnis;
 let globalOWAlternateGFX;
 let globalOWAnis;
 let disableThunder;
@@ -14618,6 +14619,10 @@ function loadOW() {
 }
 function loadOWExAnimations() {
     globalOWAnis = [];
+    localOWAnis = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        localOWAnis[i] = [];
+    }
     if (isLMModified && lmVer >= 2.40) {
         let globalAnisPointer;
         let hasGlobalAnis;
@@ -14637,6 +14642,15 @@ function loadOWExAnimations() {
         }
         else {
             console.log("Global OW ExAnimation is disabled");
+        }
+        for (let i = 0; i < 7; i++) {
+            let localAnisPointer = read3(read3(read3(0x048087) + 0xE1) + 3 * i);
+            let hasLocalAni = (((localAnisPointer >>> 8) & 0xFF) !== 0);
+            if (!hasLocalAni)
+                continue;
+            console.log("submap number: ", i);
+            let header = {};
+            loadExAnimation(localAnisPointer, localOWAnis[i], header, true);
         }
     }
 }
