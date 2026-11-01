@@ -14565,9 +14565,22 @@ function loadOW() {
         const yLow = read1(0x04F625 + 5 * i + 3);
         const yHigh = read1(0x04F625 + 5 * i + 4);
         const owSprite = new OWSprite();
+        let fullX = (xHigh << 8) | xLow;
+        let fullY = (yHigh << 8) | yLow;
+        if (fullY >= 64 * 8) {
+            // submap
+            fullX += 0x10;
+            fullY += 0x08;
+            if (fullX >= 64 * 8) {
+                fullX -= 64 * 8;
+            }
+            if (fullY >= 64 * 8) {
+                fullY -= 64 * 8;
+            }
+        }
         owSprite.num = spriteNum;
-        owSprite.xPos = (xHigh << 8) | xLow;
-        owSprite.yPos = (yHigh << 8) | yLow;
+        owSprite.xPos = fullX;
+        owSprite.yPos = fullY;
         owSprites[i] = owSprite;
     }
     owSpritesDisabledSlot = new Array(10);
