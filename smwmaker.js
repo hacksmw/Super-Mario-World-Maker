@@ -13625,11 +13625,61 @@ function loadOWExAnimations() {
         }
     }
 }
-function loadOW() {
+function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, submap = 0) {
+    index = index % 0x300;
     const canvas = document.createElement("canvas");
-    canvas.width = 160 * 8;
-    canvas.height = 168 * 8;
+    canvas.width = 8;
+    canvas.height = 8;
     const ctx = canvas.getContext("2d");
+    const page = intdiv(index, 128);
+    let gfx;
+    switch (page) {
+        case 0:
+            gfx = owsp1bmps[submap];
+            break;
+        case 1:
+            gfx = owsp2bmps[submap];
+            break;
+        case 2:
+            gfx = owsp3bmps[submap];
+            break;
+        case 3:
+            gfx = owsp4bmps[submap];
+            break;
+        default:
+            throw new Error();
+            break;
+    }
+    let i = index % 128;
+    const bitmap = gfx[i];
+    for (let j = 0; j < 64; j++) {
+        let color;
+        let r, g, b;
+        color = owPals[submap][palette][bitmap[j]];
+        r = color.r;
+        g = color.g;
+        b = color.b;
+        let alpha = 1.0;
+        if (bitmap[j] == 0) {
+            alpha = 0.0;
+        }
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        if (flipx === true && flipy === false) {
+            ctx.fillRect(7 - (j % 8), intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === false && flipy === true) {
+            ctx.fillRect((j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === true && flipy === true) {
+            ctx.fillRect(7 - (j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else {
+            ctx.fillRect((j % 8), intdiv(j, 8), 1, 1);
+        }
+    }
+    return ctx.getImageData(0, 0, 8, 8);
+}
+function loadOW() {
     eventNum = 0;
     step = 0;
     let tileNums;
@@ -14574,7 +14624,7 @@ function loadOW() {
             if (fullX >= 64 * 8) {
                 fullX -= 64 * 8;
             }
-            if (fullY >= 64 * 8) {
+            if (fullY >= 128 * 8) {
                 fullY -= 64 * 8;
             }
         }
@@ -14592,12 +14642,21 @@ function loadOW() {
     // ExAnimations
     loadOWExAnimations();
     /* render */
+    return renderOW();
+}
+function renderOW() {
     console.log("wait...");
+    const canvas = document.createElement("canvas");
+    canvas.width = 160 * 8;
+    canvas.height = 168 * 8;
+    const ctx = canvas.getContext("2d");
     const tempCanvas = document.createElement("canvas");
     tempCanvas.height = canvas.height;
     tempCanvas.width = canvas.width;
     const tempCtx = tempCanvas.getContext("2d");
     // layer 2
+    let result = owLayer2Tiles;
+    let result2 = owLayer2TilesSettings;
     for (let i = 0; i < result.length; i++) {
         let tileNum = result[i];
         let tileSetting = result2[i];
@@ -14705,6 +14764,24 @@ function loadOW() {
                     tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
                 }
                 break;
+            case 0x08:
+                {
+                    // bowser sign
+                    const a = getOWSpr8x8Img(0x6C, 0x9, false, false, 0);
+                    const b = getOWSpr8x8Img(0x6D, 0x9, false, false, 0);
+                    const c = getOWSpr8x8Img(0x6E, 0x9, false, false, 0);
+                    const d = getOWSpr8x8Img(0x6F, 0x9, false, false, 0);
+                    y += 8 * 64;
+                    y += 0x08;
+                    if (y >= 128 * 8) {
+                        y -= 64 * 8;
+                    }
+                    tempCtx.putImageData(a, x, y);
+                    tempCtx.putImageData(b, x + 0x8, y);
+                    tempCtx.putImageData(c, x + 0x10, y);
+                    tempCtx.putImageData(d, x + 0x18, y);
+                }
+                break;
             case 0x01:
                 {
                     // lakitu
@@ -14769,6 +14846,9 @@ function loadOW() {
                 {
                     const img = getOWSpr8x8Img(0x04, 0xA, false, false, 0);
                     tempCtx.putImageData(img, x, y);
+                    tempCtx.putImageData(img, x + 0x8, y);
+                    tempCtx.putImageData(img, x, y + 0x8);
+                    tempCtx.putImageData(img, x + 0x8, y + 0x8);
                 }
                 break;
         }
@@ -14776,58 +14856,4 @@ function loadOW() {
     ctx.drawImage(tempCanvas, 0, 0);
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, submap = 0) {
-    index = index % 0x300;
-    const canvas = document.createElement("canvas");
-    canvas.width = 8;
-    canvas.height = 8;
-    const ctx = canvas.getContext("2d");
-    const page = intdiv(index, 128);
-    let gfx;
-    switch (page) {
-        case 0:
-            gfx = owsp1bmps[submap];
-            break;
-        case 1:
-            gfx = owsp2bmps[submap];
-            break;
-        case 2:
-            gfx = owsp3bmps[submap];
-            break;
-        case 3:
-            gfx = owsp4bmps[submap];
-            break;
-        default:
-            throw new Error();
-            break;
-    }
-    let i = index % 128;
-    const bitmap = gfx[i];
-    for (let j = 0; j < 64; j++) {
-        let color;
-        let r, g, b;
-        color = owPals[submap][palette][bitmap[j]];
-        r = color.r;
-        g = color.g;
-        b = color.b;
-        let alpha = 1.0;
-        if (bitmap[j] == 0) {
-            alpha = 0.0;
-        }
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        if (flipx === true && flipy === false) {
-            ctx.fillRect(7 - (j % 8), intdiv(j, 8), 1, 1);
-        }
-        else if (flipx === false && flipy === true) {
-            ctx.fillRect((j % 8), 7 - intdiv(j, 8), 1, 1);
-        }
-        else if (flipx === true && flipy === true) {
-            ctx.fillRect(7 - (j % 8), 7 - intdiv(j, 8), 1, 1);
-        }
-        else {
-            ctx.fillRect((j % 8), intdiv(j, 8), 1, 1);
-        }
-    }
-    return ctx.getImageData(0, 0, 8, 8);
 }
