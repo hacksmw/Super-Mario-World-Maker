@@ -14785,6 +14785,9 @@ function renderOW() {
         let x = owSprites[i].xPos;
         let y = owSprites[i].yPos;
         switch (owSprites[i].num) {
+            case 0x00:
+                // nothing
+                break;
             case 0x04:
                 {
                     // plant
@@ -14892,8 +14895,6 @@ function renderOW() {
                     for (let i = 0; i < 3; i++) {
                         let x = owFishesX[i];
                         let y = owFishesY[i];
-                        console.log("x: ", x.toString(16));
-                        console.log("y: ", y.toString(16));
                         tempCtx.putImageData(topLeft, x, y);
                         tempCtx.putImageData(topRight, x + 0x8, y);
                         tempCtx.putImageData(btmLeft, x, y + 0x8);
