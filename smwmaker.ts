@@ -235,6 +235,7 @@ class SubmapAniSettings {
     disableCustomGlobalAni: number = 0;
 }
 
+let marioSubmap: number, marioXpos: number, marioYpos: number;
 let submapGhostsOffsetX: number[], submapGhostsOffsetY: number[];
 let koopalingsX: number[], koopalingsY: number[];
 let owFishesX: number[], owFishesY: number[];
@@ -16153,6 +16154,11 @@ function loadOW() {
         initialMarioStatuses[i] = read1(0x009EF0 + i);
     }
 
+    marioSubmap = initialMarioStatuses[0];
+
+    marioXpos = (initialMarioStatuses[7] << 8) | initialMarioStatuses[6];
+    marioYpos = (initialMarioStatuses[9] << 8) | initialMarioStatuses[8];
+
     // ow palettes
     
     owPals = getOWPalettes();
@@ -16806,6 +16812,38 @@ function renderOW() {
             }
             break;
         }
+    }
+
+    {
+        // render mario
+
+        const topleft = getOWSpr8x8Img(0x0A, 0xA, false, false, 0);
+        const topright = getOWSpr8x8Img(0x0B, 0xA, false, false, 0);
+        const btmleft = getOWSpr8x8Img(0x1A, 0xA, false, false, 0);
+        const btmright = getOWSpr8x8Img(0x1B, 0xA, false, false, 0);
+
+        let x = marioXpos, y = marioYpos;
+
+        if (marioSubmap !== 0) {
+            // mario is in submap
+            y += 64*8;
+            y += 8;
+            x += 0x10;
+            if (y >= 128*8) {
+                y -= 64*8;
+            }
+            if (x >= 64*8) {
+                x -= 64*8
+            }
+        }
+
+        x -= 8;
+        y -= 12;
+
+        tempCtx!.putImageData(topleft, x, y);
+        tempCtx!.putImageData(topright, x + 0x8, y);
+        tempCtx!.putImageData(btmleft, x, y + 0x8);
+        tempCtx!.putImageData(btmright, x + 0x8, y + 0x8);
     }
 
     ctx!.drawImage(tempCanvas, 0, 0);
