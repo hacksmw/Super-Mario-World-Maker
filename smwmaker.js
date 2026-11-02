@@ -14686,6 +14686,101 @@ function loadOW() {
         tempCtx.putImageData(dnright, (i % 32) * 16 + 8, intdiv(i, 32) * 16 + 8 + factor);
     }
     ctx.drawImage(tempCanvas, 0, 0);
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    // sprite
+    for (let i = 0; i < owSprites.length; i++) {
+        let x = owSprites[i].xPos;
+        let y = owSprites[i].yPos;
+        switch (owSprites[i].num) {
+            case 0x04:
+                {
+                    // plant
+                    const topLeft = getOWSpr8x8Img(0x2A, 0x9, false, false, 0);
+                    const topRight = getOWSpr8x8Img(0x2B, 0x9, false, false, 0);
+                    const btmLeft = getOWSpr8x8Img(0x3A, 0x9, false, false, 0);
+                    const btmRight = getOWSpr8x8Img(0x3B, 0x9, false, false, 0);
+                    tempCtx.putImageData(topLeft, x, y);
+                    tempCtx.putImageData(topRight, x + 0x8, y);
+                    tempCtx.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+                break;
+            case 0x0A:
+                {
+                    // ghost
+                    const topLeft = getOWSpr8x8Img(0x61, 0xA, true, false, 0);
+                    const topRight = getOWSpr8x8Img(0x60, 0xA, true, false, 0);
+                    const btmLeft = getOWSpr8x8Img(0x71, 0xA, true, false, 0);
+                    const btmRight = getOWSpr8x8Img(0x70, 0xA, true, false, 0);
+                    tempCtx.putImageData(topLeft, x, y);
+                    tempCtx.putImageData(topRight, x + 0x8, y);
+                    tempCtx.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+                break;
+            default:
+                {
+                    const img = getOWSpr8x8Img(0x04, 0xA, false, false, 0);
+                    tempCtx.putImageData(img, x, y);
+                }
+                break;
+        }
+    }
+    ctx.drawImage(tempCanvas, 0, 0);
     console.log("done...");
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, submap = 0) {
+    index = index % 0x300;
+    const canvas = document.createElement("canvas");
+    canvas.width = 8;
+    canvas.height = 8;
+    const ctx = canvas.getContext("2d");
+    const page = intdiv(index, 128);
+    let gfx;
+    switch (page) {
+        case 0:
+            gfx = owsp1bmps[submap];
+            break;
+        case 1:
+            gfx = owsp2bmps[submap];
+            break;
+        case 2:
+            gfx = owsp3bmps[submap];
+            break;
+        case 3:
+            gfx = owsp4bmps[submap];
+            break;
+        default:
+            throw new Error();
+            break;
+    }
+    let i = index % 128;
+    const bitmap = gfx[i];
+    for (let j = 0; j < 64; j++) {
+        let color;
+        let r, g, b;
+        color = owPals[submap][palette][bitmap[j]];
+        r = color.r;
+        g = color.g;
+        b = color.b;
+        let alpha = 1.0;
+        if (bitmap[j] == 0) {
+            alpha = 0.0;
+        }
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        if (flipx === true && flipy === false) {
+            ctx.fillRect(7 - (j % 8), intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === false && flipy === true) {
+            ctx.fillRect((j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else if (flipx === true && flipy === true) {
+            ctx.fillRect(7 - (j % 8), 7 - intdiv(j, 8), 1, 1);
+        }
+        else {
+            ctx.fillRect((j % 8), intdiv(j, 8), 1, 1);
+        }
+    }
+    return ctx.getImageData(0, 0, 8, 8);
 }
