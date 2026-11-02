@@ -234,7 +234,8 @@ class SubmapAniSettings {
     disableCustomLevelAni: number = 0;
     disableCustomGlobalAni: number = 0;
 }
-
+let mainmapSmokeX: number, mainmapSmokeY: number;
+let submapSmokeX: number, submapSmokeY: number;
 let titleScreen: any[];
 let submapAniSettings: SubmapAniSettings[];
 let localOWAnis: ExAni[][];
@@ -16362,6 +16363,11 @@ function loadOW() {
         owSpritesDisabledSlot[i] = read1(0x04F829 + i);
     }
 
+    mainmapSmokeX = read2(0x04FC1E + 2*0);
+    submapSmokeX = read2(0x04FC1E + 2*1);
+    mainmapSmokeY = read2(0x04FC22 + 2*0);
+    submapSmokeY = read2(0x04FC22 + 2*1);
+
     // Title Screen
     titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
 
@@ -16600,6 +16606,32 @@ function renderOW() {
                 tempCtx!.putImageData(btmRight, x + 0x8, y + 0x8);
             }
             break;
+            case 0x07:
+                {
+                    // smoke
+                    const smoke = getOWSpr8x8Img(0x5F, 0xA, true, false, 0);   
+
+                    let sSmokeX = submapSmokeX;
+                    let sSmokeY = submapSmokeY;
+
+                    sSmokeY += 8*64;
+
+                    sSmokeY += 0x08;
+
+                    if (sSmokeY >= 128 * 8) {
+                        sSmokeY -= 64 * 8;
+                    }
+
+                    sSmokeX += 0x10;
+
+                    if (sSmokeX >= 64 * 8) {
+                        sSmokeX -= 64 * 8;
+                    }     
+
+                    tempCtx!.putImageData(smoke, mainmapSmokeX, mainmapSmokeY);
+                    tempCtx!.putImageData(smoke, sSmokeX, sSmokeY);
+                }
+                break;
             case 0x0A: {
                 // ghost
                 const topLeft = getOWSpr8x8Img(0x61, 0xA, true, false, 0);
