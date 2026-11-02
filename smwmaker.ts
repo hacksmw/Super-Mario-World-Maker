@@ -235,6 +235,7 @@ class SubmapAniSettings {
     disableCustomGlobalAni: number = 0;
 }
 
+let koopalingsX: number[], koopalingsY: number[];
 let owFishesX: number[], owFishesY: number[];
 let mainmapSmokeX: number, mainmapSmokeY: number;
 let submapSmokeX: number, submapSmokeY: number;
@@ -16388,6 +16389,24 @@ function loadOW() {
         owFishesY[i] = y;
     }
 
+    // koopaling's loc
+
+    koopalingsX = new Array(3);
+    koopalingsY = new Array(3);
+
+    for (let i = 0; i < 3; i++) {
+        const lowX = read1(0x04FB88 + i);
+        const highX = read1(0x04FB8B + i);
+        const lowY = read1(0x04FB8E + i);
+        const highY = read1(0x04FB91 + i);
+
+        const x = (highX << 8) | lowX;
+        const y = (highY << 8) | lowY;
+
+        koopalingsX[i] = x;
+        koopalingsY[i] = y;
+    }
+
     // Title Screen
     titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
 
@@ -16665,6 +16684,26 @@ function renderOW() {
 
                     console.log("x: ", x.toString(16));
                     console.log("y: ", y.toString(16));
+
+                    tempCtx!.putImageData(topLeft, x, y);
+                    tempCtx!.putImageData(topRight, x + 0x8, y);
+                    tempCtx!.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx!.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+
+                
+            }
+            break;
+            case 0x06: {
+                // koopalings
+                const topLeft = getOWSpr8x8Img(0x6A, 0x9, false, false, 0);
+                const topRight = getOWSpr8x8Img(0x6B, 0x9, false, false, 0);
+                const btmLeft = getOWSpr8x8Img(0x7A, 0x9, false, false, 0);
+                const btmRight = getOWSpr8x8Img(0x7B, 0x9, false, false, 0);
+
+                for (let i = 0; i < 3; i++) {
+                    let x = koopalingsX[i];
+                    let y = koopalingsY[i];
 
                     tempCtx!.putImageData(topLeft, x, y);
                     tempCtx!.putImageData(topRight, x + 0x8, y);
