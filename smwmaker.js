@@ -14705,6 +14705,53 @@ function loadOW() {
                     tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
                 }
                 break;
+            case 0x01:
+                {
+                    // lakitu
+                    const topLeft = getOWSpr8x8Img(0x26, 0x9, false, false, 0);
+                    const topRight = getOWSpr8x8Img(0x27, 0x9, false, false, 0);
+                    const btmLeft = getOWSpr8x8Img(0x36, 0x9, false, false, 0);
+                    const btmRight = getOWSpr8x8Img(0x37, 0x9, false, false, 0);
+                    tempCtx.putImageData(topLeft, x, y);
+                    tempCtx.putImageData(topRight, x + 0x8, y);
+                    tempCtx.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+                break;
+            case 0x05:
+                {
+                    // moving cloud
+                    const topLeft = getOWSpr8x8Img(0x44, 0x9, false, false, 0);
+                    const topRight = getOWSpr8x8Img(0x45, 0x9, false, false, 0);
+                    const btmLeft = getOWSpr8x8Img(0x54, 0x9, false, false, 0);
+                    const btmRight = getOWSpr8x8Img(0x55, 0x9, false, false, 0);
+                    const topLeft2 = getOWSpr8x8Img(0x44, 0x9, true, false, 0);
+                    const topRight2 = getOWSpr8x8Img(0x45, 0x9, true, false, 0);
+                    const btmLeft2 = getOWSpr8x8Img(0x54, 0x9, true, false, 0);
+                    const btmRight2 = getOWSpr8x8Img(0x55, 0x9, true, false, 0);
+                    tempCtx.putImageData(topLeft, x, y);
+                    tempCtx.putImageData(topRight, x + 0x8, y);
+                    tempCtx.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                    tempCtx.putImageData(topLeft2, x + 0x18, y);
+                    tempCtx.putImageData(topRight2, x + 0x10, y);
+                    tempCtx.putImageData(btmLeft2, x + 0x18, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x10, y + 0x8);
+                }
+                break;
+            case 0x02:
+                {
+                    // blue bird
+                    const topLeft = getOWSpr8x8Img(0x4C, 0xB, false, false, 0);
+                    const topRight = getOWSpr8x8Img(0x4D, 0xB, false, false, 0);
+                    const btmLeft = getOWSpr8x8Img(0x5C, 0xB, false, false, 0);
+                    const btmRight = getOWSpr8x8Img(0x5D, 0xB, false, false, 0);
+                    tempCtx.putImageData(topLeft, x, y);
+                    tempCtx.putImageData(topRight, x + 0x8, y);
+                    tempCtx.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+                break;
             case 0x0A:
                 {
                     // ghost
