@@ -235,6 +235,7 @@ class SubmapAniSettings {
     disableCustomGlobalAni: number = 0;
 }
 
+let submapGhostsOffsetX: number[], submapGhostsOffsetY: number[];
 let koopalingsX: number[], koopalingsY: number[];
 let owFishesX: number[], owFishesY: number[];
 let mainmapSmokeX: number, mainmapSmokeY: number;
@@ -16407,6 +16408,24 @@ function loadOW() {
         koopalingsY[i] = y;
     }
 
+    // submap ghosts offset
+
+    submapGhostsOffsetX = new Array(3);
+    submapGhostsOffsetY = new Array(3);
+
+    for (let i = 0; i < 3; i++) {
+        let x = read2(0x04F666 + 2*i);
+        let y = read2(0x04F66C + 2*i);
+
+        // sign extension
+
+        x = (x << 16) >> 16;
+        y = (y << 16) >> 16;
+
+        submapGhostsOffsetX[i] = x;
+        submapGhostsOffsetY[i] = y;
+    }
+
     // Title Screen
     titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
 
@@ -16720,10 +16739,38 @@ function renderOW() {
                 const topRight = getOWSpr8x8Img(0x60, 0xA, true, false, 0);
                 const btmLeft = getOWSpr8x8Img(0x71, 0xA, true, false, 0);
                 const btmRight = getOWSpr8x8Img(0x70, 0xA, true, false, 0);
+
                 tempCtx!.putImageData(topLeft, x, y);
                 tempCtx!.putImageData(topRight, x + 0x8, y);
                 tempCtx!.putImageData(btmLeft, x, y + 0x8);
                 tempCtx!.putImageData(btmRight, x + 0x8, y + 0x8);
+
+                let xPos: number, yPos: number;
+
+                const index = i-0xA;
+
+                if (index < 0) continue;
+
+                xPos = submapGhostsOffsetX[index];
+                yPos = submapGhostsOffsetY[index];
+                
+                xPos = x + xPos + 0x10;
+
+                if (xPos >= 64 * 8) {
+                    xPos -= 64 * 8;
+                }
+
+                yPos = 8*64 + y + yPos + 0x8;
+
+                if (yPos >= 128 * 8) {
+                    yPos -= 64 * 8;
+                }
+
+                tempCtx!.putImageData(topLeft, xPos, yPos);
+                tempCtx!.putImageData(topRight, xPos + 0x8, yPos);
+                tempCtx!.putImageData(btmLeft, xPos, yPos + 0x8);
+                tempCtx!.putImageData(btmRight, xPos + 0x8, yPos + 0x8);
+
             }
             break;
             default: {

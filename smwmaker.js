@@ -207,6 +207,7 @@ class SubmapAniSettings {
     disableCustomLevelAni = 0;
     disableCustomGlobalAni = 0;
 }
+let submapGhostsOffsetX, submapGhostsOffsetY;
 let koopalingsX, koopalingsY;
 let owFishesX, owFishesY;
 let mainmapSmokeX, mainmapSmokeY;
@@ -14671,6 +14672,18 @@ function loadOW() {
         koopalingsX[i] = x;
         koopalingsY[i] = y;
     }
+    // submap ghosts offset
+    submapGhostsOffsetX = new Array(3);
+    submapGhostsOffsetY = new Array(3);
+    for (let i = 0; i < 3; i++) {
+        let x = read2(0x04F666 + 2 * i);
+        let y = read2(0x04F66C + 2 * i);
+        // sign extension
+        x = (x << 16) >> 16;
+        y = (y << 16) >> 16;
+        submapGhostsOffsetX[i] = x;
+        submapGhostsOffsetY[i] = y;
+    }
     // Title Screen
     titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
     // ExAnimations
@@ -14930,6 +14943,24 @@ function renderOW() {
                     tempCtx.putImageData(topRight, x + 0x8, y);
                     tempCtx.putImageData(btmLeft, x, y + 0x8);
                     tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                    let xPos, yPos;
+                    const index = i - 0xA;
+                    if (index < 0)
+                        continue;
+                    xPos = submapGhostsOffsetX[index];
+                    yPos = submapGhostsOffsetY[index];
+                    xPos = x + xPos + 0x10;
+                    if (xPos >= 64 * 8) {
+                        xPos -= 64 * 8;
+                    }
+                    yPos = 8 * 64 + y + yPos + 0x8;
+                    if (yPos >= 128 * 8) {
+                        yPos -= 64 * 8;
+                    }
+                    tempCtx.putImageData(topLeft, xPos, yPos);
+                    tempCtx.putImageData(topRight, xPos + 0x8, yPos);
+                    tempCtx.putImageData(btmLeft, xPos, yPos + 0x8);
+                    tempCtx.putImageData(btmRight, xPos + 0x8, yPos + 0x8);
                 }
                 break;
             default:
