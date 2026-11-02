@@ -234,6 +234,8 @@ class SubmapAniSettings {
     disableCustomLevelAni: number = 0;
     disableCustomGlobalAni: number = 0;
 }
+
+let owFishesX: number[], owFishesY: number[];
 let mainmapSmokeX: number, mainmapSmokeY: number;
 let submapSmokeX: number, submapSmokeY: number;
 let titleScreen: any[];
@@ -16368,6 +16370,24 @@ function loadOW() {
     mainmapSmokeY = read2(0x04FC22 + 2*0);
     submapSmokeY = read2(0x04FC22 + 2*1);
 
+    // ow fishes loc
+
+    owFishesX = new Array(3);
+    owFishesY = new Array(3);
+
+    for (let i = 0; i < 3; i++) {
+        const lowX = read1(0x04FA2E + i);
+        const highX = read1(0x04FA31 + i);
+        const lowY = read1(0x04FA34 + i);
+        const highY = read1(0x04FA37 + i);
+
+        const x = (highX << 8) | lowX;
+        const y = (highY << 8) | lowY;
+
+        owFishesX[i] = x;
+        owFishesY[i] = y;
+    }
+
     // Title Screen
     titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
 
@@ -16632,6 +16652,29 @@ function renderOW() {
                     tempCtx!.putImageData(smoke, sSmokeX, sSmokeY);
                 }
                 break;
+            case 0x03: {
+                // fish
+                const topLeft = getOWSpr8x8Img(0x4A, 0x9, false, false, 0);
+                const topRight = getOWSpr8x8Img(0x4B, 0x9, false, false, 0);
+                const btmLeft = getOWSpr8x8Img(0x5A, 0x9, false, false, 0);
+                const btmRight = getOWSpr8x8Img(0x5B, 0x9, false, false, 0);
+
+                for (let i = 0; i < 3; i++) {
+                    let x = owFishesX[i];
+                    let y = owFishesY[i];
+
+                    console.log("x: ", x.toString(16));
+                    console.log("y: ", y.toString(16));
+
+                    tempCtx!.putImageData(topLeft, x, y);
+                    tempCtx!.putImageData(topRight, x + 0x8, y);
+                    tempCtx!.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx!.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+
+                
+            }
+            break;
             case 0x0A: {
                 // ghost
                 const topLeft = getOWSpr8x8Img(0x61, 0xA, true, false, 0);
