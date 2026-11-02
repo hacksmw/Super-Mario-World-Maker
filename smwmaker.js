@@ -14801,6 +14801,27 @@ function renderOW() {
             case 0x00:
                 // nothing
                 break;
+            case 0x09:
+                {
+                    // bowser
+                    if (y >= 128 * 8) {
+                        y = 0;
+                    }
+                    y += 8 * 64;
+                    y += 0x08;
+                    if (y >= 128 * 8) {
+                        y -= 64 * 8;
+                    }
+                    const topLeft = getOWSpr8x8Img(0x68, 0x8, false, false, 0);
+                    const topRight = getOWSpr8x8Img(0x69, 0x8, false, false, 0);
+                    const btmLeft = getOWSpr8x8Img(0x78, 0x8, false, false, 0);
+                    const btmRight = getOWSpr8x8Img(0x79, 0x8, false, false, 0);
+                    tempCtx.putImageData(topLeft, x, y);
+                    tempCtx.putImageData(topRight, x + 0x8, y);
+                    tempCtx.putImageData(btmLeft, x, y + 0x8);
+                    tempCtx.putImageData(btmRight, x + 0x8, y + 0x8);
+                }
+                break;
             case 0x04:
                 {
                     // plant
