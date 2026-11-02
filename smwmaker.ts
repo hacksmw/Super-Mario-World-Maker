@@ -235,6 +235,7 @@ class SubmapAniSettings {
     disableCustomGlobalAni: number = 0;
 }
 
+let luigiSubmap: number, luigiXpos: number, luigiYpos: number;
 let marioSubmap: number, marioXpos: number, marioYpos: number;
 let submapGhostsOffsetX: number[], submapGhostsOffsetY: number[];
 let koopalingsX: number[], koopalingsY: number[];
@@ -16159,6 +16160,11 @@ function loadOW() {
     marioXpos = (initialMarioStatuses[7] << 8) | initialMarioStatuses[6];
     marioYpos = (initialMarioStatuses[9] << 8) | initialMarioStatuses[8];
 
+    luigiSubmap = initialMarioStatuses[1];
+
+    luigiXpos = (initialMarioStatuses[11] << 8) | initialMarioStatuses[10];
+    luigiYpos = (initialMarioStatuses[13] << 8) | initialMarioStatuses[12];
+
     // ow palettes
     
     owPals = getOWPalettes();
@@ -16812,6 +16818,38 @@ function renderOW() {
             }
             break;
         }
+    }
+
+    {
+        // render luigi
+
+        const topleft = getOWSpr8x8Img(0x0A, 0xB, false, false, 0);
+        const topright = getOWSpr8x8Img(0x0B, 0xB, false, false, 0);
+        const btmleft = getOWSpr8x8Img(0x1A, 0xB, false, false, 0);
+        const btmright = getOWSpr8x8Img(0x1B, 0xB, false, false, 0);
+
+        let x = luigiXpos, y = luigiYpos;
+
+        if (luigiSubmap !== 0) {
+            // luigi is in submap
+            y += 64*8;
+            y += 8;
+            x += 0x10;
+            if (y >= 128*8) {
+                y -= 64*8;
+            }
+            if (x >= 64*8) {
+                x -= 64*8
+            }
+        }
+
+        x -= 8;
+        y -= 12;
+
+        tempCtx!.putImageData(topleft, x, y);
+        tempCtx!.putImageData(topright, x + 0x8, y);
+        tempCtx!.putImageData(btmleft, x, y + 0x8);
+        tempCtx!.putImageData(btmright, x + 0x8, y + 0x8);
     }
 
     {
