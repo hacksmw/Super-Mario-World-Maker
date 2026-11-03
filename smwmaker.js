@@ -14750,6 +14750,8 @@ function renderOW() {
         //console.log("y: ", (intdiv(linearTo, 64)).toString(16));
         let x = (linearTo % 64);
         let y = (intdiv(linearTo, 64));
+        let isSubmap = (y > 64 * 8);
+        let submapNum = getSubmapNumBy8x8(x, y);
         if (from >= layer26x6TileSize) {
             for (let j = 0; j < 4; j++) {
                 const tile = eventTiles[from + j];
@@ -14760,7 +14762,7 @@ function renderOW() {
                 const pal = (sett >>> 2) & 0b111;
                 const high = (sett >>> 0) & 0b11;
                 const realTile = (high << 8) | tile;
-                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy);
+                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
                 ctx.putImageData(img, ((x + (j % 2))) * 8, ((y + (intdiv(j, 2))) * 8));
             }
         }
@@ -14774,7 +14776,7 @@ function renderOW() {
                 const pal = (sett >>> 2) & 0b111;
                 const high = (sett >>> 0) & 0b11;
                 const realTile = (high << 8) | tile;
-                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy);
+                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
                 ctx.putImageData(img, ((x + (j % 6))) * 8, ((y + (intdiv(j, 6))) * 8));
             }
         }
