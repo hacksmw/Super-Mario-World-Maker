@@ -14742,7 +14742,7 @@ function renderOW() {
         ctx.putImageData(dnleft, (i % 16) * 16, 128 * 8 + intdiv(i, 16) * 16 + 8);
         ctx.putImageData(dnright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 8);
     }
-    // events
+    // layer2 events
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];
     const delta = ((eventsIndex[(eventNum + 1) * 2 + 1] << 8) | eventsIndex[(eventNum + 1) * 2]) - eventIndex;
     const index = eventIndex * 4 + delta * 4;
@@ -14844,8 +14844,13 @@ function renderOW() {
                 }
                 let afterTileNoTop = listOfLevelTilesThatCanBeDestroyedBefore[tileIndex];
                 let afterTileNoBtm = listOfLevelTilesThatCanBeDestroyedAfter[tileIndex];
-                layer1Tiles[index] = afterTileNoTop;
-                layer1Tiles[index + 32] = afterTileNoBtm;
+                if (tileIndex > 2) {
+                    layer1Tiles[index] = afterTileNoTop;
+                    layer1Tiles[index + 32] = afterTileNoBtm;
+                }
+                else {
+                    layer1Tiles[index] = afterTileNoBtm;
+                }
             }
         }
     }
