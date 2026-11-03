@@ -105,6 +105,12 @@ class Layer1Event {
     vramLoc: number = 0;
 }
 
+class SilentEvent {
+    isLayer2: number[] = [];
+    tileNum: number[] = [];
+    location: number[] = [];
+}
+
 class Layer2EventTile {
     src: number = 0;
     dest: number = 0;
@@ -119,7 +125,7 @@ class OWEvent {
     destructionEvent: Nullable<DestructionEvent[]> = null;
     layer2Event: Nullable<Layer2Event> = null;
     layer1Event: Nullable<Layer1Event> = null;
-    silentEvent: any = null;
+    silentEvent: Nullable<SilentEvent> = null;
 }
 
 class ExAni {
@@ -15516,9 +15522,9 @@ function loadOW() {
                 y = intdiv(convertedLoc, 64);
             }
 
-            owEvents[eventNum].silentEvent.isLayer2.push(isLayer2);
-            owEvents[eventNum].silentEvent.tileNum.push(tileNum);
-            owEvents[eventNum].silentEvent.location.push(convertedLoc);    
+            owEvents[eventNum].silentEvent!.isLayer2.push(isLayer2);
+            owEvents[eventNum].silentEvent!.tileNum.push(tileNum);
+            owEvents[eventNum].silentEvent!.location.push(convertedLoc);    
             
             /*
             console.log("--silent event--");
@@ -15578,9 +15584,9 @@ function loadOW() {
                     y = intdiv(convertedLoc, 64);
                 }
 
-                owEvents[i].silentEvent.isLayer2.push(isLayer2);
-                owEvents[i].silentEvent.tileNum.push(tileNum);
-                owEvents[i].silentEvent.location.push(convertedLoc);  
+                owEvents[i].silentEvent!.isLayer2.push(isLayer2);
+                owEvents[i].silentEvent!.tileNum.push(tileNum);
+                owEvents[i].silentEvent!.location.push(convertedLoc);  
 
                 /*
                 console.log("--silent event--");
@@ -16584,23 +16590,80 @@ function renderOW() {
     for (let i = 0; i <= eventNum; i++) {
         const event = owEvents[i];
         
-        if (!event.layer1Event) continue;
+        break_if:
+        if (event.layer1Event) {
+            let x = event.layer1Event.x;
+            let y = event.layer1Event.y;
 
-        let x = event.layer1Event.x;
-        let y = event.layer1Event.y;
+            let index = y * 32 + x;
 
-        let index = y * 32 + x;
+            if (index === 0) {
+                break break_if;
+            }        
 
-        if (index === 0) continue;
+            let tileNo = layer1Tiles[index];
+
+            let tileIndex = beforeTiles.indexOf(tileNo);
+            let afterTileNo = afterTiles[tileIndex];
+
+            layer1Tiles[index] = afterTileNo;    
+        }
+
+        if (event.silentEvent) {
+            const silentEvent = event.silentEvent;
+            for (let j = 0; j < silentEvent.isLayer2.length; j++) {
+                const isLayer2 = silentEvent.isLayer2[j];
+                if (!isLayer2) {
+                    const loc = silentEvent.location[j];
+                    const x = loc % 32;
+                    const y = intdiv(loc, 32);
+                    const tileNum = silentEvent.tileNum[j];
+                    layer1Tiles[loc] = tileNum;
+                }
+            }
+        }
+
         
-
-        let tileNo = layer1Tiles[index];
-
-        let tileIndex = beforeTiles.indexOf(tileNo);
-        let afterTileNo = afterTiles[tileIndex];
-
-        layer1Tiles[index] = afterTileNo;
     }
+
+    /*
+    // destruction events
+
+    for (let i = 0; i <= eventNum; i++) {
+        const event = owEvents[i];
+        
+        if (!event.destructionEvent) continue;
+
+        for (let j = 0; j < event.destructionEvent.length; j++) {
+            let x: number, y: number;
+
+            x = event.destructionEvent[j].x;
+            y = event.destructionEvent[j].y;
+
+            let index = y * 32 + x;
+
+            if (index === 0) continue;
+
+            let tileNo = layer1Tiles[index];
+
+            let tileIndex = listOfLevelTilesThatCanBeDestroyed.indexOf(tileNo);
+
+            console.log("x: ", x.toString(16));
+            console.log("y: ", y.toString(16));
+
+            console.log("tileNo: ", tileNo.toString(16));
+
+            let afterTileNoTop = listOfLevelTilesThatCanBeDestroyedBefore[tileIndex];
+            let afterTileNoBtm = listOfLevelTilesThatCanBeDestroyedAfter[tileIndex];
+
+            console.log("tileIndex: " + tileIndex.toString(16));
+            
+
+            layer1Tiles[index] = afterTileNoTop;
+            layer1Tiles[index + 0x32] = afterTileNoBtm;
+        }
+    }
+    */
 
     for (let i = 0; i < 2048; i++) {
         let index = layer1Tiles[i];
