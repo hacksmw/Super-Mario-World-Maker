@@ -15148,8 +15148,8 @@ function getOWSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, f
 }
 
 function loadOW() {
-    eventNum = 0;
-    step = 0;
+    eventNum = 1;
+    step = 5;
 
     let tileNums;
     let tileSettings;
@@ -16509,8 +16509,16 @@ function renderOW() {
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];  
     const delta = ((eventsIndex[(eventNum+1) * 2 + 1] << 8) | eventsIndex[(eventNum+1) * 2]) - eventIndex;
     const index = eventIndex * 4 + delta * 4;
+    let count = 0;
 
     for (let i = 0; i < index; i+=4) {
+        if (i >= eventIndex * 4) {
+            if (count > step) {
+                break;
+            }
+            count++;
+        }
+
         const from = (eventsData[i+1] << 8) | eventsData[i];
         const to = (eventsData[i+3] << 8) | eventsData[i+2];
         const linearTo = convertVram2linear(to);
@@ -16521,6 +16529,7 @@ function renderOW() {
 
         let x = (linearTo % 64);
         let y = (intdiv(linearTo, 64));
+        
         let isSubmap = (y > 64 * 8);
         let submapNum = getSubmapNumBy8x8(x, y);
 
@@ -16536,8 +16545,9 @@ function renderOW() {
                 const realTile = (high << 8) | tile;
                 const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
                 
-
-                ctx!.putImageData(img, ((x+(j % 2))) * 8, ((y+(intdiv(j, 2))) * 8));
+                if (true) {
+                    ctx!.putImageData(img, ((x+(j % 2))) * 8, ((y+(intdiv(j, 2))) * 8));
+                }
             }
             
         } else {
@@ -16552,9 +16562,17 @@ function renderOW() {
                 const realTile = (high << 8) | tile;
                 const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
 
-                ctx!.putImageData(img, ((x+(j % 6))) * 8, ((y+(intdiv(j, 6))) * 8));
+                if (true) {
+                    ctx!.putImageData(img, ((x+(j % 6))) * 8, ((y+(intdiv(j, 6))) * 8));
+                }
             }
         }
+        
+
+        
+        
+
+        
         
     }
 

@@ -13687,8 +13687,8 @@ function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, su
     return ctx.getImageData(0, 0, 8, 8);
 }
 function loadOW() {
-    eventNum = 0;
-    step = 0;
+    eventNum = 1;
+    step = 5;
     let tileNums;
     let tileSettings;
     let adr, adr2, adr3, adr4;
@@ -14741,7 +14741,14 @@ function renderOW() {
     const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];
     const delta = ((eventsIndex[(eventNum + 1) * 2 + 1] << 8) | eventsIndex[(eventNum + 1) * 2]) - eventIndex;
     const index = eventIndex * 4 + delta * 4;
+    let count = 0;
     for (let i = 0; i < index; i += 4) {
+        if (i >= eventIndex * 4) {
+            if (count > step) {
+                break;
+            }
+            count++;
+        }
         const from = (eventsData[i + 1] << 8) | eventsData[i];
         const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
         const linearTo = convertVram2linear(to);
@@ -14763,7 +14770,9 @@ function renderOW() {
                 const high = (sett >>> 0) & 0b11;
                 const realTile = (high << 8) | tile;
                 const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
-                ctx.putImageData(img, ((x + (j % 2))) * 8, ((y + (intdiv(j, 2))) * 8));
+                if (true) {
+                    ctx.putImageData(img, ((x + (j % 2))) * 8, ((y + (intdiv(j, 2))) * 8));
+                }
             }
         }
         else {
@@ -14777,7 +14786,9 @@ function renderOW() {
                 const high = (sett >>> 0) & 0b11;
                 const realTile = (high << 8) | tile;
                 const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
-                ctx.putImageData(img, ((x + (j % 6))) * 8, ((y + (intdiv(j, 6))) * 8));
+                if (true) {
+                    ctx.putImageData(img, ((x + (j % 6))) * 8, ((y + (intdiv(j, 6))) * 8));
+                }
             }
         }
     }
