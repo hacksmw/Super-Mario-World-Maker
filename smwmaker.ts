@@ -15154,8 +15154,8 @@ function getOWSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, f
 }
 
 function loadOW() {
-    eventNum = 6;
-    step = 0xFF;
+    eventNum = 0;
+    step = 0;
 
     let tileNums;
     let tileSettings;
