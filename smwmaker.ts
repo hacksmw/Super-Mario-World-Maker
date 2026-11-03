@@ -16589,8 +16589,43 @@ function renderOW() {
     
     for (let i = 0; i <= eventNum; i++) {
         const event = owEvents[i];
+
+        break_if1:
+        if (event.destructionEvent) {
+            for (let j = 0; j < event.destructionEvent.length; j++) {
+                let x: number, y: number;
+
+                x = event.destructionEvent[j].x;
+                y = event.destructionEvent[j].y;
+
+                let index = y * 32 + x;
+
+                if (index === 0) break break_if1;
+
+                let tileNo = layer1Tiles[index];
+
+                let tileIndex = listOfLevelTilesThatCanBeDestroyed.indexOf(tileNo);
+
+                if (tileIndex === -1) {
+                    break break_if1;
+                }
+
+                let afterTileNoTop = listOfLevelTilesThatCanBeDestroyedBefore[tileIndex];
+                let afterTileNoBtm = listOfLevelTilesThatCanBeDestroyedAfter[tileIndex];
+
+                if (tileIndex > 2) {
+                    layer1Tiles[index] = afterTileNoTop;
+                    layer1Tiles[index + 32] = afterTileNoBtm;
+                } else {
+                    layer1Tiles[index] = afterTileNoBtm;
+                }
+
+                
+                
+            }
+        }
         
-        break_if:
+        break_if2:
         if (event.layer1Event) {
             let x = event.layer1Event.x;
             let y = event.layer1Event.y;
@@ -16598,7 +16633,7 @@ function renderOW() {
             let index = y * 32 + x;
 
             if (index === 0) {
-                break break_if;
+                break break_if2;
             }
 
             let tileNo = layer1Tiles[index];
@@ -16606,7 +16641,7 @@ function renderOW() {
             let tileIndex = beforeTiles.indexOf(tileNo);
 
             if (tileIndex === -1) {
-                break break_if;
+                break break_if2;
             }
 
             
@@ -16627,41 +16662,6 @@ function renderOW() {
                     const tileNum = silentEvent.tileNum[j];
                     layer1Tiles[loc] = tileNum;
                 }
-            }
-        }
-
-        break_if2:
-        if (event.destructionEvent) {
-            for (let j = 0; j < event.destructionEvent.length; j++) {
-                let x: number, y: number;
-
-                x = event.destructionEvent[j].x;
-                y = event.destructionEvent[j].y;
-
-                let index = y * 32 + x;
-
-                if (index === 0) break break_if2;
-
-                let tileNo = layer1Tiles[index];
-
-                let tileIndex = listOfLevelTilesThatCanBeDestroyed.indexOf(tileNo);
-
-                if (tileIndex === -1) {
-                    break break_if2;
-                }
-
-                let afterTileNoTop = listOfLevelTilesThatCanBeDestroyedBefore[tileIndex];
-                let afterTileNoBtm = listOfLevelTilesThatCanBeDestroyedAfter[tileIndex];
-
-                if (tileIndex > 2) {
-                    layer1Tiles[index] = afterTileNoTop;
-                    layer1Tiles[index + 32] = afterTileNoBtm;
-                } else {
-                    layer1Tiles[index] = afterTileNoBtm;
-                }
-
-                
-                
             }
         }
     }
