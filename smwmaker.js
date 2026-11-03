@@ -13687,7 +13687,7 @@ function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, su
     return ctx.getImageData(0, 0, 8, 8);
 }
 function loadOW() {
-    eventNum = 1;
+    eventNum = 4;
     step = 5;
     let tileNums;
     let tileSettings;
@@ -14792,8 +14792,24 @@ function renderOW() {
             }
         }
     }
+    // layer1 events
+    const layer1Tiles = owLayer1Tiles.slice();
+    for (let i = 0; i <= eventNum; i++) {
+        const event = owEvents[i];
+        if (!event.layer1Event)
+            continue;
+        let x = event.layer1Event.x;
+        let y = event.layer1Event.y;
+        let index = y * 32 + x;
+        if (index === 0)
+            continue;
+        let tileNo = layer1Tiles[index];
+        let tileIndex = beforeTiles.indexOf(tileNo);
+        let afterTileNo = afterTiles[tileIndex];
+        layer1Tiles[index] = afterTileNo;
+    }
     for (let i = 0; i < 2048; i++) {
-        let index = owLayer1Tiles[i];
+        let index = layer1Tiles[i];
         if (index === 0)
             continue;
         let x = i % 32;

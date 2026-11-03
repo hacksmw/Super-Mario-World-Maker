@@ -15148,7 +15148,7 @@ function getOWSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, f
 }
 
 function loadOW() {
-    eventNum = 1;
+    eventNum = 4;
     step = 5;
 
     let tileNums;
@@ -15465,6 +15465,7 @@ function loadOW() {
 
         layer1Event.x = x;
         layer1Event.y = y;
+        
         layer1Event.vramLoc = vramLoc;
 
         owEvents[i].layer1Event = layer1Event;
@@ -16576,8 +16577,33 @@ function renderOW() {
         
     }
 
+    // layer1 events
+
+    const layer1Tiles = owLayer1Tiles.slice();
+
+    for (let i = 0; i <= eventNum; i++) {
+        const event = owEvents[i];
+        
+        if (!event.layer1Event) continue;
+
+        let x = event.layer1Event.x;
+        let y = event.layer1Event.y;
+
+        let index = y * 32 + x;
+
+        if (index === 0) continue;
+        
+
+        let tileNo = layer1Tiles[index];
+
+        let tileIndex = beforeTiles.indexOf(tileNo);
+        let afterTileNo = afterTiles[tileIndex];
+
+        layer1Tiles[index] = afterTileNo;
+    }
+
     for (let i = 0; i < 2048; i++) {
-        let index = owLayer1Tiles[i];
+        let index = layer1Tiles[i];
 
         if (index === 0) continue;
 
@@ -16603,10 +16629,12 @@ function renderOW() {
         tempCtx!.putImageData(dnright, (i%32)*16 + 8, intdiv(i, 32)*16 + 8 + factor);
     }
 
+
+
     ctx!.drawImage(tempCanvas, 0, 0);
 
     tempCtx!.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-
+    
 
 
     // sprite
