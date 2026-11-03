@@ -15154,8 +15154,8 @@ function getOWSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, f
 }
 
 function loadOW() {
-    eventNum = 1;
-    step = 5;
+    eventNum = 6;
+    step = 0xFF;
 
     let tileNums;
     let tileSettings;
@@ -15526,14 +15526,14 @@ function loadOW() {
             owEvents[eventNum].silentEvent!.tileNum.push(tileNum);
             owEvents[eventNum].silentEvent!.location.push(convertedLoc);    
             
-            /*
-            console.log("--silent event--");
-            console.log("eventNum: ", eventNum.toString(16));
-            console.log("isLayer2: ", isLayer2);
-            console.log("tileNum: ", tileNum.toString(16));
-            console.log("x: ", x.toString(16));
-            console.log("y: ", y.toString(16));
-            */
+            
+            //console.log("--silent event--");
+            //console.log("eventNum: ", eventNum.toString(16));
+            //console.log("isLayer2: ", isLayer2);
+            //console.log("tileNum: ", tileNum.toString(16));
+            //console.log("x: ", x.toString(16));
+            //console.log("y: ", y.toString(16));
+            
         }
     } else {
         let table, layer2Table, locTable, tileNumTable;
@@ -16513,6 +16513,7 @@ function renderOW() {
 
     // layer2 events
 
+    break_for:
     for (let k = 0; k <= eventNum; k++) {
         const lastEventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];  
         const eventIndex = (eventsIndex[k * 2 + 1] << 8) | eventsIndex[k * 2 + 0];  
@@ -16523,7 +16524,7 @@ function renderOW() {
         for (let i = eventIndex * 4; i < index; i += 4) {
             if (i >= lastEventIndex * 4) {
                 if (count > step) {
-                    break;
+                    break break_for;
                 }
                 count++;
             }
@@ -16568,6 +16569,58 @@ function renderOW() {
                 }
             }
         }
+
+        // silent layer 2 events
+
+        const sEvent = owEvents[k].silentEvent!;
+
+        for (let i = 0; i < sEvent.isLayer2.length; i++) {
+            if (sEvent.isLayer2[i]) {
+                const loc = sEvent.location[i];
+                
+                const x = loc % 64;
+                const y = intdiv(loc, 64);
+
+                const tileNum = sEvent.tileNum[i];
+                
+                let isSubmap = (y > 64 * 8);
+                let submapNum = getSubmapNumBy8x8(x, y);
+
+                let from = tileNum;
+                
+                if (from >= layer26x6TileSize) {
+                    for (let j = 0; j < 4; j++) {
+                        const tile = eventTiles[from+j];
+                        const sett = eventTilesSettings[from+j];
+                        const flipy = sett >>> 7;
+                        const flipx = (sett >>> 6) & 1;
+                        const priority = (sett >>> 5) & 1;
+                        const pal = (sett >>> 2) & 0b111;
+                        const high = (sett >>> 0) & 0b11;
+                        const realTile = (high << 8) | tile;
+                        const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
+                        
+                        ctx!.putImageData(img, ((x+(j % 2))) * 8, ((y+(intdiv(j, 2))) * 8));
+                    }
+                } else {
+                    for (let j = 0; j < 36; j++) {
+                        const tile = eventTiles[from+j];
+                        const sett = eventTilesSettings[from+j];
+                        const flipy = sett >>> 7;
+                        const flipx = (sett >>> 6) & 1;
+                        const priority = (sett >>> 5) & 1;
+                        const pal = (sett >>> 2) & 0b111;
+                        const high = (sett >>> 0) & 0b11;
+                        const realTile = (high << 8) | tile;
+                        const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
+
+                        ctx!.putImageData(img, ((x+(j % 6))) * 8, ((y+(intdiv(j, 6))) * 8));
+                    }
+                }
+            }
+        }
+
+
     }
 
     // layer1 events
