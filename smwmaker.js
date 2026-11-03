@@ -13692,7 +13692,7 @@ function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, su
     return ctx.getImageData(0, 0, 8, 8);
 }
 function loadOW() {
-    eventNum = 6;
+    eventNum = 1;
     step = 5;
     let tileNums;
     let tileSettings;
@@ -14743,55 +14743,51 @@ function renderOW() {
         ctx.putImageData(dnright, (i % 16) * 16 + 8, 128 * 8 + intdiv(i, 16) * 16 + 8);
     }
     // layer2 events
-    const eventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];
-    const delta = ((eventsIndex[(eventNum + 1) * 2 + 1] << 8) | eventsIndex[(eventNum + 1) * 2]) - eventIndex;
-    const index = eventIndex * 4 + delta * 4;
-    let count = 0;
-    for (let i = 0; i < index; i += 4) {
-        if (i >= eventIndex * 4) {
-            if (count > step) {
-                break;
+    for (let k = 0; k <= eventNum; k++) {
+        const lastEventIndex = (eventsIndex[eventNum * 2 + 1] << 8) | eventsIndex[eventNum * 2 + 0];
+        const eventIndex = (eventsIndex[k * 2 + 1] << 8) | eventsIndex[k * 2 + 0];
+        const delta = ((eventsIndex[(k + 1) * 2 + 1] << 8) | eventsIndex[(k + 1) * 2]) - eventIndex;
+        const index = eventIndex * 4 + delta * 4;
+        let count = 0;
+        for (let i = eventIndex * 4; i < index; i += 4) {
+            if (i >= lastEventIndex * 4) {
+                if (count > step) {
+                    break;
+                }
+                count++;
             }
-            count++;
-        }
-        const from = (eventsData[i + 1] << 8) | eventsData[i];
-        const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
-        const linearTo = convertVram2linear(to);
-        //console.log("from: ", from.toString(16));
-        //console.log("x: ", (linearTo % 64).toString(16));
-        //console.log("y: ", (intdiv(linearTo, 64)).toString(16));
-        let x = (linearTo % 64);
-        let y = (intdiv(linearTo, 64));
-        let isSubmap = (y > 64 * 8);
-        let submapNum = getSubmapNumBy8x8(x, y);
-        if (from >= layer26x6TileSize) {
-            for (let j = 0; j < 4; j++) {
-                const tile = eventTiles[from + j];
-                const sett = eventTilesSettings[from + j];
-                const flipy = sett >>> 7;
-                const flipx = (sett >>> 6) & 1;
-                const priority = (sett >>> 5) & 1;
-                const pal = (sett >>> 2) & 0b111;
-                const high = (sett >>> 0) & 0b11;
-                const realTile = (high << 8) | tile;
-                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
-                if (true) {
+            const from = (eventsData[i + 1] << 8) | eventsData[i];
+            const to = (eventsData[i + 3] << 8) | eventsData[i + 2];
+            const linearTo = convertVram2linear(to);
+            let x = (linearTo % 64);
+            let y = (intdiv(linearTo, 64));
+            let isSubmap = (y > 64 * 8);
+            let submapNum = getSubmapNumBy8x8(x, y);
+            if (from >= layer26x6TileSize) {
+                for (let j = 0; j < 4; j++) {
+                    const tile = eventTiles[from + j];
+                    const sett = eventTilesSettings[from + j];
+                    const flipy = sett >>> 7;
+                    const flipx = (sett >>> 6) & 1;
+                    const priority = (sett >>> 5) & 1;
+                    const pal = (sett >>> 2) & 0b111;
+                    const high = (sett >>> 0) & 0b11;
+                    const realTile = (high << 8) | tile;
+                    const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
                     ctx.putImageData(img, ((x + (j % 2))) * 8, ((y + (intdiv(j, 2))) * 8));
                 }
             }
-        }
-        else {
-            for (let j = 0; j < 36; j++) {
-                const tile = eventTiles[from + j];
-                const sett = eventTilesSettings[from + j];
-                const flipy = sett >>> 7;
-                const flipx = (sett >>> 6) & 1;
-                const priority = (sett >>> 5) & 1;
-                const pal = (sett >>> 2) & 0b111;
-                const high = (sett >>> 0) & 0b11;
-                const realTile = (high << 8) | tile;
-                const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
-                if (true) {
+            else {
+                for (let j = 0; j < 36; j++) {
+                    const tile = eventTiles[from + j];
+                    const sett = eventTilesSettings[from + j];
+                    const flipy = sett >>> 7;
+                    const flipx = (sett >>> 6) & 1;
+                    const priority = (sett >>> 5) & 1;
+                    const pal = (sett >>> 2) & 0b111;
+                    const high = (sett >>> 0) & 0b11;
+                    const realTile = (high << 8) | tile;
+                    const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, submapNum);
                     ctx.putImageData(img, ((x + (j % 6))) * 8, ((y + (intdiv(j, 6))) * 8));
                 }
             }
