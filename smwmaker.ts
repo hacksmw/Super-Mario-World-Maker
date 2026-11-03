@@ -16511,6 +16511,68 @@ function renderOW() {
         ctx!.putImageData(dnright, (i%16)*16 + 8, 128*8+intdiv(i, 16)*16 + 8);
     }
 
+    // event tiles
+
+    let c: number, x: number, y: number;
+
+    c = 0;
+    x = 0;
+    y = 0;
+
+    for (let i = 0; i < layer26x6TileSize; i += 36) {
+        for (let j = 0; j < 36; j++) {
+            const tile = eventTiles[i+j];
+            const sett = eventTilesSettings[i+j];
+            const flipy = sett >>> 7;
+            const flipx = (sett >>> 6) & 1;
+            const priority = (sett >>> 5) & 1;
+            const pal = (sett >>> 2) & 0b111;
+            const high = (sett >>> 0) & 0b11;
+            const realTile = (high << 8) | tile;
+            const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, 0);
+
+            ctx!.putImageData(img, ((64+x+(j % 6))) * 8, ((y+(intdiv(j, 6))) * 8));
+        }
+
+        c++;
+
+        x = (c % 8) * 6;
+        y = (intdiv(c, 8)) * 6;
+
+
+    }
+
+    let oldY = y;
+
+    c = 0;
+    x = 0;
+    y = 0;
+
+    for (let i = layer26x6TileSize; i < 0x1300; i += 4) {
+        for (let j = 0; j < 4; j++) {
+            const tile = eventTiles[i+j];
+            const sett = eventTilesSettings[i+j];
+            const flipy = sett >>> 7;
+            const flipx = (sett >>> 6) & 1;
+            const priority = (sett >>> 5) & 1;
+            const pal = (sett >>> 2) & 0b111;
+            const high = (sett >>> 0) & 0b11;
+            const realTile = (high << 8) | tile;
+            const img = getOW8x8Img(realTile, pal, !!flipx, !!flipy, 0);
+
+            ctx!.putImageData(img, ((64+x+(j % 2))) * 8, ((oldY+y+(intdiv(j, 2))) * 8));
+        }
+
+        c++;
+
+        x = (c % 24) * 2;
+        y = (intdiv(c, 24)) * 2;
+
+
+    }
+
+
+
     // layer2 events
 
     break_for:
