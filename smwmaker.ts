@@ -15154,7 +15154,7 @@ function getOWSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, f
 }
 
 function loadOW() {
-    eventNum = 4;
+    eventNum = 6;
     step = 5;
 
     let tileNums;
@@ -16586,7 +16586,7 @@ function renderOW() {
     // layer1 events
 
     const layer1Tiles = owLayer1Tiles.slice();
-
+    
     for (let i = 0; i <= eventNum; i++) {
         const event = owEvents[i];
         
@@ -16599,11 +16599,18 @@ function renderOW() {
 
             if (index === 0) {
                 break break_if;
-            }        
+            }
 
             let tileNo = layer1Tiles[index];
 
             let tileIndex = beforeTiles.indexOf(tileNo);
+
+            if (tileIndex === -1) {
+                break break_if;
+            }
+
+            
+
             let afterTileNo = afterTiles[tileIndex];
 
             layer1Tiles[index] = afterTileNo;    
@@ -16623,47 +16630,34 @@ function renderOW() {
             }
         }
 
-        
-    }
+        break_if2:
+        if (event.destructionEvent) {
+            for (let j = 0; j < event.destructionEvent.length; j++) {
+                let x: number, y: number;
 
-    /*
-    // destruction events
+                x = event.destructionEvent[j].x;
+                y = event.destructionEvent[j].y;
 
-    for (let i = 0; i <= eventNum; i++) {
-        const event = owEvents[i];
-        
-        if (!event.destructionEvent) continue;
+                let index = y * 32 + x;
 
-        for (let j = 0; j < event.destructionEvent.length; j++) {
-            let x: number, y: number;
+                if (index === 0) break break_if2;
 
-            x = event.destructionEvent[j].x;
-            y = event.destructionEvent[j].y;
+                let tileNo = layer1Tiles[index];
 
-            let index = y * 32 + x;
+                let tileIndex = listOfLevelTilesThatCanBeDestroyed.indexOf(tileNo);
 
-            if (index === 0) continue;
+                if (tileIndex === -1) {
+                    break break_if2;
+                }
 
-            let tileNo = layer1Tiles[index];
+                let afterTileNoTop = listOfLevelTilesThatCanBeDestroyedBefore[tileIndex];
+                let afterTileNoBtm = listOfLevelTilesThatCanBeDestroyedAfter[tileIndex];
 
-            let tileIndex = listOfLevelTilesThatCanBeDestroyed.indexOf(tileNo);
-
-            console.log("x: ", x.toString(16));
-            console.log("y: ", y.toString(16));
-
-            console.log("tileNo: ", tileNo.toString(16));
-
-            let afterTileNoTop = listOfLevelTilesThatCanBeDestroyedBefore[tileIndex];
-            let afterTileNoBtm = listOfLevelTilesThatCanBeDestroyedAfter[tileIndex];
-
-            console.log("tileIndex: " + tileIndex.toString(16));
-            
-
-            layer1Tiles[index] = afterTileNoTop;
-            layer1Tiles[index + 0x32] = afterTileNoBtm;
+                layer1Tiles[index] = afterTileNoTop;
+                layer1Tiles[index + 32] = afterTileNoBtm;
+            }
         }
     }
-    */
 
     for (let i = 0; i < 2048; i++) {
         let index = layer1Tiles[i];
