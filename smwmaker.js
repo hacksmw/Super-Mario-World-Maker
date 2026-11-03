@@ -13692,7 +13692,7 @@ function getOWSpr8x8Img(index = 0, palette = 0, flipx = false, flipy = false, su
     return ctx.getImageData(0, 0, 8, 8);
 }
 function loadOW() {
-    eventNum = 0;
+    eventNum = -1;
     step = 0;
     let tileNums;
     let tileSettings;
