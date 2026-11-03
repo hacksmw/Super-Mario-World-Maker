@@ -15155,7 +15155,7 @@ function getOWSpr8x8Img(index: number = 0, palette: number = 0, flipx = false, f
 
 function loadOW() {
     eventNum = -1;
-    step = 0;
+    step = -1;
 
     let tileNums;
     let tileSettings;
@@ -16523,7 +16523,7 @@ function renderOW() {
         
         for (let i = eventIndex * 4; i < index; i += 4) {
             if (i >= lastEventIndex * 4) {
-                if (count > step) {
+                if (step !== -1 && count > step) {
                     break break_for;
                 }
                 count++;
