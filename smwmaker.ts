@@ -5376,7 +5376,6 @@ function loadGraphics() {
             lt3tiles = stripe(fileData.slice(snes2pc(layer3)));
         } else {
             lt3tiles = [];
-            
         }
     }
     
@@ -16446,7 +16445,7 @@ function loadOW() {
     }
 
     // Title Screen
-    titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
+    titleScreen = stripe(fileData.slice(snes2pc(read3(0x0084D3))), 32);
 
     // ExAnimations
 

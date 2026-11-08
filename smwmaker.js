@@ -14696,7 +14696,7 @@ function loadOW() {
         submapGhostsOffsetY[i] = y;
     }
     // Title Screen
-    titleScreen = stripe(fileData.slice(snes2pc(0x05b375)), 32);
+    titleScreen = stripe(fileData.slice(snes2pc(read3(0x0084D3))), 32);
     // ExAnimations
     loadOWExAnimations();
     /* render */
